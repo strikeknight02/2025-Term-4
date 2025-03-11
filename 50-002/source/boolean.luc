@@ -1,0 +1,16 @@
+module boolean #(BITS = 2)(
+    input alufn[4],
+    input a[BITS],
+    input b[BITS],
+    output out[BITS]
+) {
+    mux_4 mux[BITS]
+    always {
+        mux.in = BITSx{{alufn}}
+        repeat(i, BITS){
+            mux.s0[i] = a[i]
+            mux.s1[i] = b[i]
+        }
+        out = mux.out
+    }
+}
