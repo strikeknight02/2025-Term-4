@@ -2,9 +2,14 @@ package com.example.wowcher;
 
 
 import android.os.Bundle;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+
+import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.fragments.Home;
 import com.example.wowcher.fragments.Map;
 import com.example.wowcher.fragments.Profile;
@@ -13,6 +18,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.wowcher.R;
 
 public class MainActivity extends AppCompatActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
