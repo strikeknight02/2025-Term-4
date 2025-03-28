@@ -1,14 +1,13 @@
 package com.example.wowcher;
 
-import static android.content.ContentValues.TAG;
-
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -18,23 +17,19 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.wowcher.classes.User;
 import com.example.wowcher.controller.UserController;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
+import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.UserSource;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 
 public class MainActivity extends AppCompatActivity {
 
-    private UserController model;
-    private TextView mainText;
+    boolean isDatabaseTesting = true;
 
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,29 +41,10 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        //Firebase Object Initialisation
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // Get the ViewModel.
-        model = new ViewModelProvider(this).get(UserController.class);
-
-        //Initial Database Call and setup Listener
-        model.getAllFromDB(db, model);
-
-        //Observer for User List
-        model.getAll().observe(this, new Observer<ArrayList<User>> () {
-            @Override
-            public void onChanged(@Nullable final ArrayList<User> newName) {
-                // Update the UI, in this case, a TextView.
-                mainText = findViewById(R.id.mainText);
-                String mText = "";
-                for (User u: newName){
-                    mText += u.username + "\n";
-                }
-                mainText.setText(mText);
-            }
-
-        });
+        if(isDatabaseTesting){
+            Intent databaseIntent = new Intent(MainActivity.this, DBTestActivity.class);
+            startActivity(databaseIntent);
+        }
 
     }
 }

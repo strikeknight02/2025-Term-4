@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">WOWcher</string>
+    <string name="title_activity_db_test">DbTestActivity</string>
 </resources>

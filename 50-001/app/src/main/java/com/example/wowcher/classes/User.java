@@ -1,13 +1,20 @@
 package com.example.wowcher.classes;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
+import java.time.LocalDateTime;
+
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class User {
 
     //primary key
-    public double userId= 0.0;
+    public String userId= "";
 
     public String username = "";
     public String role = "";
-    public String createdAt = "";
+    public String createdAt =  LocalDateTime.now().toString();
     public int availableVouchers = 0;
     public int previousVouchers = 0;
 
@@ -16,7 +23,7 @@ public class User {
 
 
     //User constructor
-    public User(double userId, String username, String role, String createdAt, int availableVouchers, int previousVouchers) {
+    public User(String userId, String username, String role, String createdAt, int availableVouchers, int previousVouchers) {
         this.userId = userId;
         this.username = username;
         this.role = role;
@@ -34,11 +41,11 @@ public class User {
         this.username = username;
     }
 
-    public double getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(double userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -62,15 +69,11 @@ public class User {
         return availableVouchers;
     }
 
-    public void setAvailableVouchers(int availableVouchers) {
-        this.availableVouchers = availableVouchers;
-    }
+    public void setAvailableVouchers(int availableVouchers) {this.availableVouchers = availableVouchers;}
 
     public int getPreviousVouchers() {
         return previousVouchers;
     }
 
-    public void setPreviousVouchers(int previousVouchers) {
-        this.previousVouchers = previousVouchers;
-    }
+    public void setPreviousVouchers(int previousVouchers) {this.previousVouchers = previousVouchers;}
 }

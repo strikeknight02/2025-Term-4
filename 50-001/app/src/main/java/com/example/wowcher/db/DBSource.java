@@ -1,17 +1,16 @@
 package com.example.wowcher.db;
 
-import android.view.View;
-
 import androidx.lifecycle.ViewModel;
 
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.wowcher.classes.User;
+
+import java.util.function.Consumer;
 
 public interface DBSource {
 
-    void getAll(FirebaseFirestore db, ViewModel model);
-    void getOne(FirebaseFirestore db, ViewModel model, String column, Object comparison);
-    void create(FirebaseFirestore db, ViewModel model, Object t);
-    void delete(FirebaseFirestore db, ViewModel model, Object t);
-    void update(FirebaseFirestore db, ViewModel model, String column, Object newValue);
+    void getData(ViewModel model, String column, Object comparison, Consumer<User> o);
+    void create( Object t);
+    void delete(String reference);
+    void update(String reference, String column, Object newValue);
 
 }
