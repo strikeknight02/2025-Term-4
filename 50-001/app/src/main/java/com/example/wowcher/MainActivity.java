@@ -21,21 +21,6 @@ import com.example.wowcher.fragments.Map;
 import com.example.wowcher.fragments.Profile;
 import com.example.wowcher.fragments.Vouchers;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.example.wowcher.R;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-
-import com.example.wowcher.classes.User;
-import com.example.wowcher.controller.UserController;
-import com.example.wowcher.controller.UserControllerFactory;
-import com.example.wowcher.db.DBSource;
-import com.example.wowcher.db.UserSource;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.time.LocalDateTime;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,6 +33,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if(isDatabaseTesting){
+            Intent databaseIntent = new Intent(MainActivity.this, DBTestActivity.class);
+            startActivity(databaseIntent);
+        }
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
@@ -73,11 +63,6 @@ public class MainActivity extends AppCompatActivity {
 
             return true;
         });
-
-        if(isDatabaseTesting){
-            Intent databaseIntent = new Intent(MainActivity.this, DBTestActivity.class);
-            startActivity(databaseIntent);
-        }
 
     }
 
