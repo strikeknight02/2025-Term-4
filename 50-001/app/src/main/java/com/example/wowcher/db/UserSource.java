@@ -29,7 +29,7 @@ import java.util.function.Consumer;
 
 public class UserSource implements DBSource{
     private final FirebaseFirestore db;
-    private CollectionReference userCollection;
+    private final CollectionReference userCollection;
     public UserSource(FirebaseFirestore db){
         this.db = db;
         this.userCollection = db.collection("users");
@@ -80,8 +80,7 @@ public class UserSource implements DBSource{
     }
 
     @Override
-    public void getData(ViewModel model, String column, Object comparison, Consumer<User> method) {
-        UserController userVM = (UserController) model;
+    public void getData(String column, Object comparison, Consumer<?> method) {
         db.collection("users")
                 .whereEqualTo(column, comparison)
                 .get()
@@ -89,12 +88,21 @@ public class UserSource implements DBSource{
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task){
                         if (task.isSuccessful()) {
-                            //Get first item only
-                            QueryDocumentSnapshot document = task.getResult().iterator().next();
+                            ArrayList<User> UserList = new ArrayList<User>();
+                            for (QueryDocumentSnapshot document : task.getResult()){
 
-                            Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                            User user = document.toObject(User.class);
-                            method.accept(user);
+                                Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                User user = document.toObject(User.class);
+                                UserList.add(user);
+                            }
+
+                            if (method instanceof Consumer<?>){
+
+                                Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
+                                methodCast.accept(UserList);
+                            } else {
+                                Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                            }
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }
@@ -117,8 +125,12 @@ public class UserSource implements DBSource{
                         Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
                         User user = document.toObject(User.class);
 
-                        userVM.getUserInfo().setValue(user);
-
+                        if (method instanceof Consumer<?>){
+                            Consumer<User> methodCast = (Consumer<User>) method;
+                            methodCast.accept(user);
+                        } else {
+                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                        }
                     }
                 });
     }

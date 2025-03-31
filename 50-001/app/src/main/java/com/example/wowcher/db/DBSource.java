@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 public interface DBSource {
 
-    void getData(ViewModel model, String column, Object comparison, Consumer<User> o);
+    void getData( String column, Object comparison, Consumer<?> o);
     void create( Object t);
     void delete(String reference);
     void update(String reference, String column, Object newValue);
