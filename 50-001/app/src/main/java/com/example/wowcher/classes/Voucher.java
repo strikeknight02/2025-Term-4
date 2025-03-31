@@ -10,11 +10,63 @@ public class Voucher {
     private int locationId = 0; // Foreign key to Location
     private String createdAt = "";
 
+    //no-arg constructor
+    public Voucher(){}
+
+    //Voucher constructor
     public Voucher(int voucherId, String title, String details, String status, int locationId, String createdAt) {
         this.title = title;
         this.details = details;
         this.status = status;
         this.locationId = locationId;
+        this.createdAt = createdAt;
+    }
+
+    public int getVoucherId() {
+        return voucherId;
+    }
+
+    public void setVoucherId(int voucherId) {
+        this.voucherId = voucherId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public int getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(int locationId) {
+        this.locationId = locationId;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 }
