@@ -207,7 +207,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback {
 
                         // Initialize camera position of user location
                         CameraPosition cameraPosition = CameraPosition.fromLatLngZoom(userLocation, 20f);
-
                         moveCameraToLocation(cameraPosition);
 
                         // Enable necessary map functions
@@ -230,6 +229,15 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback {
                 .position(location)
                 .icon(BitmapDescriptorFactory.fromBitmap(customMarker(imageId)))
                 .flat(true);
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(@NonNull Marker marker) {
+                System.out.println("clicked");
+                return false;
+            }
+        });
+
         mMap.addMarker(markerOptions);
     }
 

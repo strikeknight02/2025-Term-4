@@ -10,7 +10,7 @@
         android:name="MapSearchBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search for a place"
+        android:hint="@string/map_search_placeholder"
         android:padding="16dp"
         android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
