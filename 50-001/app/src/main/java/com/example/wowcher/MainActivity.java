@@ -37,12 +37,12 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
-            if (itemId == R.id.home) {
-                setCurrentFragment(homeFragment);
-            } else if (itemId == R.id.map) {
+            if (itemId == R.id.map) {
                 setCurrentFragment(mapFragment);
             } else if (itemId == R.id.voucher) {
                 setCurrentFragment(voucherFragment);
+            } else if (itemId == R.id.rewards) {
+                setCurrentFragment(homeFragment);
             } else if (itemId == R.id.profile) {
                 setCurrentFragment(profileFragment);
             }

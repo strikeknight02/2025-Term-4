@@ -56,4 +56,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/redeemButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Redeem"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/black"
+        app:cornerRadius="10dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="20dp"/>
+
 </LinearLayout>
