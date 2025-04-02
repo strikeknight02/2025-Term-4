@@ -41,7 +41,7 @@ public class DBTestActivity extends AppCompatActivity {
 
         // Initialise the ViewModel.
         UserController userModel = new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
-        userModel.getModelInstance(userModel);
+        //userModel.getModelInstance(userModel);
 
         //Initial Database Call and setup Listener
         userModel.getUserInfoFromSource("username", "Speedy");

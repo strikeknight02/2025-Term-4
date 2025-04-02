@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi;
 import androidx.lifecycle.ViewModel;
 
 import com.example.wowcher.classes.User;
+import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.controller.UserController;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -35,31 +36,35 @@ public class UserSource implements DBSource{
         this.userCollection = db.collection("users");
     }
 
-    public void getAll( ViewModel model){
-        UserController userVM = (UserController) model;
-
-        db.collection("users")
+    @Override
+    public void getAllData(Consumer<?> method){
+        userCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<User> mUserList = new ArrayList<User>();
+                        ArrayList<User> userList = new ArrayList<User>();
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
                                 User user = document.toObject(User.class);
-                                mUserList.add(user);
-                                Log.d("SUCCESSFUL GET", mUserList.get(0).getUsername());
+                                userList.add(user);
                             }
-                            userVM.getAll().setValue(mUserList);
+                            if (method instanceof Consumer<?>){
+
+                                Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
+                                methodCast.accept(userList);
+                            } else {
+                                Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                            }
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }
                     }
                 });
 
-        db.collection("users")
+        userCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -69,12 +74,18 @@ public class UserSource implements DBSource{
                             return;
                         }
 
-                        ArrayList<User> mUserList = new ArrayList<User>();
+                        ArrayList<User> userList = new ArrayList<User>();
                         for (QueryDocumentSnapshot document : value) {
                             User user = document.toObject(User.class);
-                            mUserList.add(user);
+                            userList.add(user);
                         }
-                        userVM.getAll().setValue(mUserList);
+                        if (method instanceof Consumer<?>){
+
+                            Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
+                            methodCast.accept(userList);
+                        } else {
+                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                        }
                     }
                 });
     }

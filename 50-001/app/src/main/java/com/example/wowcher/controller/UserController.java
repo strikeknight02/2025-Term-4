@@ -65,10 +65,12 @@ public class UserController extends ViewModel {
         databaseInstance.create(user);
     }
 
+    //Update a User attribute
     public void updateUser(String userId, String column, Object newValue){
         databaseInstance.update(userId, column, newValue);
     }
 
+    //Delete a User
     public void deleteUser(String userId){
         databaseInstance.delete(userId);
     }
