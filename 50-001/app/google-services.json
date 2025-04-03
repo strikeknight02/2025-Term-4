@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "501064280344",
-    "project_id": "wowcher-e52cd",
-    "storage_bucket": "wowcher-e52cd.firebasestorage.app"
+    "project_number": "302527014877",
+    "project_id": "isp1d-1f66f",
+    "storage_bucket": "isp1d-1f66f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:501064280344:android:8a76e0fa045f33420c566d",
+        "mobilesdk_app_id": "1:302527014877:android:ce5e7798e5abab3fb9f834",
         "android_client_info": {
           "package_name": "com.example.wowcher"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD5mNF7r9AmzptULPm4xmjes1_RhShsCdo"
+          "current_key": "INSERT API KEY HERE"
         }
       ],
       "services": {
