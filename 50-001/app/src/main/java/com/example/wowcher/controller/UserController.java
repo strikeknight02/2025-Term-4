@@ -1,7 +1,5 @@
 package com.example.wowcher.controller;
 
-import android.util.Log;
-
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
