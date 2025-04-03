@@ -19,7 +19,6 @@ import com.example.wowcher.fragments.Map;
 import com.example.wowcher.fragments.Profile;
 import com.example.wowcher.fragments.Vouchers;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.example.wowcher.R;
 
 
 public class MainActivity extends AppCompatActivity {

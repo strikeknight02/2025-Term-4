@@ -45,19 +45,30 @@ public class UserSource implements DBSource{
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         ArrayList<User> mUserList = new ArrayList<User>();
+
+                        // 🔍 Debug: Check if Firestore returned any results
+                        Log.d("DEBUG", "Firestore Query Result Count: " + task.getResult().size());
+
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
                                 User user = document.toObject(User.class);
                                 mUserList.add(user);
-                                Log.d("SUCCESSFUL GET", mUserList.get(0).getUsername());
                             }
+
+                            if (!mUserList.isEmpty()) {
+                                Log.d("SUCCESSFUL GET", mUserList.get(0).getUsername()); // ✅ Safe access
+                            } else {
+                                Log.e("ERROR", "No users found in Firestore!");
+                            }
+
                             userVM.getAll().setValue(mUserList);
                         } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
+                            Log.e("FIRESTORE ERROR", "Error getting documents.", task.getException());
                         }
                     }
                 });
+
 
         db.collection("users")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -81,6 +92,8 @@ public class UserSource implements DBSource{
 
     @Override
     public void getData(String column, Object comparison, Consumer<?> method) {
+        Log.d("DEBUG", "getData() called with column: " + column + ", value: " + comparison);
+
         db.collection("users")
                 .whereEqualTo(column, comparison)
                 .get()
@@ -119,15 +132,17 @@ public class UserSource implements DBSource{
                             Log.w(TAG, "Listen failed.", e);
                             return;
                         }
+                        ArrayList<User> UserList = new ArrayList<User>();
+                        for (QueryDocumentSnapshot document : value){
 
-                        QueryDocumentSnapshot document = value.iterator().next();
-
-                        Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                        User user = document.toObject(User.class);
+                            Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                            User user = document.toObject(User.class);
+                            UserList.add(user);
+                        }
 
                         if (method instanceof Consumer<?>){
-                            Consumer<User> methodCast = (Consumer<User>) method;
-                            methodCast.accept(user);
+                            Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
+                            methodCast.accept(UserList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }

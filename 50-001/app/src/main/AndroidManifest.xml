@@ -24,7 +24,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBkfdhJhu_JdJYRGhuDiZFzNn_yJrOJSpw" />
+            android:value="geo api key" />
 
         <activity
             android:name=".Map"
@@ -41,13 +41,33 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
+
+        </activity>
+
+        <activity
+            android:name=".Login"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+
         </activity>
-        <activity android:name=".DBTestActivity" />
+
+        <activity
+            android:name=".Register"
+            android:exported="true">
+
+        </activity>
+        <activity
+            android:name=".DBTestActivity"
+            android:exported="true">
+
+        </activity>
+
     </application>
 
 </manifest>
