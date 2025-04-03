@@ -3,6 +3,7 @@ package com.example.wowcher;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -12,13 +13,18 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.wowcher.classes.User;
+import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.controller.UserController;
 import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.controller.VoucherController;
+import com.example.wowcher.controller.VoucherControllerFactory;
 import com.example.wowcher.db.DBSource;
 import com.example.wowcher.db.UserSource;
+import com.example.wowcher.db.VoucherSource;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class DBTestActivity extends AppCompatActivity {
@@ -33,34 +39,46 @@ public class DBTestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_db_testing);
 
-        //Firebase Object Initialisation
+        LinearLayout rootView = findViewById(R.id.root_view);
+
+        //Firebase Object Initialisation (NEED IN ACTIVITY)
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        //DBSource Initialisation
-        DBSource userSourceInstance = new UserSource(db);
+        //DBSource Initialisation (NEED IN ACTIVITY)
+        DBSource voucherSourceInstance = new VoucherSource(db);
 
-        // Initialise the ViewModel.
-        UserController userModel = new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
-        //userModel.getModelInstance(userModel);
+        // Initialise the ViewModel. (NEED IN ACTIVITY)
+        VoucherController voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
+        voucherModel.getModelInstance(voucherModel);
 
-        //Initial Database Call and setup Listener
-        userModel.getUserInfoFromSource("username", "Speedy");
+        //Initial Database Call and setup Listener (NEED DEPENDING ON WHAT YOU NEED)
+        voucherModel.getVouchersforAll();
 
-        //Observer for User List
-        userModel.getUserInfo().observe(this, new Observer<User> () {
+        //Voucher newVoucher = new Voucher(3, "20% OFF TOFU", "50% of all tofu at the tofu shop", "Redeemed?", 2, "1am");
+
+        //voucherModel.addVoucher(newVoucher);
+
+        //Observer for User List (NEED DEPENDING ON WHAT YOU NEED)
+        voucherModel.getAllVouchers().observe(this, new Observer<ArrayList<Voucher>> () {
             @Override
-            public void onChanged(@Nullable final User user) {
+            public void onChanged(@Nullable final ArrayList<Voucher> voucher) {
                 // Update the UI, in this case, a TextView.
-                Log.d("ERROR Check", user.getUsername());
-                nameText = findViewById(R.id.nameText);
-                roleText = findViewById(R.id.roleText);
-                createdAtText = findViewById(R.id.createdAtText);
+                Log.d("ERROR Check", voucher.toString());
 
-                nameText.setText(user.getUsername());
-                roleText.setText(user.getRole());
-                createdAtText.setText(user.getCreatedAt());
+                for (int i = 0; i < voucher.size(); i++) {
+                    TextView wordView = new TextView(getApplicationContext());
+                    wordView.setText(voucher.get(i).getTitle());
+                    rootView.addView(wordView);
+                }
+
+//                nameText = findViewById(R.id.nameText);
+//                roleText = findViewById(R.id.roleText);
+//                createdAtText = findViewById(R.id.createdAtText);
+//
+//                nameText.setText(voucher);
+//                roleText.setText(voucher);
+//                createdAtText.setText(voucher);
             }
-
         });
 
         //-----------------------TESTING BELOW

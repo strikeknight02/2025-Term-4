@@ -127,15 +127,17 @@ public class UserSource implements DBSource{
                             Log.w(TAG, "Listen failed.", e);
                             return;
                         }
+                        ArrayList<User> UserList = new ArrayList<User>();
+                        for (QueryDocumentSnapshot document : value){
 
-                        QueryDocumentSnapshot document = value.iterator().next();
-
-                        Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                        User user = document.toObject(User.class);
+                            Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                            User user = document.toObject(User.class);
+                            UserList.add(user);
+                        }
 
                         if (method instanceof Consumer<?>){
-                            Consumer<User> methodCast = (Consumer<User>) method;
-                            methodCast.accept(user);
+                            Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
+                            methodCast.accept(UserList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -144,7 +146,7 @@ public class UserSource implements DBSource{
     }
 
     @Override
-    public void create( Object t) {
+    public void create(Object t) {
         db.collection("users")
                 .add(t)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){

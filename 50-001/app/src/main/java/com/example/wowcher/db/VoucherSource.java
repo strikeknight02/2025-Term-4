@@ -157,21 +157,21 @@ public class VoucherSource implements DBSource{
                         Log.d("SUCCESSFUL CREATE", "DocumentSnapshot written with ID: " + documentReference.getId());
 
                         //FOR CHANGING ID OF VOUCHERS TO DOCUMENT REFERENCE
-//                        voucherCollection
-//                                .document(documentReference.getId())
-//                                .update("userId", documentReference.getId())
-//                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                    @Override
-//                                    public void onSuccess(Void aVoid) {
-//                                        Log.d("SUCCESSFUL UPDATE ID", "DocumentSnapshot successfully updated with ID!");
-//                                    }
-//                                })
-//                                .addOnFailureListener(new OnFailureListener() {
-//                                    @Override
-//                                    public void onFailure(@NonNull Exception e) {
-//                                        Log.w("UNSUCCESSFUL UPDATE ID", "Error updating document with ID", e);
-//                                    }
-//                                });
+                        voucherCollection
+                                .document(documentReference.getId())
+                                .update("userId", documentReference.getId())
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Log.d("SUCCESSFUL UPDATE ID", "DocumentSnapshot successfully updated with ID!");
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.w("UNSUCCESSFUL UPDATE ID", "Error updating document with ID", e);
+                                    }
+                                });
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
