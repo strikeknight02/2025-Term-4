@@ -5,8 +5,11 @@ module compare (
     input n,
     output out
 ) {
+    // init adder and mux
     mux_4 mux
+    
     always {
+        //pass values into 4 way mux
         mux.s0 = alufn[0]
         mux.s1 = alufn[1]
         mux.in[0] = 0

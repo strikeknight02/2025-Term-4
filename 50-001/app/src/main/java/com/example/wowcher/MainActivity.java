@@ -1,11 +1,15 @@
 package com.example.wowcher;
 
+import android.content.Intent;
+import android.os.Build;
 
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.activity.EdgeToEdge;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
@@ -17,8 +21,13 @@ import com.example.wowcher.fragments.Vouchers;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.wowcher.R;
 
+
 public class MainActivity extends AppCompatActivity {
 
+    boolean isDatabaseTesting = true;
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
 
             return true;
         });
+
+        if(isDatabaseTesting){
+            Intent databaseIntent = new Intent(MainActivity.this, DBTestActivity.class);
+            startActivity(databaseIntent);
+        }
+
     }
 
     private void setCurrentFragment(Fragment fragment) {

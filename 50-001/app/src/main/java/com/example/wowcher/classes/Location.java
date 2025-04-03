@@ -2,11 +2,11 @@ package com.example.wowcher.classes;
 
 public class Location {
     //primary key
-    private int locationId;
+    private int locationId = 0;
 
-    private int locationType;
-    private String geolocation;
-    private String createdAt;
+    private int locationType = 0;
+    private String geolocation = "";
+    private String createdAt = "";
 
     //location constructor
     public Location(int locationId, int locationType, String geolocation, String createdAt) {
