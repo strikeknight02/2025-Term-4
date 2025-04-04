@@ -35,6 +35,18 @@ public class Login extends AppCompatActivity {
     private TextView nameText;
 
     @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if(currentUser != null){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
@@ -59,18 +71,7 @@ public class Login extends AppCompatActivity {
             Log.e("DEBUG", "TextView 'titleText' is NULL! Check activity_login.xml.");
         }
 
-        // Observe User Data
-        userModel.getUserInfo().observe(this, new Observer<User>() {
-            @Override
-            public void onChanged(@Nullable final User user) {
-                if (user != null) {
-                    Log.d("DEBUG", "User data received: " + user.getEmail());
-                    nameText.setText(user.getEmail());
-                } else {
-                    Log.d("DEBUG", "User is NULL!");
-                }
-            }
-        });
+
 
         // Set Button Listeners
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -89,8 +90,8 @@ public class Login extends AppCompatActivity {
     }
 
     private void loginUser() {
-        String email = emailField.getText().toString().trim();
-        String password = passwordField.getText().toString().trim();
+        String email = emailField.getText().toString();
+        String password = passwordField.getText().toString();
 
         Log.d("DEBUG", "Email entered: " + email);
 
@@ -106,19 +107,21 @@ public class Login extends AppCompatActivity {
             return;
         }
 
-        // Log in user with Firebase Authentication
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (!task.isSuccessful()) {
-                            Log.e("FIREBASE_AUTH", "Login failed", task.getException()); // Log error details
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
 
-                            Toast.makeText(Login.this, "Login failed. Check email/password", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(Login.this, "Login successful!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(Login.this, MainActivity.class));
+                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(intent);
                             finish();
+                        } else {
+                            // If sign in fails, display a message to the user.
+                             Toast.makeText(Login.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+
                         }
                     }
                 });

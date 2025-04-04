@@ -19,11 +19,16 @@ import com.example.wowcher.fragments.Map;
 import com.example.wowcher.fragments.Profile;
 import com.example.wowcher.fragments.Vouchers;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    boolean isDatabaseTesting = true;
+    boolean isDatabaseTesting = false;
+
+    FirebaseAuth auth;
+    FirebaseUser user;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -32,6 +37,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+        if (user == null){
+            Intent intent = new Intent(getApplicationContext(), Login.class);
+            startActivity(intent);
+            finish(); // Correct way to finish the activity from a fragment
+        }
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
