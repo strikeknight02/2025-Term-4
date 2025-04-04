@@ -1,0 +1,397 @@
+module alchitry_top (
+    input clk,              // 100MHz clock
+    input rst_n,            // reset button (active low)
+    output led[8],          // 8 user controllable LEDs
+    input usb_rx,           // USB->Serial input
+    output usb_tx,           // USB->Serial output
+    output io_led[3][8],     // LEDs on IO Shield
+    output io_segment[8],        // 7-segment LEDs on IO Shield
+    output io_select[4],        // Digit select on IO Shield
+    input io_button[5],      // 5 buttons on IO Shield
+    input io_dip[3][8]       // DIP switches on IO Shield
+) {
+    //setting up alu
+    alu alu
+    
+    //function for 7seg
+    bin_to_dec in_state_renderer(#DIGITS(4), #LEADING_ZEROS(0))
+    //bin_to_dec err_renderer(#DIGITS(4), #LEADING_ZEROS(0))
+    
+    //setting up regfile
+    regfile regfile(.clk(clk), .rst(rst_n))
+    
+    //signals
+    sig rst                 // reset signal
+    sig slow_clock
+    sig alufn[6]
+    sig asel
+    sig bsel
+    sig wdsel[2]
+    sig ra1[3] 
+    sig ra2[3] 
+    sig wa[3] 
+    sig we
+    sig alu_out[32]
+    
+    //setting up FSM
+    enum States{
+        START,
+        IDLE1,
+        PAUSE,
+        DECREASE_CLK_NO_PRESS,
+        CHECK_CLK_OVER_NO_PRESS,
+        DEDUCT_SCORE_NO_PRESS,
+        CLAMP_SCORE_TO_ZERO_NO_PRESS,
+        CHECK_CORRECT_INPUT_1,
+        CHECK_CORRECT_INPUT_2,
+        CHECK_CORRECT_INPUT_3,
+        INCREMENT_SCORE,
+        DEDUCT_SCORE,
+        CLAMP_SCORE_TO_ZERO,
+        IDLE2,
+        DECREASE_CLK,
+        CHECK_CLK_OVER,
+        RESET_CLK,
+        UPDATE_POSITION_1,
+        UPDATE_POSITION_2,
+        UPDATE_POSITION_3,
+        CHECK_END
+    }
+    
+    //constants
+    const SEVEN_SEG_DIV = $is_sim() ? 3 : 16
+    const CLK_FREQ = $is_sim() ? 1000 : 10000000
+    const SLOW_CLOCK_DEFAULT_SPEED = $is_sim() ? 9 : 26 // 8 for sim, 24 for physical
+    
+    //muxes
+    mux_2 asel_mux
+    mux_2 bsel_mux
+    mux_4_32_bit_1_sel wdsel_mux
+    
+    .clk(clk) {
+        // The reset conditioner is used to synchronize the reset signal to the FPGA
+        // clock. This ensures the entire FPGA comes out of reset at the same time.
+        reset_conditioner reset_cond
+        
+        //edge conditioner
+        edge_detector io_button_edge[5](#RISE({1, 1, 1, 1, 1}), #FALL({0, 0, 0, 0, 0}))
+        edge_detector slow_clock_edge(#RISE(1), #FALL(0)) // Add edge detector for slow_clock
+        
+        // Button conditioners
+        button_conditioner io_button_cond[5](#CLK_FREQ({CLK_FREQ, CLK_FREQ, CLK_FREQ, CLK_FREQ, CLK_FREQ}))
+        
+        //setting up dff for states
+        .rst(rst) {
+            dff state[5](#INIT(States.START))
+            // seven segment instantiation
+            multi_seven_seg seg(#DIV(SEVEN_SEG_DIV))
+            //multi_seven_seg_letters seg_letters(#DIV(SEVEN_SEG_DIV))
+        }
+    }
+    
+    //counter
+    counter counter(#SIZE(1), #DIV(SLOW_CLOCK_DEFAULT_SPEED), .clk(clk), .rst(rst))
+    
+    always {
+        reset_cond.in = ~rst_n  // input raw inverted reset signal
+        rst = reset_cond.out    // conditioned reset
+        usb_tx = usb_rx         // echo the serial data
+        
+        //io button conditioning
+        io_button_cond.in = io_button
+        io_button_edge.in = io_button_cond.out
+        
+        //slow clock connection
+        slow_clock = counter.value
+        slow_clock_edge.in = slow_clock
+        
+        //default led
+        //io_led = 3x{{8b0}}
+        //led = 8b0
+        
+        //default sig
+        ra1 = 3b000
+        ra2 = 3b000
+        wa = 3b000
+        we = b0
+        alufn = 6b000000
+        asel = b0
+        bsel = b0
+        wdsel = b0
+        alu_out = alu.out
+        
+        //setting up alu
+        alu.a = asel_mux.out
+        alu.b = bsel_mux.out
+        alu.alufn = alufn
+        
+        //FSM logic
+        case (state.q){
+            States.START:
+                we = b0
+                if (io_button_edge.out[0]){
+                    state.d = States.IDLE1
+                }
+            
+            States.IDLE1:
+                we = b0
+                if (slow_clock_edge.out){
+                    state.d = States.DECREASE_CLK_NO_PRESS
+                }
+                if (io_button_edge.out[0]){
+                    state.d = States.PAUSE
+                }
+                if (io_button_edge.out[3]){
+                    state.d = States.CHECK_CORRECT_INPUT_1
+                }
+                if (io_button_edge.out[1]){
+                    state.d = States.CHECK_CORRECT_INPUT_2
+                }
+                if (io_button_edge.out[4]){
+                    state.d = States.CHECK_CORRECT_INPUT_3
+                }
+            
+            States.PAUSE:
+                we = b0
+                if (io_button_edge.out[0]){
+                    state.d = States.IDLE1
+                }
+            
+            States.DECREASE_CLK_NO_PRESS:
+                ra1 = 4
+                wa = 4
+                we = 1
+                alufn = b000001
+                asel = b0
+                bsel = b1
+                wdsel = b00
+                state.d = States.CHECK_CLK_OVER_NO_PRESS
+            
+            States.CHECK_CLK_OVER_NO_PRESS:
+                ra1 = 4
+                ra2 = 7
+                we = 0
+                alufn = b110011
+                asel = 0
+                bsel = 0
+                wdsel = b00
+                if (alu_out[0] == 0){
+                    state.d = States.IDLE1
+                }
+                else if (alu_out[0] == 1){
+                    state.d = States.DEDUCT_SCORE_NO_PRESS
+                }
+            
+            States.DEDUCT_SCORE_NO_PRESS:
+                ra1 = 3
+                wa = 3
+                we = 1
+                alufn = b000001
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                state.d = States.CLAMP_SCORE_TO_ZERO_NO_PRESS
+            
+            States.CLAMP_SCORE_TO_ZERO_NO_PRESS:
+                ra1 = 3
+                ra2 = 7
+                we = 0
+                alufn = b110011
+                asel = 0
+                bsel = 0
+                wdsel = b00
+                state.d = States.RESET_CLK
+            
+            States.CHECK_CORRECT_INPUT_1:
+                ra1 = 0
+                we = 0
+                alufn = b010001
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                if (alu_out == 1){
+                    state.d = States.INCREMENT_SCORE
+                }
+                else if (alu_out == 0){
+                    state.d = States.DEDUCT_SCORE
+                }
+            
+            States.CHECK_CORRECT_INPUT_2:
+                ra1 = 1
+                we = 0
+                alufn = b010001
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                if (alu_out == 1){
+                    state.d = States.INCREMENT_SCORE
+                }
+                else if (alu_out == 0){
+                    state.d = States.DEDUCT_SCORE
+                }
+            
+            States.CHECK_CORRECT_INPUT_3:
+                ra1 = 2
+                we = 0
+                alufn = b010001
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                if (alu_out == 1){
+                    state.d = States.INCREMENT_SCORE
+                }
+                else if (alu_out == 0){
+                    state.d = States.DEDUCT_SCORE
+                }
+            
+            States.DEDUCT_SCORE:
+                ra1 = 3
+                wa = 3
+                we = 1
+                alufn = b000001
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                state.d = States.CLAMP_SCORE_TO_ZERO
+            
+            States.CLAMP_SCORE_TO_ZERO:
+                ra1 = 3
+                wa = 3
+                we = 1
+                alufn = b000010
+                asel = 0
+                bsel = 0
+                wdsel = b00 
+                state.d = States.IDLE2
+            
+            States.INCREMENT_SCORE:
+                ra1 = 3
+                wa = 3
+                we = 1
+                alufn = b000000
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                state.d = States.IDLE2
+            
+            States.IDLE2:
+                we = b0
+                if (slow_clock_edge.out){
+                    state.d = States.DECREASE_CLK
+                }
+            
+            States.DECREASE_CLK:
+                ra1 = 4
+                wa = 4
+                we = 1
+                alufn = b000001
+                asel = b0
+                bsel = b1
+                wdsel = b00
+                state.d = States.CHECK_CLK_OVER
+            
+            States.CHECK_CLK_OVER:
+                ra1 = 4
+                ra2 = 7
+                we = 0
+                alufn = b110011
+                asel = 0
+                bsel = 0
+                wdsel = b00
+                if (alu_out[0] == 0){
+                    state.d = States.IDLE2
+                }
+                else if (alu_out[0] == 1){
+                    state.d = States.RESET_CLK
+                }
+            
+            States.RESET_CLK:
+                ra1 = 4
+                ra2 = 7
+                wa = 4
+                we = 1
+                alufn = b000000
+                asel = 0
+                bsel = 0
+                state.d = States.UPDATE_POSITION_1
+            
+            States.UPDATE_POSITION_1:
+                ra1 = 0
+                wa = 0
+                we = 1
+                alufn = b100001
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                state.d = States.UPDATE_POSITION_2
+            
+            States.UPDATE_POSITION_2:
+                ra1 = 1
+                wa = 1
+                we = 1
+                alufn = b100001
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                state.d = States.UPDATE_POSITION_3
+            
+            States.UPDATE_POSITION_3:
+                ra1 = 2
+                wa = 2
+                we = 1
+                alufn = b100001
+                asel = 0
+                bsel = 1
+                wdsel = b00
+                state.d = States.CHECK_END
+            
+            States.CHECK_END:
+                ra1 = 0
+                ra2 = 7
+                we = 0
+                asel = 0
+                bsel = 0
+                wdsel = b00
+                state.d = States.IDLE1
+                //state.d = States.START
+        }
+        
+        //output leds    
+        io_led[0] = regfile.led1[7:0]
+        io_led[1] = regfile.led2[7:0]
+        io_led[2] = regfile.led3[7:0]
+        led = 8x{slow_clock_edge.out}
+        
+        //setting up default for asel & bsel
+        asel_mux.s0 = asel
+        asel_mux.i1 = 32b0
+        bsel_mux.s0 = bsel
+        bsel_mux.i1 = 32b1
+        
+        //connecting regfile to asel & bsel
+        asel_mux.i0 = regfile.rd1
+        bsel_mux.i0 = regfile.rd2
+        
+        //adding selection signals
+        wdsel_mux.s0 = wdsel
+        
+        //setting up wdsel
+        wdsel_mux.in[0] = alu.out
+        wdsel_mux.in[1] = 32hFFFF
+        wdsel_mux.in[2] = 32hF
+        wdsel_mux.in[3] = 23h0
+        
+        //setting up regfile
+        regfile.wa = wa
+        regfile.we = we
+        regfile.ra1 = ra1
+        regfile.ra2 = ra2
+        regfile.wdsel = wdsel_mux.out
+        
+        //output to seven seg
+        in_state_renderer.value = alu.out
+        seg.values = in_state_renderer.digits
+        io_segment = ~seg.seg
+        io_select = ~seg.sel
+    }
+}

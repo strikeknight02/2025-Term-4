@@ -1,0 +1,9 @@
+module compare_last_bit (
+    input a[32],
+    input b[32],
+    output out[32]
+) {
+    always {
+        out = $resize((a[0] == b[0]), 32)
+    }
+}
