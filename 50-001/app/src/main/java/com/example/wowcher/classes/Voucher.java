@@ -2,7 +2,7 @@ package com.example.wowcher.classes;
 
 public class Voucher {
     //primary key
-    private int voucherId = 0;
+    private int voucherId;
 
     private String title = "";
     private String details = "";

@@ -1,21 +1,30 @@
 package com.example.wowcher;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.example.wowcher.classes.Voucher;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VoucherDetailActivity extends AppCompatActivity {
-    TextView detailDesc, detailTitle;
+
+    TextView detailDesc, detailTitle, detailVoucherId, detailStatus;
     ImageView detailImage;
     Button backButton, redeemButton;
-    String voucherTitle, voucherDetails;
-    int voucherImage;
+    String voucherTitle, voucherDetails, voucherStatus;
+    int voucherId;
+
+    FirebaseFirestore db;
+    FirebaseAuth auth;
+    FirebaseUser user;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,37 +36,76 @@ public class VoucherDetailActivity extends AppCompatActivity {
         detailImage = findViewById(R.id.detailImage);
         backButton = findViewById(R.id.backButton);
         redeemButton = findViewById(R.id.redeemButton);
+        detailVoucherId = findViewById(R.id.detailVoucherId);
+        detailStatus = findViewById(R.id.detailStatus);
 
-        // Retrieve data passed from previous activity
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
-            voucherTitle = bundle.getString("Title", "No title available");
-            voucherDetails = bundle.getString("Desc", "No description available");
-            voucherImage = bundle.getInt("Image", R.drawable.baseline_discount_24);
+            voucherId = getIntent().getIntExtra("Id", -1);
+            voucherTitle = bundle.getString("Title", "No title");
+            voucherDetails = bundle.getString("Desc", "No description");
+            voucherStatus = bundle.getString("Status", "Not Redeemed");  // Add Status if needed
 
+            // Display data in the UI
             detailTitle.setText(voucherTitle);
             detailDesc.setText(voucherDetails);
-            detailImage.setImageResource(voucherImage);
+            detailVoucherId.setText("Voucher ID: " + voucherId);
+            detailStatus.setText("Status: " + voucherStatus);
         }
 
-        // Back Button to return to the previous screen
         backButton.setOnClickListener(v -> finish());
 
-        // Redeem Button to save the voucher
+        if (user != null) {
+            checkIfVoucherAlreadyRedeemed();
+        }
+
         redeemButton.setOnClickListener(v -> redeemVoucher());
     }
 
+    private void checkIfVoucherAlreadyRedeemed() {
+        String userId = user.getUid();
+
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedVouchers")
+                .document(String.valueOf(voucherId))
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        redeemButton.setText("Owned");
+                        redeemButton.setEnabled(false);
+                        detailStatus.setText("Status: Redeemed");
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error checking voucher status", Toast.LENGTH_SHORT).show());
+    }
+
     private void redeemVoucher() {
-        SharedPreferences sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        String userId = user.getUid();
 
-        // Append voucher to saved list
-        String existingVouchers = sharedPreferences.getString("redeemedVouchers", "");
-        String updatedVouchers = existingVouchers + voucherTitle + ";"; // Using ';' as a delimiter
+        Map<String, Object> voucherData = new HashMap<>();
+        voucherData.put("voucherId", voucherId);
+        voucherData.put("title", voucherTitle);
+        voucherData.put("details", voucherDetails);
+        voucherData.put("timestamp", System.currentTimeMillis());
 
-        editor.putString("redeemedVouchers", updatedVouchers);
-        editor.apply();
-
-        Toast.makeText(this, "Voucher redeemed successfully!", Toast.LENGTH_SHORT).show();
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedVouchers")
+                .document(String.valueOf(voucherId))
+                .set(voucherData)
+                .addOnSuccessListener(docRef -> {
+                    Toast.makeText(this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
+                    redeemButton.setEnabled(false);
+                    redeemButton.setText("Owned");
+                    detailStatus.setText("Status: Redeemed");
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to redeem voucher", Toast.LENGTH_SHORT).show());
     }
 }
