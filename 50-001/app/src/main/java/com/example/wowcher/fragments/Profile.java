@@ -89,15 +89,15 @@ public class Profile extends Fragment {
                     ownedVouchers.clear();
 
                     for (QueryDocumentSnapshot doc : querySnapshot) {
-                        Long voucherId = doc.getLong("voucherId");
-                        if (voucherId != null && voucherIds.contains(voucherId.intValue())) {
+                        String voucherId = doc.getString("voucherId");
+                        if (voucherId != null && voucherIds.contains(voucherId)) {
                             String title = doc.getString("title");
                             String details = doc.getString("details");
                             String status = doc.getString("status");
                             String createdAt = doc.getString("createdAt");
                             int locationId = doc.getLong("locationId").intValue();
 
-                            Voucher voucher = new Voucher(voucherId.intValue(), title, details, status, locationId, createdAt);
+                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
                             ownedVouchers.add(voucher);
                         }
                     }

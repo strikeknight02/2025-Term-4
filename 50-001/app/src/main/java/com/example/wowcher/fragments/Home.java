@@ -78,7 +78,7 @@ public class Home extends Fragment {
                         dataList.clear();
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            int voucherId = document.getLong("voucherId").intValue();
+                            String voucherId = document.getString("voucherId");
                             String title = document.getString("title");
                             String details = document.getString("details");
                             String status = document.getString("status");
