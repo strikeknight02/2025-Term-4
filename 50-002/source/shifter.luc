@@ -1,6 +1,6 @@
-module shifter #(BITS = 2)(
+module shifter(
     input a[32],
-    input b[32],
+    input b[5],
     input alufn[2],
     output out[32]
 ) {
@@ -23,8 +23,8 @@ module shifter #(BITS = 2)(
         mux.s1 = alufn[1]
         mux.in[0] = ls.out
         mux.in[1] = rs.out
-        mux.in[2] = ars.out
-        mux.in[3] = 32b0
+        mux.in[2] = 32b0
+        mux.in[3] = ars.out
         out = mux.out
     }
 }

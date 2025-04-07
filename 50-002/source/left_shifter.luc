@@ -1,6 +1,6 @@
 module left_shifter (
     input a[32],
-    input b[32],
+    input b[5],
     output out[32]
 ) {
     //16 bit, 8 bit, 4 bit, 2 bit and 1 bit mux
@@ -39,7 +39,7 @@ module left_shifter (
         
         //1 bit
         mux.i0[4] = z
-        mux.i1[4] = c{z[30:0], b0}
+        mux.i1[4] = c{z[30:0], 1b0}
         mux.s0[4] = b[0]
         out = mux.out[4]
     }
