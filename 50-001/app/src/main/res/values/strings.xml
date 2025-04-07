@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">WOWcher</string>
     <string name="title_activity_db_test">DbTestActivity</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="email_icon">Email Icon</string>
+    <string name="phone_icon">Phone Icon</string>
 </resources>
