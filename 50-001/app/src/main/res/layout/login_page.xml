@@ -78,6 +78,7 @@
             android:textColor="@color/black"/>
 
         <Button
+            android:id="@+id/login_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="GO"
@@ -87,6 +88,7 @@
             android:layout_marginBottom="5dp"/>
 
         <Button
+            android:id="@+id/new_user_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#00000000"
