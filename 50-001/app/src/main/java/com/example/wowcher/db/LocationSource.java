@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.classes.Location;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,33 +25,34 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-public class VoucherSource implements DBSource{
-    FirebaseFirestore db;
-    private final CollectionReference voucherCollection;
+public class LocationSource implements DBSource{
 
-    public VoucherSource(FirebaseFirestore db){
+    private final FirebaseFirestore db;
+    private final CollectionReference locationCollection;
+    public LocationSource(FirebaseFirestore db){
         this.db = db;
-        this.voucherCollection = db.collection("vouchers");
+        this.locationCollection = db.collection("locations");
     }
 
-    public void getAllData(Consumer<?> method){
-        voucherCollection
+    @Override
+    public void getAllData(Consumer<?> method) {
+        locationCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                        ArrayList<Location> locationList = new ArrayList<Location>();
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                Voucher voucher = document.toObject(Voucher.class);
-                                voucherList.add(voucher);
+                                Location location = document.toObject(Location.class);
+                                locationList.add(location);
                             }
                             if (method instanceof Consumer<?>){
 
-                                Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                                methodCast.accept(voucherList);
+                                Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                                methodCast.accept(locationList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
@@ -61,7 +62,7 @@ public class VoucherSource implements DBSource{
                     }
                 });
 
-        voucherCollection
+        locationCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -71,15 +72,15 @@ public class VoucherSource implements DBSource{
                             return;
                         }
 
-                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                        ArrayList<Location> locationList = new ArrayList<Location>();
                         for (QueryDocumentSnapshot document : value) {
-                            Voucher voucher = document.toObject(Voucher.class);
-                            voucherList.add(voucher);
+                            Location location = document.toObject(Location.class);
+                            locationList.add(location);
                         }
                         if (method instanceof Consumer<?>){
 
-                            Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                            methodCast.accept(voucherList);
+                            Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                            methodCast.accept(locationList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -88,8 +89,8 @@ public class VoucherSource implements DBSource{
     }
 
     @Override
-    public void getData( String column, Object comparison, Consumer<?> method) {
-        voucherCollection
+    public void getData(String column, Object comparison, Consumer<?> method) {
+        locationCollection
                 .whereEqualTo(column, comparison)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -97,18 +98,18 @@ public class VoucherSource implements DBSource{
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                            ArrayList<Location> locationList = new ArrayList<Location>();
                             for (QueryDocumentSnapshot document : task.getResult()){
 
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                Voucher voucher = document.toObject(Voucher.class);
-                                voucherList.add(voucher);
+                                Location location = document.toObject(Location.class);
+                                locationList.add(location);
                             }
 
                             if (method instanceof Consumer<?>){
 
-                                Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                                methodCast.accept(voucherList);
+                                Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                                methodCast.accept(locationList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
@@ -118,7 +119,7 @@ public class VoucherSource implements DBSource{
                     }
                 });
 
-        voucherCollection
+        locationCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -128,17 +129,17 @@ public class VoucherSource implements DBSource{
                             return;
                         }
 
-                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                        ArrayList<Location> locationList = new ArrayList<Location>();
                         for (QueryDocumentSnapshot document : value){
 
                             Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                            Voucher voucher = document.toObject(Voucher.class);
-                            voucherList.add(voucher);
+                            Location location = document.toObject(Location.class);
+                            locationList.add(location);
                         }
 
                         if (method != null){
-                            Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                            methodCast.accept(voucherList);
+                            Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                            methodCast.accept(locationList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -148,17 +149,17 @@ public class VoucherSource implements DBSource{
 
     @Override
     public void create(Object t) {
-        voucherCollection
+        locationCollection
                 .add(t)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d("SUCCESSFUL CREATE", "DocumentSnapshot written with ID: " + documentReference.getId());
 
-                        //FOR CHANGING ID OF VOUCHERS TO DOCUMENT REFERENCE
-                        voucherCollection
+                        //FOR CHANGING ID OF LOCATIONS TO DOCUMENT REFERENCE
+                        locationCollection
                                 .document(documentReference.getId())
-                                .update("voucherId", documentReference.getId())
+                                .update("locationId", documentReference.getId())
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
@@ -179,12 +180,11 @@ public class VoucherSource implements DBSource{
                         Log.w("BOOO NO CREATE", "Error writing document", e);
                     }
                 });
-
     }
 
     @Override
     public void delete(String reference) {
-        voucherCollection
+        locationCollection
                 .document(reference)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -202,8 +202,8 @@ public class VoucherSource implements DBSource{
     }
 
     @Override
-    public void update(String reference,  String column, Object newValues) {
-        voucherCollection
+    public void update(String reference, String column, Object newValues) {
+        locationCollection
                 .document(reference)
                 .update(column, newValues)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -219,5 +219,4 @@ public class VoucherSource implements DBSource{
                     }
                 });
     }
-
 }

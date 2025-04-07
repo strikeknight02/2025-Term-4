@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.classes.Rewards;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,33 +25,33 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-public class VoucherSource implements DBSource{
-    FirebaseFirestore db;
-    private final CollectionReference voucherCollection;
+public class RewardsSource implements DBSource{
 
-    public VoucherSource(FirebaseFirestore db){
+    private final FirebaseFirestore db;
+    private final CollectionReference rewardsCollection;
+    public RewardsSource(FirebaseFirestore db){
         this.db = db;
-        this.voucherCollection = db.collection("vouchers");
+        this.rewardsCollection = db.collection("rewards");
     }
-
-    public void getAllData(Consumer<?> method){
-        voucherCollection
+    @Override
+    public void getAllData(Consumer<?> method) {
+        rewardsCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                        ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                Voucher voucher = document.toObject(Voucher.class);
-                                voucherList.add(voucher);
+                                Rewards rewards = document.toObject(Rewards.class);
+                                rewardsList.add(rewards);
                             }
                             if (method instanceof Consumer<?>){
 
-                                Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                                methodCast.accept(voucherList);
+                                Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                                methodCast.accept(rewardsList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
@@ -61,7 +61,7 @@ public class VoucherSource implements DBSource{
                     }
                 });
 
-        voucherCollection
+        rewardsCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -71,15 +71,15 @@ public class VoucherSource implements DBSource{
                             return;
                         }
 
-                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                        ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
                         for (QueryDocumentSnapshot document : value) {
-                            Voucher voucher = document.toObject(Voucher.class);
-                            voucherList.add(voucher);
+                            Rewards rewards = document.toObject(Rewards.class);
+                            rewardsList.add(rewards);
                         }
                         if (method instanceof Consumer<?>){
 
-                            Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                            methodCast.accept(voucherList);
+                            Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                            methodCast.accept(rewardsList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -88,8 +88,8 @@ public class VoucherSource implements DBSource{
     }
 
     @Override
-    public void getData( String column, Object comparison, Consumer<?> method) {
-        voucherCollection
+    public void getData(String column, Object comparison, Consumer<?> method) {
+        rewardsCollection
                 .whereEqualTo(column, comparison)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -97,18 +97,18 @@ public class VoucherSource implements DBSource{
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                            ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
                             for (QueryDocumentSnapshot document : task.getResult()){
 
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                Voucher voucher = document.toObject(Voucher.class);
-                                voucherList.add(voucher);
+                                Rewards rewards = document.toObject(Rewards.class);
+                                rewardsList.add(rewards);
                             }
 
                             if (method instanceof Consumer<?>){
 
-                                Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                                methodCast.accept(voucherList);
+                                Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                                methodCast.accept(rewardsList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
@@ -118,7 +118,7 @@ public class VoucherSource implements DBSource{
                     }
                 });
 
-        voucherCollection
+        rewardsCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -128,17 +128,17 @@ public class VoucherSource implements DBSource{
                             return;
                         }
 
-                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                        ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
                         for (QueryDocumentSnapshot document : value){
 
                             Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                            Voucher voucher = document.toObject(Voucher.class);
-                            voucherList.add(voucher);
+                            Rewards rewards = document.toObject(Rewards.class);
+                            rewardsList.add(rewards);
                         }
 
                         if (method != null){
-                            Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                            methodCast.accept(voucherList);
+                            Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                            methodCast.accept(rewardsList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -148,17 +148,17 @@ public class VoucherSource implements DBSource{
 
     @Override
     public void create(Object t) {
-        voucherCollection
+        rewardsCollection
                 .add(t)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d("SUCCESSFUL CREATE", "DocumentSnapshot written with ID: " + documentReference.getId());
 
-                        //FOR CHANGING ID OF VOUCHERS TO DOCUMENT REFERENCE
-                        voucherCollection
+                        //FOR CHANGING ID OF REWARDSS TO DOCUMENT REFERENCE
+                        rewardsCollection
                                 .document(documentReference.getId())
-                                .update("voucherId", documentReference.getId())
+                                .update("rewardId", documentReference.getId())
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
@@ -179,12 +179,11 @@ public class VoucherSource implements DBSource{
                         Log.w("BOOO NO CREATE", "Error writing document", e);
                     }
                 });
-
     }
 
     @Override
     public void delete(String reference) {
-        voucherCollection
+        rewardsCollection
                 .document(reference)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -202,8 +201,8 @@ public class VoucherSource implements DBSource{
     }
 
     @Override
-    public void update(String reference,  String column, Object newValues) {
-        voucherCollection
+    public void update(String reference, String column, Object newValues) {
+        rewardsCollection
                 .document(reference)
                 .update(column, newValues)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -219,5 +218,4 @@ public class VoucherSource implements DBSource{
                     }
                 });
     }
-
 }

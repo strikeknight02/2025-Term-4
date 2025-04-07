@@ -13,7 +13,6 @@ public class VoucherController extends ViewModel {
 
     private DBSource db;
     private VoucherController instance;
-    private MutableLiveData<ArrayList<Voucher>> voucherList;
 
     private MutableLiveData<ArrayList<Voucher>> voucherListAll;
 
@@ -23,13 +22,6 @@ public class VoucherController extends ViewModel {
 
     public void getModelInstance(VoucherController instance){
         this.instance = instance;
-    }
-
-    public MutableLiveData<ArrayList<Voucher>> getUserVouchers(){
-        if (voucherList == null){
-            voucherList = new MutableLiveData<ArrayList<Voucher>>();
-        }
-        return voucherList;
     }
 
     public MutableLiveData<ArrayList<Voucher>> getAllVouchers(){
@@ -44,11 +36,8 @@ public class VoucherController extends ViewModel {
         db.getAllData( method );
     }
 
-    //Get Voucher Data
-    public void getVoucherForUser(String column, Object comparison){
-        Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getUserVouchers().setValue((ArrayList<Voucher>) vouchers); };
-        db.getData(column, comparison, method );
-    }
+    //TODO Get Locations by Vouchers Available to Users
+    // Location Object
 
     //Update a Voucher attribute
     public void updateVoucher(String voucherId, String column, Object newValue){

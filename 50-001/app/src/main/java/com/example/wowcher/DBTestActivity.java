@@ -66,6 +66,7 @@ public class DBTestActivity extends AppCompatActivity {
                 Log.d("ERROR Check", voucher.toString());
 
                 for (int i = 0; i < voucher.size(); i++) {
+                    Log.i("LOOP CHECK", i+"");
                     TextView wordView = new TextView(getApplicationContext());
                     wordView.setText(voucher.get(i).getTitle());
                     rootView.addView(wordView);

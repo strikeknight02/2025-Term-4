@@ -9,29 +9,36 @@ import java.time.LocalDateTime;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class User {
 
-    //primary key
-    public String userId= "";
-
+    // Primary key
+    public String userId = "";
     public String username = "";
+    public String email = "";
+    public String password = "";
+    public String mobileNumber = "";
     public String role = "";
-    public String createdAt =  LocalDateTime.now().toString();
+    public String tier = "Bronze"; // Default tier
+    public int points = 0; // Default points
+    public String createdAt = LocalDateTime.now().toString();
     public int availableVouchers = 0;
     public int previousVouchers = 0;
 
-    //no-arg constructor
-    public User(){}
+    // No-arg constructor
+    public User() {}
 
-
-    //User constructor
-    public User(String userId, String username, String role, String createdAt, int availableVouchers, int previousVouchers) {
+    // User constructor
+    public User(String userId, String username, String email, String password, String mobileNumber, String role, String tier, int points, String createdAt, int availableVouchers, int previousVouchers) {
         this.userId = userId;
         this.username = username;
+        this.email = email;
+        this.password = password;
+        this.mobileNumber = mobileNumber;
         this.role = role;
+        this.tier = tier;
+        this.points = points;
         this.createdAt = createdAt;
         this.availableVouchers = availableVouchers;
         this.previousVouchers = previousVouchers;
     }
-
 
     public String getUsername() {
         return username;
@@ -49,12 +56,52 @@ public class User {
         this.userId = userId;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
     public String getRole() {
         return role;
     }
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getTier() {
+        return tier;
+    }
+
+    public void setTier(String tier) {
+        this.tier = tier;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
     }
 
     public String getCreatedAt() {
@@ -69,11 +116,15 @@ public class User {
         return availableVouchers;
     }
 
-    public void setAvailableVouchers(int availableVouchers) {this.availableVouchers = availableVouchers;}
+    public void setAvailableVouchers(int availableVouchers) {
+        this.availableVouchers = availableVouchers;
+    }
 
     public int getPreviousVouchers() {
         return previousVouchers;
     }
 
-    public void setPreviousVouchers(int previousVouchers) {this.previousVouchers = previousVouchers;}
+    public void setPreviousVouchers(int previousVouchers) {
+        this.previousVouchers = previousVouchers;
+    }
 }

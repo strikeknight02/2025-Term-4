@@ -2,7 +2,7 @@ package com.example.wowcher.classes;
 
 public class Voucher {
     //primary key
-    private int voucherId = 0;
+    private String voucherId = "";
 
     private String title = "";
     private String details = "";
@@ -14,7 +14,7 @@ public class Voucher {
     public Voucher(){}
 
     //Voucher constructor
-    public Voucher(int voucherId, String title, String details, String status, int locationId, String createdAt) {
+    public Voucher(String voucherId, String title, String details, String status, int locationId, String createdAt) {
         this.title = title;
         this.details = details;
         this.status = status;
@@ -22,11 +22,11 @@ public class Voucher {
         this.createdAt = createdAt;
     }
 
-    public int getVoucherId() {
+    public String getVoucherId() {
         return voucherId;
     }
 
-    public void setVoucherId(int voucherId) {
+    public void setVoucherId(String voucherId) {
         this.voucherId = voucherId;
     }
 
