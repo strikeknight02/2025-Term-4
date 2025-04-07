@@ -21,13 +21,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBkfdhJhu_JdJYRGhuDiZFzNn_yJrOJSpw" />
-
-        <activity
-            android:name=".Map"
-            android:exported="true">
-
-        </activity>
+            android:value="${mapApiKey}" />
 
         <activity
             android:name=".VoucherDetailActivity"

@@ -28,7 +28,7 @@
         android:id="@+id/detailImage"
         android:padding="8dp"
         android:layout_gravity="center"
-        android:src="@drawable/baseline_map_24"
+        android:src="@drawable/marker_mcd"
         android:scaleType="centerCrop"/>
     <TextView
         android:layout_width="match_parent"

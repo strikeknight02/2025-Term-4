@@ -26,7 +26,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             detailDesc.setText(bundle.getString("Desc", "No description available"));
-            int imageResId = bundle.getInt("Image", R.drawable.baseline_discount_24);
+            int imageResId = bundle.getInt("Image", R.drawable.marker_mcd);
             detailImage.setImageResource(imageResId);
             detailTitle.setText(bundle.getString("Title", "No title available"));
         }

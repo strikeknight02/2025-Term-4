@@ -3,17 +3,17 @@
     <item
         android:id="@+id/home"
         android:title="Home"
-        android:icon="@drawable/baseline_home_24"/>
+        android:icon="@drawable/marker_mcd"/>
     <item
         android:id="@+id/map"
         android:title="Map"
-        android:icon="@drawable/baseline_map_24"/>
+        android:icon="@drawable/marker_mcd"/>
     <item
         android:id="@+id/voucher"
         android:title="Voucher"
-        android:icon="@drawable/baseline_discount_24"/>
+        android:icon="@drawable/marker_mcd"/>
     <item
         android:id="@+id/profile"
         android:title="Profile"
-        android:icon="@drawable/baseline_person_24"/>
+        android:icon="@drawable/marker_mcd"/>
 </menu>
