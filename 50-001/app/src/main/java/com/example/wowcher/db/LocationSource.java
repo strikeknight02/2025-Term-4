@@ -9,7 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.example.wowcher.classes.User;
+import com.example.wowcher.classes.Location;
+import com.example.wowcher.classes.Voucher;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,33 +26,34 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-public class UserSource implements DBSource{
+public class LocationSource implements DBSource{
+
     private final FirebaseFirestore db;
-    private final CollectionReference userCollection;
-    public UserSource(FirebaseFirestore db){
+    private final CollectionReference locationCollection;
+    public LocationSource(FirebaseFirestore db){
         this.db = db;
-        this.userCollection = db.collection("users");
+        this.locationCollection = db.collection("locations");
     }
 
     @Override
-    public void getAllData(Consumer<?> method){
-        userCollection
+    public void getAllData(Consumer<?> method) {
+        locationCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<User> userList = new ArrayList<User>();
+                        ArrayList<Location> locationList = new ArrayList<Location>();
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                User user = document.toObject(User.class);
-                                userList.add(user);
+                                Location location = document.toObject(Location.class);
+                                locationList.add(location);
                             }
                             if (method instanceof Consumer<?>){
 
-                                Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
-                                methodCast.accept(userList);
+                                Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                                methodCast.accept(locationList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
@@ -61,7 +63,7 @@ public class UserSource implements DBSource{
                     }
                 });
 
-        userCollection
+        locationCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -71,15 +73,70 @@ public class UserSource implements DBSource{
                             return;
                         }
 
-                        ArrayList<User> userList = new ArrayList<User>();
+                        ArrayList<Location> locationList = new ArrayList<Location>();
                         for (QueryDocumentSnapshot document : value) {
-                            User user = document.toObject(User.class);
-                            userList.add(user);
+                            Location location = document.toObject(Location.class);
+                            locationList.add(location);
                         }
                         if (method instanceof Consumer<?>){
 
-                            Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
-                            methodCast.accept(userList);
+                            Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                            methodCast.accept(locationList);
+                        } else {
+                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                        }
+                    }
+                });
+    }
+
+    //Location Specific
+    public void getLocationBasedOnVoucher(Consumer<?> method, ArrayList<String> locationsList){
+        locationCollection
+                .whereIn("locationId", locationsList)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        ArrayList<Location> locationList = new ArrayList<Location>();
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                Location location = document.toObject(Location.class);
+                                locationList.add(location);
+                            }
+                            if (method instanceof Consumer<?>){
+
+                                Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                                methodCast.accept(locationList);
+                            } else {
+                                Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                            }
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+
+        locationCollection
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
+
+                        ArrayList<Location> locationList = new ArrayList<Location>();
+                        for (QueryDocumentSnapshot document : value) {
+                            Location location = document.toObject(Location.class);
+                            locationList.add(location);
+                        }
+                        if (method instanceof Consumer<?>){
+
+                            Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                            methodCast.accept(locationList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -89,36 +146,36 @@ public class UserSource implements DBSource{
 
     @Override
     public void getData(String column, Object comparison, Consumer<?> method) {
-        userCollection
+        locationCollection
                 .whereEqualTo(column, comparison)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task){
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            ArrayList<User> UserList = new ArrayList<User>();
+                            ArrayList<Location> locationList = new ArrayList<Location>();
                             for (QueryDocumentSnapshot document : task.getResult()){
 
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                User user = document.toObject(User.class);
-                                UserList.add(user);
+                                Location location = document.toObject(Location.class);
+                                locationList.add(location);
                             }
 
                             if (method instanceof Consumer<?>){
 
-                                Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
-                                methodCast.accept(UserList);
+                                Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                                methodCast.accept(locationList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
                         } else {
-                            Log.w("ERROR", "Error getting documents.", task.getException());
+                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
                     }
                 });
 
-        db.collection("users")
-                .whereEqualTo(column, comparison)
+        locationCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -127,17 +184,18 @@ public class UserSource implements DBSource{
                             Log.w(TAG, "Listen failed.", e);
                             return;
                         }
-                        ArrayList<User> UserList = new ArrayList<User>();
+
+                        ArrayList<Location> locationList = new ArrayList<Location>();
                         for (QueryDocumentSnapshot document : value){
 
                             Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                            User user = document.toObject(User.class);
-                            UserList.add(user);
+                            Location location = document.toObject(Location.class);
+                            locationList.add(location);
                         }
 
-                        if (method instanceof Consumer<?>){
-                            Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
-                            methodCast.accept(UserList);
+                        if (method != null){
+                            Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                            methodCast.accept(locationList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -147,26 +205,27 @@ public class UserSource implements DBSource{
 
     @Override
     public void create(Object t) {
-        db.collection("users")
+        locationCollection
                 .add(t)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d("SUCCESSFUL CREATE", "DocumentSnapshot written with ID: " + documentReference.getId());
 
-                        userCollection
+                        //FOR CHANGING ID OF LOCATIONS TO DOCUMENT REFERENCE
+                        locationCollection
                                 .document(documentReference.getId())
-                                .update("userId", documentReference.getId())
+                                .update("locationId", documentReference.getId())
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Log.d(TAG, "DocumentSnapshot successfully updated with ID!");
+                                        Log.d("SUCCESSFUL UPDATE ID", "DocumentSnapshot successfully updated with ID!");
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Log.w(TAG, "Error updating document with ID", e);
+                                        Log.w("UNSUCCESSFUL UPDATE ID", "Error updating document with ID", e);
                                     }
                                 });
                     }
@@ -177,12 +236,12 @@ public class UserSource implements DBSource{
                         Log.w("BOOO NO CREATE", "Error writing document", e);
                     }
                 });
-
     }
 
     @Override
     public void delete(String reference) {
-        db.collection("users").document(reference)
+        locationCollection
+                .document(reference)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -193,14 +252,14 @@ public class UserSource implements DBSource{
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error deleting document", e);
+                        Log.w("UNSUCCESSFUL DELETE", "Error deleting document", e);
                     }
                 });
     }
 
     @Override
-    public void update( String reference,  String column, Object newValues) {
-        db.collection("users")
+    public void update(String reference, String column, Object newValues) {
+        locationCollection
                 .document(reference)
                 .update(column, newValues)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -216,5 +275,4 @@ public class UserSource implements DBSource{
                     }
                 });
     }
-
 }

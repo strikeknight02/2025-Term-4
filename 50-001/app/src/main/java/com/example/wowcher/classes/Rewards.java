@@ -20,6 +20,8 @@ public class Rewards {
         this.isAvailable = isAvailable;
     }
 
+    public Rewards(){}
+
     // Getters and Setters
     public int getRewardId() {
         return rewardId;

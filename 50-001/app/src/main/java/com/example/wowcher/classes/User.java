@@ -5,6 +5,7 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class User {
@@ -19,14 +20,13 @@ public class User {
     public String tier = "Bronze"; // Default tier
     public int points = 0; // Default points
     public String createdAt = LocalDateTime.now().toString();
-    public int availableVouchers = 0;
-    public int previousVouchers = 0;
+    public ArrayList<String> previousVouchers = new ArrayList<String>();
 
     // No-arg constructor
     public User() {}
 
     // User constructor
-    public User(String userId, String username, String email, String password, String mobileNumber, String role, String tier, int points, String createdAt, int availableVouchers, int previousVouchers) {
+    public User(String userId, String username, String email, String password, String mobileNumber, String role, String tier, int points, String createdAt, ArrayList<String> previousVouchers) {
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -36,7 +36,6 @@ public class User {
         this.tier = tier;
         this.points = points;
         this.createdAt = createdAt;
-        this.availableVouchers = availableVouchers;
         this.previousVouchers = previousVouchers;
     }
 
@@ -112,19 +111,11 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    public int getAvailableVouchers() {
-        return availableVouchers;
-    }
-
-    public void setAvailableVouchers(int availableVouchers) {
-        this.availableVouchers = availableVouchers;
-    }
-
-    public int getPreviousVouchers() {
+    public ArrayList<String> getPreviousVouchers() {
         return previousVouchers;
     }
 
-    public void setPreviousVouchers(int previousVouchers) {
+    public void setPreviousVouchers(ArrayList<String> previousVouchers) {
         this.previousVouchers = previousVouchers;
     }
 }

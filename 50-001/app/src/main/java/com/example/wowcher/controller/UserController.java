@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.wowcher.classes.User;
+import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.db.DBSource;
 
 
@@ -32,7 +33,7 @@ public class UserController extends ViewModel {
     }
 
     //All User getter
-    public MutableLiveData<ArrayList<User>> getAll() {
+    public MutableLiveData<ArrayList<User>> getAllUsers() {
         if (mUserList == null) {
             mUserList = new MutableLiveData<ArrayList<User>>();
         }
@@ -47,16 +48,16 @@ public class UserController extends ViewModel {
         return user;
     }
 
-    //TODO Fix User Get All
-    //Get All Users
-//    public void getAllUsersFromDB(){
-//        databaseInstance.getAll(instance);
-//    }
-
+    //Get All
+    public void getUsers(){
+        Consumer<ArrayList<User>> method = (ArrayList<User> users) -> { instance.getAllUsers().setValue((ArrayList<User>) users); };
+        databaseInstance.getAllData( method );
+    }
 
     //Get User Info From Database
     public void getUserInfoFromSource(String column, Object comparison){
-        Consumer<ArrayList<User>> method = (ArrayList<User> userList) -> { instance.getUserInfo().setValue(userList.get(0)); };
+        Consumer<ArrayList<User>> method = (ArrayList<User> userList) -> { if(userList.size() >0) {instance.getUserInfo().setValue(userList.get(0));} else {
+            Log.d("BRO", "NOT WORKING");} };
         databaseInstance.getData(column, comparison, method );
     }
 
@@ -65,10 +66,12 @@ public class UserController extends ViewModel {
         databaseInstance.create(user);
     }
 
+    //Update a User attribute
     public void updateUser(String userId, String column, Object newValue){
         databaseInstance.update(userId, column, newValue);
     }
 
+    //Delete a User
     public void deleteUser(String userId){
         databaseInstance.delete(userId);
     }

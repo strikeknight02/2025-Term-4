@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.example.wowcher.classes.User;
+import com.example.wowcher.classes.Rewards;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,33 +25,33 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-public class UserSource implements DBSource{
-    private final FirebaseFirestore db;
-    private final CollectionReference userCollection;
-    public UserSource(FirebaseFirestore db){
-        this.db = db;
-        this.userCollection = db.collection("users");
-    }
+public class RewardsSource implements DBSource{
 
+    private final FirebaseFirestore db;
+    private final CollectionReference rewardsCollection;
+    public RewardsSource(FirebaseFirestore db){
+        this.db = db;
+        this.rewardsCollection = db.collection("rewards");
+    }
     @Override
-    public void getAllData(Consumer<?> method){
-        userCollection
+    public void getAllData(Consumer<?> method) {
+        rewardsCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<User> userList = new ArrayList<User>();
+                        ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                User user = document.toObject(User.class);
-                                userList.add(user);
+                                Rewards rewards = document.toObject(Rewards.class);
+                                rewardsList.add(rewards);
                             }
                             if (method instanceof Consumer<?>){
 
-                                Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
-                                methodCast.accept(userList);
+                                Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                                methodCast.accept(rewardsList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
@@ -61,7 +61,7 @@ public class UserSource implements DBSource{
                     }
                 });
 
-        userCollection
+        rewardsCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -71,15 +71,15 @@ public class UserSource implements DBSource{
                             return;
                         }
 
-                        ArrayList<User> userList = new ArrayList<User>();
+                        ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
                         for (QueryDocumentSnapshot document : value) {
-                            User user = document.toObject(User.class);
-                            userList.add(user);
+                            Rewards rewards = document.toObject(Rewards.class);
+                            rewardsList.add(rewards);
                         }
                         if (method instanceof Consumer<?>){
 
-                            Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
-                            methodCast.accept(userList);
+                            Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                            methodCast.accept(rewardsList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -89,36 +89,36 @@ public class UserSource implements DBSource{
 
     @Override
     public void getData(String column, Object comparison, Consumer<?> method) {
-        userCollection
+        rewardsCollection
                 .whereEqualTo(column, comparison)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task){
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            ArrayList<User> UserList = new ArrayList<User>();
+                            ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
                             for (QueryDocumentSnapshot document : task.getResult()){
 
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                User user = document.toObject(User.class);
-                                UserList.add(user);
+                                Rewards rewards = document.toObject(Rewards.class);
+                                rewardsList.add(rewards);
                             }
 
                             if (method instanceof Consumer<?>){
 
-                                Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
-                                methodCast.accept(UserList);
+                                Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                                methodCast.accept(rewardsList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
                         } else {
-                            Log.w("ERROR", "Error getting documents.", task.getException());
+                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
                     }
                 });
 
-        db.collection("users")
-                .whereEqualTo(column, comparison)
+        rewardsCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -127,17 +127,18 @@ public class UserSource implements DBSource{
                             Log.w(TAG, "Listen failed.", e);
                             return;
                         }
-                        ArrayList<User> UserList = new ArrayList<User>();
+
+                        ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
                         for (QueryDocumentSnapshot document : value){
 
                             Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                            User user = document.toObject(User.class);
-                            UserList.add(user);
+                            Rewards rewards = document.toObject(Rewards.class);
+                            rewardsList.add(rewards);
                         }
 
-                        if (method instanceof Consumer<?>){
-                            Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
-                            methodCast.accept(UserList);
+                        if (method != null){
+                            Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                            methodCast.accept(rewardsList);
                         } else {
                             Log.d("INVALID PARAMETER", "Invalid Method passed!");
                         }
@@ -147,26 +148,27 @@ public class UserSource implements DBSource{
 
     @Override
     public void create(Object t) {
-        db.collection("users")
+        rewardsCollection
                 .add(t)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d("SUCCESSFUL CREATE", "DocumentSnapshot written with ID: " + documentReference.getId());
 
-                        userCollection
+                        //FOR CHANGING ID OF REWARDSS TO DOCUMENT REFERENCE
+                        rewardsCollection
                                 .document(documentReference.getId())
-                                .update("userId", documentReference.getId())
+                                .update("rewardId", documentReference.getId())
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Log.d(TAG, "DocumentSnapshot successfully updated with ID!");
+                                        Log.d("SUCCESSFUL UPDATE ID", "DocumentSnapshot successfully updated with ID!");
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Log.w(TAG, "Error updating document with ID", e);
+                                        Log.w("UNSUCCESSFUL UPDATE ID", "Error updating document with ID", e);
                                     }
                                 });
                     }
@@ -177,12 +179,12 @@ public class UserSource implements DBSource{
                         Log.w("BOOO NO CREATE", "Error writing document", e);
                     }
                 });
-
     }
 
     @Override
     public void delete(String reference) {
-        db.collection("users").document(reference)
+        rewardsCollection
+                .document(reference)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -193,14 +195,14 @@ public class UserSource implements DBSource{
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error deleting document", e);
+                        Log.w("UNSUCCESSFUL DELETE", "Error deleting document", e);
                     }
                 });
     }
 
     @Override
-    public void update( String reference,  String column, Object newValues) {
-        db.collection("users")
+    public void update(String reference, String column, Object newValues) {
+        rewardsCollection
                 .document(reference)
                 .update(column, newValues)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -216,5 +218,4 @@ public class UserSource implements DBSource{
                     }
                 });
     }
-
 }
