@@ -8,4 +8,10 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="lavender">#8692f7</color>
+    <color name="orange">#FF9149</color>
+    <color name="mc_yellow">#FFCC00</color>
+    <color name="mc_red">#DA291C</color>
+    <color name="gray">#AAAAAA</color>
+    <color name="dark_gray">#555555</color>
+    <color name="light_gray">#EEEEEE</color>
 </resources>

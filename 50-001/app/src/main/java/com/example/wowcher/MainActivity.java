@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.os.Handler;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.NonNull;
 import androidx.activity.EdgeToEdge;
@@ -25,6 +27,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import android.view.animation.Animation;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,6 +40,14 @@ public class MainActivity extends AppCompatActivity {
 
     FirebaseAuth auth;
     FirebaseUser user;
+    private static int SPLASH_SCREEN = 5000;
+
+    //Animation variables
+    Animation topAnim, bottomAnim;
+    ImageView image;
+    TextView logo, slogan;
+
+    boolean isDatabaseTesting = true;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -72,6 +87,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
             return true;
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.splash_screen);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
         });
 
         // Check for location permissions
@@ -82,6 +103,31 @@ public class MainActivity extends AppCompatActivity {
                     Manifest.permission.ACCESS_COARSE_LOCATION
             }, REQUEST_CODE_ASK_PERMISSIONS);
         }
+
+        //Animations
+        topAnim = AnimationUtils.loadAnimation(this,R.anim.top_animation);
+        bottomAnim = AnimationUtils.loadAnimation(this,R.anim.bottom_animation);
+
+        //Hooks
+        image = findViewById(R.id.splash_screen_logo);
+        logo = findViewById(R.id.splash_screen_text);
+        slogan = findViewById(R.id.splash_screen_slogan);
+
+        image.setAnimation(topAnim);
+        image.setAnimation(bottomAnim);
+        image.setAnimation(bottomAnim);
+
+        // CAN CHANGE SCREEN AFTER SPLASH (change Dashboard,class)
+        /*
+        new Handler().postDelayed(new Runnable(){
+            @Override
+            public void run(){
+                Intent intent = new Intent(MainActivity.this, Dashboard.class);
+                startActivity(intent);
+                finish();
+            }
+        }, SPLASH_SCREEN);*/
+
 
         if(isDatabaseTesting){
             Intent databaseIntent = new Intent(MainActivity.this, DBTestActivity.class);
