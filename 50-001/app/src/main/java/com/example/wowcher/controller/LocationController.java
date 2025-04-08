@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.wowcher.classes.Location;
 import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.LocationSource;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -18,6 +19,8 @@ public class LocationController extends ViewModel {
     MutableLiveData<ArrayList<Location>> allLocationList;
 
     MutableLiveData<ArrayList<Location>> specificLocationList;
+
+    private MutableLiveData<ArrayList<Voucher>> locationBasedOnVouchers;
 
     public LocationController(DBSource databaseInstance) {
         this.databaseInstance = databaseInstance;
@@ -41,9 +44,22 @@ public class LocationController extends ViewModel {
         return specificLocationList;
     }
 
+    public MutableLiveData<ArrayList<Voucher>> locationBasedVouchers(){
+        if (locationBasedOnVouchers == null){
+            locationBasedOnVouchers = new MutableLiveData<ArrayList<Voucher>>();
+        }
+        return locationBasedOnVouchers;
+    }
+
     public void getLocationforAll(){
         Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.getAllLocations().setValue((ArrayList<Location>) locations); };
         databaseInstance.getAllData( method );
+    }
+
+    public void getVouchersBasedOnLocation(ArrayList<String> locationList){
+        Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.getSomeLocations().setValue((ArrayList<Location>) locations); };
+        LocationSource locationDatabaseInstance = (LocationSource) databaseInstance;
+        locationDatabaseInstance.getLocationBasedOnVoucher( method, locationList );
     }
 
     public void getSpecificLocations(String category){

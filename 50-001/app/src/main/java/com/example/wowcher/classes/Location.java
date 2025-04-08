@@ -1,12 +1,19 @@
 package com.example.wowcher.classes;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
+import java.time.LocalDateTime;
+
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class Location {
     //primary key
     private String locationId = "";
 
     private int locationType = 0;
     private String geolocation = "";
-    private String createdAt = "";
+    private String createdAt = LocalDateTime.now().toString();
 
     //location constructor
     public Location(String locationId, int locationType, String geolocation, String createdAt) {
@@ -15,6 +22,8 @@ public class Location {
         this.geolocation = geolocation;
         this.createdAt = createdAt;
     }
+
+    public Location(){}
 
     public String getLocationId() {
         return locationId;

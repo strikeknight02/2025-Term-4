@@ -1,5 +1,7 @@
 package com.example.wowcher.classes;
 
+import java.time.LocalDateTime;
+
 public class Voucher {
     //primary key
     private String voucherId = "";
@@ -7,14 +9,14 @@ public class Voucher {
     private String title = "";
     private String details = "";
     private String status = "";
-    private int locationId = 0; // Foreign key to Location
-    private String createdAt = "";
+    private String locationId = ""; // Foreign key to Location
+    private String createdAt = LocalDateTime.now().toString();
 
     //no-arg constructor
     public Voucher(){}
 
     //Voucher constructor
-    public Voucher(String voucherId, String title, String details, String status, int locationId, String createdAt) {
+    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt) {
         this.title = title;
         this.details = details;
         this.status = status;
@@ -54,11 +56,11 @@ public class Voucher {
         this.status = status;
     }
 
-    public int getLocationId() {
+    public String getLocationId() {
         return locationId;
     }
 
-    public void setLocationId(int locationId) {
+    public void setLocationId(String locationId) {
         this.locationId = locationId;
     }
 

@@ -89,7 +89,7 @@ public class UserSource implements DBSource{
 
     @Override
     public void getData(String column, Object comparison, Consumer<?> method) {
-        db.collection("users")
+        userCollection
                 .whereEqualTo(column, comparison)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -112,7 +112,7 @@ public class UserSource implements DBSource{
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
                         } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
+                            Log.w("ERROR", "Error getting documents.", task.getException());
                         }
                     }
                 });

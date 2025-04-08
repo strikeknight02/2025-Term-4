@@ -5,19 +5,20 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.VoucherSource;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class VoucherController extends ViewModel {
 
-    private DBSource db;
+    private DBSource databaseInstance;
     private VoucherController instance;
 
     private MutableLiveData<ArrayList<Voucher>> voucherListAll;
 
     public VoucherController(DBSource databaseInstance) {
-        this.db = databaseInstance;
+        this.databaseInstance = databaseInstance;
     }
 
     public void getModelInstance(VoucherController instance){
@@ -31,26 +32,29 @@ public class VoucherController extends ViewModel {
         return voucherListAll;
     }
 
-    public void getVouchersforAll(){
+    public void getVouchersforAll(ArrayList<String> redeemedVouchers){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getAllVouchers().setValue((ArrayList<Voucher>) vouchers); };
-        db.getAllData( method );
+        VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
+        voucherSourceInstance.getAllUserVouchers( method, redeemedVouchers );
     }
 
-    //TODO Get Locations by Vouchers Available to Users
-    // Location Object
+    public void getVoucherBySomething(String column, Object comparison){
+        Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getAllVouchers().setValue((ArrayList<Voucher>) vouchers); };
+        databaseInstance.getData(column, comparison, method);
+    }
 
     //Update a Voucher attribute
     public void updateVoucher(String voucherId, String column, Object newValue){
-        db.update(voucherId, column, newValue);
+        databaseInstance.update(voucherId, column, newValue);
     }
 
     //Add Voucher to Database
     public void addVoucher(Voucher voucher){
-        db.create(voucher);
+        databaseInstance.create(voucher);
     }
 
     //Delete a Voucher
     public void deleteVoucher(String voucherId){
-        db.delete(voucherId);
+        databaseInstance.delete(voucherId);
     }
 }

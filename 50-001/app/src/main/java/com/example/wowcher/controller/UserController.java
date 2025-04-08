@@ -1,5 +1,7 @@
 package com.example.wowcher.controller;
 
+import android.util.Log;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -54,7 +56,8 @@ public class UserController extends ViewModel {
 
     //Get User Info From Database
     public void getUserInfoFromSource(String column, Object comparison){
-        Consumer<ArrayList<User>> method = (ArrayList<User> userList) -> { instance.getUserInfo().setValue(userList.get(0)); };
+        Consumer<ArrayList<User>> method = (ArrayList<User> userList) -> { if(userList.size() >0) {instance.getUserInfo().setValue(userList.get(0));} else {
+            Log.d("BRO", "NOT WORKING");} };
         databaseInstance.getData(column, comparison, method );
     }
 

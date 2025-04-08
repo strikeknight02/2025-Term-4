@@ -12,13 +12,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.wowcher.classes.Location;
 import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.LocationController;
+import com.example.wowcher.controller.LocationControllerFactory;
 import com.example.wowcher.controller.UserController;
 import com.example.wowcher.controller.UserControllerFactory;
 import com.example.wowcher.controller.VoucherController;
 import com.example.wowcher.controller.VoucherControllerFactory;
 import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.LocationSource;
 import com.example.wowcher.db.UserSource;
 import com.example.wowcher.db.VoucherSource;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -33,6 +37,8 @@ public class DBTestActivity extends AppCompatActivity {
     TextView roleText;
     TextView createdAtText;
 
+    ArrayList<Location> locationsList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -46,42 +52,83 @@ public class DBTestActivity extends AppCompatActivity {
 
         //DBSource Initialisation (NEED IN ACTIVITY)
         DBSource voucherSourceInstance = new VoucherSource(db);
+        DBSource locationSourceInstance = new LocationSource(db);
+        DBSource userSourceInstance = new UserSource(db);
 
         // Initialise the ViewModel. (NEED IN ACTIVITY)
         VoucherController voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
         voucherModel.getModelInstance(voucherModel);
 
+        LocationController locationModel = new ViewModelProvider(this, new LocationControllerFactory(locationSourceInstance)).get(LocationController.class);
+        locationModel.getModelInstance(locationModel);
+
+        UserController userModel = new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
+
+        ArrayList<String> redeemedVouchers= new ArrayList<>();
+        redeemedVouchers.add("3bcaMDLohBFKWZ2Zglxg");
+        redeemedVouchers.add("UnXzipX5lKm7kaDbBscq");
+
         //Initial Database Call and setup Listener (NEED DEPENDING ON WHAT YOU NEED)
-        voucherModel.getVouchersforAll();
+        voucherModel.getVouchersforAll(redeemedVouchers);
 
-        //Voucher newVoucher = new Voucher(3, "20% OFF TOFU", "50% of all tofu at the tofu shop", "Redeemed?", 2, "1am");
-
-        //voucherModel.addVoucher(newVoucher);
-
-        //Observer for User List (NEED DEPENDING ON WHAT YOU NEED)
-        voucherModel.getAllVouchers().observe(this, new Observer<ArrayList<Voucher>> () {
+        final Observer<ArrayList<Voucher>> voucherListObserver = new Observer<ArrayList<Voucher>> () {
             @Override
             public void onChanged(@Nullable final ArrayList<Voucher> voucher) {
                 // Update the UI, in this case, a TextView.
                 Log.d("ERROR Check", voucher.toString());
-
-                for (int i = 0; i < voucher.size(); i++) {
-                    Log.i("LOOP CHECK", i+"");
+                rootView.removeAllViews();
+                for(int j=0; j< voucher.size(); j++){
                     TextView wordView = new TextView(getApplicationContext());
-                    wordView.setText(voucher.get(i).getTitle());
+                    wordView.setText(voucher.get(j).getTitle());
                     rootView.addView(wordView);
                 }
 
-//                nameText = findViewById(R.id.nameText);
-//                roleText = findViewById(R.id.roleText);
-//                createdAtText = findViewById(R.id.createdAtText);
-//
-//                nameText.setText(voucher);
-//                roleText.setText(voucher);
-//                createdAtText.setText(voucher);
-            }
-        });
+                ArrayList<String> locationIdList = new ArrayList<>();
+                if(voucher != null){
+                    for (Voucher v: voucher){
+                        String locationId = v.getLocationId();
+                        locationIdList.add(locationId);
+                    }
 
+                    if(!locationIdList.isEmpty()){
+                        locationModel.getVouchersBasedOnLocation(locationIdList);
+                    }
+                }
+            }
+        };
+
+        //Observer for User List (NEED DEPENDING ON WHAT YOU NEED)
+        voucherModel.getAllVouchers().observe(this, voucherListObserver);
+
+        final Observer<ArrayList<Location>> locationsListObserver = new Observer<ArrayList<Location>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Location> locations) {
+                // Update the UI, in this case, a TextView.
+                Log.d("ERROR Check", locations.toString());
+                for (int i = 0; i < locationsList.size(); i++) {
+                    Log.i("LOOP CHECK", i+"");
+                    TextView wordView = new TextView(getApplicationContext());
+                    wordView.setText(locationsList.get(i).getLocationId());
+                    rootView.addView(wordView);
+                }
+            }
+        };
+
+        locationModel.getSomeLocations().observe(this, locationsListObserver);
+
+        userModel.getUserInfoFromSource("username", "test1");
+
+        final Observer<User> userInfoObserver = new Observer<User>() {
+            @Override
+            public void onChanged(User user) {
+                TextView wordView = new TextView(getApplicationContext());
+                wordView.setText(user.getPreviousVouchers().toString());
+                rootView.addView(wordView);
+            }
+        };
+
+        userModel.getUserInfo().observe(this, userInfoObserver);
         //-----------------------TESTING BELOW
         //User newUser = new User("", "Speedy", "Customer", LocalDateTime.now().toString(), 0, 0);
 
