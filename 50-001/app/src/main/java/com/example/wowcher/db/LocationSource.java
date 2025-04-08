@@ -117,31 +117,6 @@ public class LocationSource implements DBSource{
                         }
                     }
                 });
-
-        locationCollection
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
-                        }
-
-                        ArrayList<Location> locationList = new ArrayList<Location>();
-                        for (QueryDocumentSnapshot document : value) {
-                            Location location = document.toObject(Location.class);
-                            locationList.add(location);
-                        }
-                        if (method instanceof Consumer<?>){
-
-                            Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
-                            methodCast.accept(locationList);
-                        } else {
-                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
-                        }
-                    }
-                });
     }
 
     @Override
