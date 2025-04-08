@@ -70,4 +70,5 @@ public class LocationController extends ViewModel {
     public void updateLocation(String locationID, String column, Object newValue){
         databaseInstance.update(locationID, column, newValue);
     }
+
 }

@@ -4,6 +4,8 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
+import com.google.firebase.firestore.GeoPoint;
+
 import java.time.LocalDateTime;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
@@ -12,11 +14,11 @@ public class Location {
     private String locationId = "";
 
     private int locationType = 0;
-    private String geolocation = "";
+    private GeoPoint geolocation = new GeoPoint(0.0, 0.0);
     private String createdAt = LocalDateTime.now().toString();
 
     //location constructor
-    public Location(String locationId, int locationType, String geolocation, String createdAt) {
+    public Location(String locationId, int locationType, GeoPoint geolocation, String createdAt) {
         this.locationId = locationId;
         this.locationType = locationType;
         this.geolocation = geolocation;
@@ -41,11 +43,11 @@ public class Location {
         this.locationType = locationType;
     }
 
-    public String getGeolocation() {
+    public GeoPoint getGeolocation() {
         return geolocation;
     }
 
-    public void setGeolocation(String geolocation) {
+    public void setGeolocation(GeoPoint geolocation) {
         this.geolocation = geolocation;
     }
 
