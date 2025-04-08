@@ -29,4 +29,5 @@
         which can be customized vastly while improving on the efficiency of ListViews and GridViews.
     </string>
     <string name="title_activity_db_test">DbTestActivity</string>
+    <string name="map_search_placeholder">Search for a place</string>
 </resources>

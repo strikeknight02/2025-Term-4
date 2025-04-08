@@ -47,16 +47,17 @@ public class UserController extends ViewModel {
         return user;
     }
 
+    //TODO Fix User Get All
     //Get All Users
-    //    public void getAllUsersFromDB(FirebaseFirestore db, UserController model){
-    //        userSourceInstance.getAll(db, model);
-    //    }
+//    public void getAllUsersFromDB(){
+//        databaseInstance.getAll(instance);
+//    }
 
 
     //Get User Info From Database
     public void getUserInfoFromSource(String column, Object comparison){
-        Consumer<User> method = (User user) -> { instance.getUserInfo().setValue(user); };
-        databaseInstance.getData(instance, column, comparison, method );
+        Consumer<ArrayList<User>> method = (ArrayList<User> userList) -> { instance.getUserInfo().setValue(userList.get(0)); };
+        databaseInstance.getData(column, comparison, method );
     }
 
     //Add User to Database
@@ -65,7 +66,6 @@ public class UserController extends ViewModel {
     }
 
     public void updateUser(String userId, String column, Object newValue){
-        //Log.d("UPDATE PARAMS", userId + "::" + column);
         databaseInstance.update(userId, column, newValue);
     }
 

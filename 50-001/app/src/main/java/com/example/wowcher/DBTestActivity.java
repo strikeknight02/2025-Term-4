@@ -43,8 +43,23 @@ public class DBTestActivity extends AppCompatActivity {
         UserController userModel = new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
         userModel.getModelInstance(userModel);
 
+        User newUser = new User(
+                "12345",  // userId
+                "john_doe",  // username
+                "john.doe@example.com",  // email
+                "securepassword123",  // password
+                "9876543210",  // mobileNumber
+                "User",  // role
+                "Gold",  // tier
+                150,  // points
+                LocalDateTime.now().toString(),  // createdAt
+                5,  // availableVouchers
+                2   // previousVouchers
+        );
+        userModel.addUser(newUser);
+
         //Initial Database Call and setup Listener
-        userModel.getUserInfoFromSource("username", "Speedy");
+        userModel.getUserInfoFromSource("username", "john_doe");
 
         //Observer for User List
         userModel.getUserInfo().observe(this, new Observer<User> () {
@@ -64,12 +79,25 @@ public class DBTestActivity extends AppCompatActivity {
         });
 
         //-----------------------TESTING BELOW
-        //User newUser = new User("", "Speedy", "Customer", LocalDateTime.now().toString(), 0, 0);
+        //        Add Test
+//        User newUser = new User(
+//                "12345",  // userId
+//                "john_doe",  // username
+//                "john.doe@example.com",  // email
+//                "securepassword123",  // password
+//                "9876543210",  // mobileNumber
+//                "User",  // role
+//                "Gold",  // tier
+//                150,  // points
+//                LocalDateTime.now().toString(),  // createdAt
+//                5,  // availableVouchers
+//                2   // previousVouchers
+//        );
+//        userModel.addUser(newUser);
 
-        //Add Test
-        //userModel.addUser(newUser);
+//        userModel.updateUser(user.getUserId(), "role", "Admin");  //User newUser = new User("", "Speedy", "Customer", LocalDateTime.now().toString(), 0, 0);
 
-        //userModel.updateUser(user.getUserId(), "role", "Admin");
+
     }
 
 }

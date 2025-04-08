@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/baseline_person_24"/>
+                android:src="@drawable/marker_mcd"/>
 
             <!-- Text Section -->
             <LinearLayout
@@ -62,6 +62,18 @@
                         android:maxLines="2"
                         android:ellipsize="end"
                         android:textColor="@color/black"/>
+
+                    <TextView
+                        android:id="@+id/recID"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Desc"
+                        android:textSize="16sp"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:textColor="@color/black"/>
+
+
                 </LinearLayout>
 
                 <!-- Status Text -->

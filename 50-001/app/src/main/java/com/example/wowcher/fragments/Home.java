@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
 import com.example.wowcher.classes.Voucher;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -30,40 +32,24 @@ public class Home extends Fragment {
     MyAdapter adapter;
     SearchView searchView;
 
+    FirebaseFirestore db;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerView);
-//        searchView = view.findViewById(R.id.search);
 
-//        searchView.clearFocus();
-//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//            @Override
-//            public boolean onQueryTextSubmit(String query) {
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextChange(String newText) {
-//                searchList(newText);
-//                return true;
-//            }
-//        });
 
         recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
         dataList = new ArrayList<>();
 
-        // Add sample data
-        dataList.add(new Voucher(1, "Discount on Electronics", "Get 20% off on all electronics", "Active", 101, "2025-03-24"));
-        dataList.add(new Voucher(2, "Free Coffee", "Buy one coffee, get one free", "Active", 102, "2025-03-20"));
-        dataList.add(new Voucher(3, "Movie Ticket Discount", "Save $5 on any movie ticket", "Expired", 103, "2025-03-15"));
-        dataList.add(new Voucher(4, "Gym Membership Offer", "First month free on new sign-ups", "Active", 104, "2025-03-10"));
-        dataList.add(new Voucher(5, "Restaurant Discount", "15% off on dining bills above $50", "Redeemed", 105, "2025-03-18"));
-
         adapter = new MyAdapter(requireContext(), dataList);
         recyclerView.setAdapter(adapter);
+
+        db = FirebaseFirestore.getInstance();
+        loadVouchersFromFirebase();
 
         return view;
     }
@@ -81,4 +67,33 @@ public class Home extends Fragment {
             adapter.setSearchList(dataSearchList);
         }
     }
+
+    private void loadVouchersFromFirebase() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("vouchers")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        dataList.clear();
+
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String voucherId = document.getString("voucherId");
+                            String title = document.getString("title");
+                            String details = document.getString("details");
+                            String status = document.getString("status");
+                            String createdAt = document.getString("createdAt");
+                            int locationId = document.getLong("locationId").intValue();
+
+                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
+                            dataList.add(voucher);
+                        }
+
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
 }

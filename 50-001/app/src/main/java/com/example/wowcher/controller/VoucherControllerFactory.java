@@ -6,16 +6,16 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.wowcher.db.DBSource;
 
-public class UserControllerFactory implements ViewModelProvider.Factory {
+public class VoucherControllerFactory implements ViewModelProvider.Factory {
     private final DBSource databaseInstance;
 
-    public UserControllerFactory(DBSource databaseInstance) {
+    public VoucherControllerFactory(DBSource databaseInstance) {
         this.databaseInstance = databaseInstance;
     }
 
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        return (T) new UserController(databaseInstance);
+        return (T) new VoucherController(databaseInstance);
     }
 }

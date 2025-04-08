@@ -37,16 +37,19 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
 //        holder.recImage.setImageResource(dataList.get(position).getDataImage());
         holder.recTitle.setText(dataList.get(position).getTitle());
         holder.recDesc.setText(dataList.get(position).getDetails());
+        holder.recID.setText(dataList.get(position).getVoucherId());
         holder.recLang.setText(dataList.get(position).getStatus());
         holder.recCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Voucher voucher = dataList.get(holder.getAdapterPosition());
                 Intent intent = new Intent(context, VoucherDetailActivity.class);
-//                intent.putExtra("Image", dataList.get(holder.getAdapterPosition()).getDataImage());
-                intent.putExtra("Title", dataList.get(holder.getAdapterPosition()).getTitle());
-                intent.putExtra("Desc", dataList.get(holder.getAdapterPosition()).getDetails());
+                intent.putExtra("Id", voucher.getVoucherId()); // ✅ Send the ID
+                intent.putExtra("Title", voucher.getTitle());
+                intent.putExtra("Desc", voucher.getDetails());
                 context.startActivity(intent);
             }
+
         });
     }
     @Override
@@ -56,7 +59,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
 }
 class MyViewHolder extends RecyclerView.ViewHolder{
     ImageView recImage;
-    TextView recTitle, recDesc, recLang;
+    TextView recTitle, recDesc, recLang,recID;
     CardView recCard;
     public MyViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -65,5 +68,6 @@ class MyViewHolder extends RecyclerView.ViewHolder{
         recDesc = itemView.findViewById(R.id.recDesc);
         recLang = itemView.findViewById(R.id.recLang);
         recCard = itemView.findViewById(R.id.recCard);
+        recID = itemView.findViewById(R.id.recID);
     }
 }
