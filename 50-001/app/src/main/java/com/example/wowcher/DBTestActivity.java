@@ -70,7 +70,7 @@ public class DBTestActivity extends AppCompatActivity {
         redeemedVouchers.add("UnXzipX5lKm7kaDbBscq");
 
         //Initial Database Call and setup Listener (NEED DEPENDING ON WHAT YOU NEED)
-        voucherModel.getVouchersforAll(redeemedVouchers);
+        locationModel.getLocationforAll();
 
         final Observer<ArrayList<Voucher>> voucherListObserver = new Observer<ArrayList<Voucher>> () {
             @Override
@@ -83,52 +83,42 @@ public class DBTestActivity extends AppCompatActivity {
                     wordView.setText(voucher.get(j).getTitle());
                     rootView.addView(wordView);
                 }
-
-                ArrayList<String> locationIdList = new ArrayList<>();
-                if(voucher != null){
-                    for (Voucher v: voucher){
-                        String locationId = v.getLocationId();
-                        locationIdList.add(locationId);
-                    }
-
-                    if(!locationIdList.isEmpty()){
-                        locationModel.getVouchersBasedOnLocation(locationIdList);
-                    }
-                }
             }
         };
-
-        //Observer for User List (NEED DEPENDING ON WHAT YOU NEED)
-        voucherModel.getAllVouchers().observe(this, voucherListObserver);
 
         final Observer<ArrayList<Location>> locationsListObserver = new Observer<ArrayList<Location>> () {
             @Override
             public void onChanged(@Nullable final ArrayList<Location> locations) {
                 // Update the UI, in this case, a TextView.
                 Log.d("ERROR Check", locations.toString());
-                for (int i = 0; i < locationsList.size(); i++) {
-                    Log.i("LOOP CHECK", i+"");
-                    TextView wordView = new TextView(getApplicationContext());
-                    wordView.setText(locationsList.get(i).getLocationId());
-                    rootView.addView(wordView);
+                ArrayList<String> locationIds = new ArrayList<>();
+                for (Location location: locations) {
+                    Log.i("LOOP CHECK", location.getLocationId());
+                    locationIds.add(location.getLocationId());
                 }
+
+                voucherModel.getVouchersBasedOnLocation(locationIds);
+
             }
         };
 
-        locationModel.getSomeLocations().observe(this, locationsListObserver);
+        //Observer for User List (NEED DEPENDING ON WHAT YOU NEED)
+        locationModel.getAllLocations().observe(this, locationsListObserver);
+        voucherModel.getVouchersBasedOnLocation().observe(this, voucherListObserver);
 
-        userModel.getUserInfoFromSource("username", "test1");
 
-        final Observer<User> userInfoObserver = new Observer<User>() {
-            @Override
-            public void onChanged(User user) {
-                TextView wordView = new TextView(getApplicationContext());
-                wordView.setText(user.getPreviousVouchers().toString());
-                rootView.addView(wordView);
-            }
-        };
-
-        userModel.getUserInfo().observe(this, userInfoObserver);
+//        userModel.getUserInfoFromSource("username", "test1");
+//
+//        final Observer<User> userInfoObserver = new Observer<User>() {
+//            @Override
+//            public void onChanged(User user) {
+//                TextView wordView = new TextView(getApplicationContext());
+//                wordView.setText(user.getPreviousVouchers().toString());
+//                rootView.addView(wordView);
+//            }
+//        };
+//
+//        userModel.getUserInfo().observe(this, userInfoObserver);
         //-----------------------TESTING BELOW
         //User newUser = new User("", "Speedy", "Customer", LocalDateTime.now().toString(), 0, 0);
 
