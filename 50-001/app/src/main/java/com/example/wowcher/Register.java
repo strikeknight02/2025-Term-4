@@ -1,6 +1,7 @@
 package com.example.wowcher;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -89,7 +90,9 @@ public class Register extends AppCompatActivity {
                                 user.put("role", "User");
                                 user.put("tier", "Bronze");
                                 user.put("points", 0);
-                                user.put("createdAt", LocalDateTime.now().toString());
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    user.put("createdAt", LocalDateTime.now().toString());
+                                }
                                 user.put("availableVouchers", new ArrayList<String>());
                                 user.put("previousVouchers", new ArrayList<String>());
                                 user.put("password", password);

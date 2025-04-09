@@ -56,6 +56,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
     public int getItemCount() {
         return dataList.size();
     }
+
+
 }
 class MyViewHolder extends RecyclerView.ViewHolder{
     ImageView recImage;

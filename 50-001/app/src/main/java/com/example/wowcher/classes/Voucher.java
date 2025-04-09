@@ -7,10 +7,10 @@ public class Voucher {
     private String title = "";
     private String details = "";
     private String status = "";
-    private int locationId = 0; // Foreign key to Location
+    private String locationId; // Foreign key to Location
     private String createdAt = "";
 
-    public Voucher(String voucherId, String title, String details, String status, int locationId, String createdAt) {
+    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt) {
         this.title = title;
         this.details = details;
         this.status = status;
@@ -35,7 +35,7 @@ public class Voucher {
         return status;
     }
 
-    public int getLocationId() {
+    public String getLocationId() {
         return locationId;
     }
 
@@ -60,7 +60,7 @@ public class Voucher {
         this.status = status;
     }
 
-    public void setLocationId(int locationId) {
+    public void setLocationId(String locationId) {
         this.locationId = locationId;
     }
 

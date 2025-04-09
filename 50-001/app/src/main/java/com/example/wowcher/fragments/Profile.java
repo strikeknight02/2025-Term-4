@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,6 +36,8 @@ public class Profile extends Fragment {
     List<Voucher> ownedVouchers;
     FirebaseFirestore db;
 
+    TextView userNameText; // Declare the TextView
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -43,7 +46,7 @@ public class Profile extends Fragment {
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
 
-        if (user == null){
+        if (user == null) {
             startActivity(new Intent(requireContext(), Login.class));
             requireActivity().finish();
         }
@@ -55,11 +58,34 @@ public class Profile extends Fragment {
         adapter = new MyAdapter(requireContext(), ownedVouchers);
         recyclerView.setAdapter(adapter);
 
+        userNameText = view.findViewById(R.id.userNameText); // Bind the TextView
+
         db = FirebaseFirestore.getInstance();
-        loadUserVouchers();
+        loadUserName(); // Load the user's name
+        loadUserVouchers(); // Load vouchers as before
 
         return view;
     }
+
+    private void loadUserName() {
+        if (user == null) return;
+
+        String userId = user.getUid();
+
+        db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String name = documentSnapshot.getString("username");
+                        userNameText.setText(name != null ? name : "No Name Found");
+                    } else {
+                        userNameText.setText("User not found");
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show());
+    }
+
 
     private void loadUserVouchers() {
         if (user == null) return;
@@ -95,7 +121,7 @@ public class Profile extends Fragment {
                             String details = doc.getString("details");
                             String status = doc.getString("status");
                             String createdAt = doc.getString("createdAt");
-                            int locationId = doc.getLong("locationId").intValue();
+                            String locationId = doc.getString("locationId");
 
                             Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
                             ownedVouchers.add(voucher);

@@ -37,7 +37,7 @@ public class Home extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_vouchers, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerView);
 
@@ -83,7 +83,7 @@ public class Home extends Fragment {
                             String details = document.getString("details");
                             String status = document.getString("status");
                             String createdAt = document.getString("createdAt");
-                            int locationId = document.getLong("locationId").intValue();
+                            String locationId = document.getString("locationId");
 
                             Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
                             dataList.add(voucher);
