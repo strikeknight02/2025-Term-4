@@ -1,5 +1,6 @@
 package com.example.wowcher.fragments;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +12,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,7 +23,16 @@ import com.example.wowcher.RewardsAdapter;
 import com.example.wowcher.MissionAdapter;
 import com.example.wowcher.classes.Missions;
 import com.example.wowcher.classes.Rewards;
+import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.RewardsController;
+import com.example.wowcher.controller.RewardsControllerFactory;
+import com.example.wowcher.controller.UserController;
+import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.RewardsSource;
+import com.example.wowcher.db.UserSource;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -35,6 +47,8 @@ public class Vouchers extends Fragment {
     MyAdapter adapter;
 
     FirebaseFirestore db;
+    UserController userModel;
+    RewardsController rewardsModel;
 
     TextView tierNameText, pointsNameText, voucherNameText;
 
@@ -83,9 +97,54 @@ public class Vouchers extends Fragment {
         adapter = new MyAdapter(requireContext(), dataList);
 
         db = FirebaseFirestore.getInstance();
+        //User
+        DBSource userSourceInstance = new UserSource(db);
+        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
 
-        loadUserInfo();
-        loadRewards();
+        //Rewards
+        DBSource rewardsSourceInstance = new RewardsSource(db);
+        rewardsModel = new ViewModelProvider(this, new RewardsControllerFactory(rewardsSourceInstance)).get(RewardsController.class);
+        rewardsModel.getModelInstance(rewardsModel);
+
+        userModel.getUserInfoFromSource("userId", getCurrentUserId());
+        rewardsModel.getRewardsforAll();
+
+        final Observer<ArrayList<Rewards>> rewardsObserver = new Observer<ArrayList<Rewards>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Rewards> rewardsList) {
+                if(rewardsList != null){
+                    // Update the rewardAdapter with the new rewards list
+                    rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load rewards", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        final Observer<User> userObserver = new Observer<User> () {
+            @Override
+            public void onChanged(@Nullable final User user) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
+                    String userTier = user.getTier();
+                    int userPoints = user.getPoints();
+
+                    if (userTier != null) {
+                        tierNameText.setText(userTier);
+                    }
+                    pointsNameText.setText(userPoints + " pts");
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        };
+
+        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
+        rewardsModel.getAllRewards().observe(getViewLifecycleOwner(), rewardsObserver);
+
+        //loadUserInfo();
+        //loadRewards();
         loadMissions();
 //        loadUserVoucherCount();
 
@@ -207,9 +266,6 @@ public class Vouchers extends Fragment {
                             Log.e("Firestore", "Error adding mission " + mission.getMissionId(), e));
         }
     }
-
-
-
 
 //    private void loadUserVoucherCount() {
 //        String userId = getCurrentUserId();

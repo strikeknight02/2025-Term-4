@@ -95,7 +95,6 @@ public class Home extends Fragment {
             }
         };
 
-
         final Observer<User> userObserver = new Observer<User> () {
             @Override
             public void onChanged(@Nullable final User user) {
