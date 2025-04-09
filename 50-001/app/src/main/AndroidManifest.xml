@@ -57,6 +57,18 @@
 
         </activity>
 
+        <activity
+            android:name=".ClaimedVouchersActivity"
+            android:exported="true">
+
+        </activity>
+        <activity
+            android:name=".RewardDetailActivity"
+            android:exported="true">
+
+        </activity>
+
+
         <activity android:name=".SplashActivity"
             android:exported="true"
             >

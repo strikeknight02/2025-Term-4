@@ -52,6 +52,7 @@ public class DBTestActivity extends AppCompatActivity {
                 "User",  // role
                 "Gold",  // tier
                 150,  // points
+                0,
                 LocalDateTime.now().toString(),  // createdAt
                 5,  // availableVouchers
                 2   // previousVouchers

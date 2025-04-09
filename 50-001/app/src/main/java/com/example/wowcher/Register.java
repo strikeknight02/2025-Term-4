@@ -89,7 +89,8 @@ public class Register extends AppCompatActivity {
                                 user.put("mobileNumber", mobile);
                                 user.put("role", "User");
                                 user.put("tier", "Bronze");
-                                user.put("points", 0);
+                                user.put("totalPoints", 0);
+                                user.put("currentPoints", 0);
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                     user.put("createdAt", LocalDateTime.now().toString());
                                 }

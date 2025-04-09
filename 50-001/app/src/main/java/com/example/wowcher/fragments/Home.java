@@ -84,8 +84,9 @@ public class Home extends Fragment {
                             String status = document.getString("status");
                             String createdAt = document.getString("createdAt");
                             String locationId = document.getString("locationId");
+                            Long pointsReward = document.getLong("pointsReward");
 
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
+                            Voucher voucher = new Voucher(voucherId, title, details, status , locationId, createdAt, pointsReward);
                             dataList.add(voucher);
                         }
 
