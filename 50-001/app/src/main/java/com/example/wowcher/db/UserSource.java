@@ -147,7 +147,7 @@ public class UserSource implements DBSource{
 
     @Override
     public void create(Object t) {
-        db.collection("users")
+        userCollection
                 .add(t)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
                     @Override
@@ -182,7 +182,8 @@ public class UserSource implements DBSource{
 
     @Override
     public void delete(String reference) {
-        db.collection("users").document(reference)
+        userCollection
+                .document(reference)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -200,7 +201,7 @@ public class UserSource implements DBSource{
 
     @Override
     public void update( String reference,  String column, Object newValues) {
-        db.collection("users")
+        userCollection
                 .document(reference)
                 .update(column, newValues)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {

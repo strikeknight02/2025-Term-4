@@ -118,6 +118,35 @@ public class VoucherSource implements DBSource{
                 });
     }
 
+    public void getAllRedeemedVouchers(Consumer<?> method, ArrayList<String> redeemedVouchers){
+        voucherCollection
+                .whereIn("voucherId", redeemedVouchers)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                Voucher voucher = document.toObject(Voucher.class);
+                                voucherList.add(voucher);
+                            }
+                            if (method instanceof Consumer<?>){
+
+                                Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
+                                methodCast.accept(voucherList);
+                            } else {
+                                Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                            }
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+    }
+
     @Override
     public void getData( String column, Object comparison, Consumer<?> method) {
         voucherCollection

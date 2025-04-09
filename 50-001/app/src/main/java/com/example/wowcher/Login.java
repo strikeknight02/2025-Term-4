@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.AuthResult;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -124,7 +126,12 @@ public class Login extends AppCompatActivity {
 
                         }
                     }
-                });
+                }).addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("NO LOGIN", e.toString());
+                    }
+                });;
     }
 
 }

@@ -1,20 +1,34 @@
 package com.example.wowcher.fragments;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.wowcher.Login;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
+import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.UserController;
+import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.controller.VoucherController;
+import com.example.wowcher.controller.VoucherControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.UserSource;
+import com.example.wowcher.db.VoucherSource;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,6 +48,9 @@ public class Profile extends Fragment {
     MyAdapter adapter;
     List<Voucher> ownedVouchers;
     FirebaseFirestore db;
+    UserController userModel;
+
+    VoucherController voucherModel;
 
     @Nullable
     @Override
@@ -56,11 +73,65 @@ public class Profile extends Fragment {
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-        loadUserVouchers();
+
+        //User
+        DBSource userSourceInstance = new UserSource(db);
+        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
+
+        //Voucher
+        DBSource voucherSourceInstance = new VoucherSource(db);
+        voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
+        voucherModel.getModelInstance(voucherModel);
+
+        userModel.getUserInfoFromSource("userId", user.getUid());
+
+        final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
+                // Toggle visibility
+                RecyclerView recyclerView = requireView().findViewById(R.id.redeemedVouchersRecyclerView);
+                View noVouchersText = requireView().findViewById(R.id.noVouchersText);
+
+                if(voucherList != null){
+                    if (!voucherList.isEmpty()) {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        noVouchersText.setVisibility(View.GONE);
+                    }
+
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        };
+
+        //loadUserVouchers();
+        final Observer<User> userObserver = new Observer<User> () {
+            @Override
+            public void onChanged(@Nullable final User user) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
+                    ArrayList<String> redeemedVouchers = user.getPreviousVouchers();
+                    // Toggle visibility
+                    RecyclerView recyclerView = requireView().findViewById(R.id.redeemedVouchersRecyclerView);
+                    View noVouchersText = requireView().findViewById(R.id.noVouchersText);
+
+                    if(!redeemedVouchers.isEmpty()){
+                        voucherModel.getUserRedeemedVouchers(redeemedVouchers);
+                        voucherModel.getRedeemedVouchers().observe(getViewLifecycleOwner(), voucherObserver);
+                    } else {
+                        recyclerView.setVisibility(View.GONE);
+                        noVouchersText.setVisibility(View.VISIBLE);
+                    }
+                }
+
+            }
+        };
+
+        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
 
         return view;
     }
 
+    //OBSOLETE
     private void loadUserVouchers() {
         if (user == null) return;
 
@@ -82,6 +153,7 @@ public class Profile extends Fragment {
                         Toast.makeText(requireContext(), "Failed to load user vouchers", Toast.LENGTH_SHORT).show());
     }
 
+    //OBSOLETE
     private void fetchVouchersById(Set<Integer> voucherIds) {
         db.collection("vouchers")
                 .get()
@@ -95,7 +167,7 @@ public class Profile extends Fragment {
                             String details = doc.getString("details");
                             String status = doc.getString("status");
                             String createdAt = doc.getString("createdAt");
-                            int locationId = doc.getLong("locationId").intValue();
+                            String locationId = doc.getString("locationId");
 
                             Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
                             ownedVouchers.add(voucher);

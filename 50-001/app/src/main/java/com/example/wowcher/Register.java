@@ -1,15 +1,25 @@
 package com.example.wowcher;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.example.wowcher.classes.User;
+import com.example.wowcher.controller.UserController;
+import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.UserSource;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -30,6 +40,8 @@ public class Register extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore fstore;
 
+    private UserController userModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +50,11 @@ public class Register extends AppCompatActivity {
         // Initialize Firebase Authentication and Firestore
         mAuth = FirebaseAuth.getInstance();
         fstore = FirebaseFirestore.getInstance();
+
+        //Initialize UserController ViewModel
+        DBSource userSourceInstance = new UserSource(fstore);
+        userModel = new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
 
         nameField = findViewById(R.id.name);
         emailField = findViewById(R.id.email);
@@ -81,25 +98,30 @@ public class Register extends AppCompatActivity {
                             if (firebaseUser != null) {
                                 String userID = firebaseUser.getUid();
 
-                                DocumentReference documentReference = fstore.collection("users").document(userID);
-                                Map<String, Object> user = new HashMap<>();
-                                user.put("username", name);
-                                user.put("email", email);
-                                user.put("mobileNumber", mobile);
-                                user.put("role", "User");
-                                user.put("tier", "Bronze");
-                                user.put("points", 0);
-                                user.put("createdAt", LocalDateTime.now().toString());
-                                user.put("availableVouchers", new ArrayList<String>());
-                                user.put("previousVouchers", new ArrayList<String>());
-                                user.put("password", password);
-
-                                documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void unused) {
-                                        Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0, LocalDateTime.now().toString(), new ArrayList<String>() );
+                                    userModel.addUser(newUser);
+                                    Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
+                                }
+//                                DocumentReference documentReference = fstore.collection("users").document(userID);
+//                                Map<String, Object> user = new HashMap<>();
+//                                user.put("username", name);
+//                                user.put("email", email);
+//                                user.put("mobileNumber", mobile);
+//                                user.put("role", "User");
+//                                user.put("tier", "Bronze");
+//                                user.put("points", 0);
+//                                user.put("createdAt", LocalDateTime.now().toString());
+//                                user.put("availableVouchers", new ArrayList<String>());
+//                                user.put("previousVouchers", new ArrayList<String>());
+//                                user.put("password", password);
+//
+//                                documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                    @Override
+//                                    public void onSuccess(Void unused) {
+//                                        Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
 
                                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(intent);
@@ -108,6 +130,11 @@ public class Register extends AppCompatActivity {
                         } else {
                             Toast.makeText(Register.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
                         }
+                    }
+                }).addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("NO REGISTER", e.toString());
                     }
                 });
     }
