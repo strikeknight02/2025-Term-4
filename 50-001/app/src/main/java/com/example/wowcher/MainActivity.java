@@ -56,17 +56,20 @@ public class MainActivity extends AppCompatActivity {
         Fragment voucherFragment = new Vouchers();
         Fragment profileFragment = new Profile();
 
-        setCurrentFragment(homeFragment);
+        setCurrentFragment(mapFragment);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
             if (itemId == R.id.map) {
                 setCurrentFragment(mapFragment);
+
             } else if (itemId == R.id.voucher) {
                 setCurrentFragment(voucherFragment);
+
             } else if (itemId == R.id.rewards) {
                 setCurrentFragment(homeFragment);
+
             } else if (itemId == R.id.profile) {
                 setCurrentFragment(profileFragment);
             }

@@ -95,7 +95,7 @@ public class Profile extends Fragment {
                             String details = doc.getString("details");
                             String status = doc.getString("status");
                             String createdAt = doc.getString("createdAt");
-                            int locationId = doc.getLong("locationId").intValue();
+                            String locationId = doc.getString("locationId");
 
                             Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
                             ownedVouchers.add(voucher);

@@ -7,8 +7,13 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.wowcher.R;
-import com.example.wowcher.VoucherDetailActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,9 +30,11 @@ import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -56,11 +63,12 @@ import java.util.List;
 public class Map extends Fragment implements OnMapReadyCallback {
     //get access to location permission
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
+
     private GoogleMap mMap;
 
     FusedLocationProviderClient fusedLocationProviderClient;
 
-    private LatLng userLocation;
+    public static LatLng userLocation;
 
     private ArrayAdapter<String> autoCompleteAdapter;
 
@@ -89,7 +97,8 @@ public class Map extends Fragment implements OnMapReadyCallback {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(currentContext);
 
         // Retrieve API key for initialize Places to get data of places
-        String apiKey = getApiKeyFromManifest(currentContext);
+        String apiKey = getApiKeyFromManifest("mapApiKey");
+
         if (!Places.isInitialized() && apiKey != null) {
             Places.initialize(currentContext, apiKey);
         }
@@ -215,8 +224,10 @@ public class Map extends Fragment implements OnMapReadyCallback {
                         CameraPosition cameraPosition = CameraPosition.fromLatLngZoom(userLocation, 20f);
                         moveCameraToLocation(cameraPosition);
 
-                        // Enable necessary map functions
-                        enableMapsSettings();
+                        // Enable maps functions
+                        mMap.setMyLocationEnabled(true);
+                        mMap.getUiSettings().setZoomControlsEnabled(true);
+
                     } else {
                         System.out.println("didnt get location");
                     }
@@ -239,7 +250,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(@NonNull Marker marker) {
-                Intent intent = new Intent(currentContext, VoucherDetailActivity.class);
+                Intent intent = new Intent(currentContext, Home.class);
 //                intent.putExtra("Image", dataList.get(holder.getAdapterPosition()).getDataImage());
 //                intent.putExtra("Title", dataList.get(holder.getAdapterPosition()).getTitle());
 //                intent.putExtra("Desc", dataList.get(holder.getAdapterPosition()).getDetails());
@@ -271,15 +282,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
-    // Suppressed permission check since this will only be used after permission is checked
-    @SuppressLint("MissingPermission")
-    public void enableMapsSettings() {
-        // Enable maps functions
-        mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-
-    }
-
     // Handles after requesting for permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -297,18 +299,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
-
-    // Retrieve API key
-    public static String getApiKeyFromManifest(Context context) {
-        try {
-            ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = applicationInfo.metaData;
-            return bundle.getString("com.google.android.geo.API_KEY");
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e("API key retrieval failed", "Error: " + e);
-            return null;
         }
     }
 
@@ -341,4 +331,16 @@ public class Map extends Fragment implements OnMapReadyCallback {
 
     }
 
+    public String getApiKeyFromManifest(String key) {
+        String apiKey;
+        try {
+            ApplicationInfo applicationInfo = currentContext.getPackageManager().getApplicationInfo(currentContext.getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = applicationInfo.metaData;
+            apiKey = bundle.getString(key);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e("API key retrieval failed", "Error: " + e);
+            return null;
+        }
+        return apiKey;
+    }
 }
