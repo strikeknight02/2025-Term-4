@@ -1,5 +1,6 @@
 package com.example.wowcher.fragments;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,12 +11,24 @@ import androidx.fragment.app.Fragment;
 
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
+import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.UserController;
+import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.controller.VoucherController;
+import com.example.wowcher.controller.VoucherControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.UserSource;
+import com.example.wowcher.db.VoucherSource;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
@@ -32,28 +45,77 @@ public class Home extends Fragment {
     MyAdapter adapter;
     SearchView searchView;
 
+    FirebaseAuth auth;
+    FirebaseUser user;
     FirebaseFirestore db;
+    UserController userModel;
+    VoucherController voucherModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+
         recyclerView = view.findViewById(R.id.recyclerView);
 
-
         recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
-        dataList = new ArrayList<>();
-
-        adapter = new MyAdapter(requireContext(), dataList);
-        recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-        loadVouchersFromFirebase();
+        //User
+        DBSource userSourceInstance = new UserSource(db);
+        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
 
+        //Voucher
+        DBSource voucherSourceInstance = new VoucherSource(db);
+        voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
+        voucherModel.getModelInstance(voucherModel);
+
+        userModel.getUserInfoFromSource("userId", user.getUid());
+
+        final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
+
+                if(voucherList != null){
+                    if (!voucherList.isEmpty()) {
+                        adapter = new MyAdapter(requireContext(), voucherList);
+                        recyclerView.setAdapter(adapter);
+                    } else {
+                        Toast.makeText(requireContext(), "No Voucher to Load", Toast.LENGTH_SHORT).show();
+                    }
+
+                    adapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+
+        final Observer<User> userObserver = new Observer<User> () {
+            @Override
+            public void onChanged(@Nullable final User user) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
+                    ArrayList<String> redeemedVouchers = user.getPreviousVouchers();
+                    voucherModel.getVouchersforAll(redeemedVouchers);
+                    voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
+                }
+
+            }
+        };
+
+        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
+
+        //OBSOLETE
+        //loadUserVouchers();
         return view;
     }
 
+    //OBSOLETE
     private void searchList(String text) {
         List<Voucher> dataSearchList = new ArrayList<>();
         for (Voucher data : dataList) {
@@ -67,7 +129,7 @@ public class Home extends Fragment {
             adapter.setSearchList(dataSearchList);
         }
     }
-
+    //OBSOLETE
     private void loadVouchersFromFirebase() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 

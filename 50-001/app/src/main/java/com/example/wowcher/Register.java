@@ -103,6 +103,8 @@ public class Register extends AppCompatActivity {
                                     userModel.addUser(newUser);
                                     Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
                                 }
+
+                                //OBSOLETE
 //                                DocumentReference documentReference = fstore.collection("users").document(userID);
 //                                Map<String, Object> user = new HashMap<>();
 //                                user.put("username", name);
