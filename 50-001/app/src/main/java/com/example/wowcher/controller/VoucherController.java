@@ -19,6 +19,8 @@ public class VoucherController extends ViewModel {
 
     private MutableLiveData<ArrayList<Voucher>> redeemedVouchers;
 
+    private MutableLiveData<ArrayList<Voucher>> locationVouchers;
+
     public VoucherController(DBSource databaseInstance) {
         this.databaseInstance = databaseInstance;
     }
@@ -41,6 +43,13 @@ public class VoucherController extends ViewModel {
         return redeemedVouchers;
     }
 
+    public MutableLiveData<ArrayList<Voucher>> getVouchersBasedOnLocation(){
+        if (locationVouchers == null){
+            locationVouchers = new MutableLiveData<ArrayList<Voucher>>();
+        }
+        return locationVouchers;
+    }
+
     public void getVouchersforAll(ArrayList<String> redeemedVouchers){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getAllVouchers().setValue((ArrayList<Voucher>) vouchers); };
         VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
@@ -51,6 +60,12 @@ public class VoucherController extends ViewModel {
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getRedeemedVouchers().setValue((ArrayList<Voucher>) vouchers); };
         VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
         voucherSourceInstance.getAllRedeemedVouchers( method, redeemedVouchers );
+    }
+
+    public void getVouchersBasedOnLocation(ArrayList<String> locationIds){
+        Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getVouchersBasedOnLocation().setValue((ArrayList<Voucher>) vouchers); };
+        VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
+        voucherSourceInstance.getLocationBasedVouchers( method, locationIds );
     }
 
     public void getVoucherBySomething(String column, Object comparison){

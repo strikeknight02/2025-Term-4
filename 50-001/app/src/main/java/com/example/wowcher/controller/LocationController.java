@@ -56,7 +56,7 @@ public class LocationController extends ViewModel {
         databaseInstance.getAllData( method );
     }
 
-    public void getVouchersBasedOnLocation(ArrayList<String> locationList){
+    public void getLocationsBasedOnVoucher(ArrayList<String> locationList){
         Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.getSomeLocations().setValue((ArrayList<Location>) locations); };
         LocationSource locationDatabaseInstance = (LocationSource) databaseInstance;
         locationDatabaseInstance.getLocationBasedOnVoucher( method, locationList );

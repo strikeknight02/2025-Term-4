@@ -102,9 +102,11 @@ public class LocationSource implements DBSource{
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+
                                 Location location = document.toObject(Location.class);
                                 locationList.add(location);
                             }
+
                             if (method instanceof Consumer<?>){
 
                                 Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
