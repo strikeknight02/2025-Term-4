@@ -24,37 +24,40 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBkfdhJhu_JdJYRGhuDiZFzNn_yJrOJSpw" />
+            android:value="${mapApiKey}" />
+
+        <meta-data
+            android:name="dirApiKey"
+            android:value="${dirApiKey}" />
 
         <activity
             android:name=".VoucherDetailActivity"
             android:exported="true">
+        </activity>
 
+        <activity
+            android:name=".VouchersListActivity"
+            android:exported="true">
         </activity>
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
-
-
         </activity>
 
         <activity
             android:name=".Login"
             android:exported="true">
-
-
         </activity>
 
         <activity
             android:name=".Register"
             android:exported="true">
-
         </activity>
+
         <activity
             android:name=".DBTestActivity"
             android:exported="true">
-
         </activity>
 
         <activity
