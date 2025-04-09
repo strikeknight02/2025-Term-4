@@ -1,5 +1,8 @@
-package com.example.wowcher.fragments;
+package com.example.wowcher;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -8,10 +11,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -19,10 +29,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.wowcher.MyAdapter;
-import com.example.wowcher.R;
-import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.classes.Location;
+import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.fragments.Map;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -30,103 +39,52 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import androidx.appcompat.widget.SearchView;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class Home extends Fragment {
+public class VouchersListActivity extends AppCompatActivity {
 
 
     RecyclerView recyclerView;
-    List<Voucher> dataList;
+    List<Voucher> vouchersDataList;
     MyAdapter adapter;
-    SearchView searchView;
+
+    String locationId;
 
     FirebaseFirestore db;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_vouchers, container, false);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_vouchers);
+        recyclerView = this.findViewById(R.id.vouchersList);
 
-        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
+        vouchersDataList = new ArrayList<>();
 
-        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
-        dataList = new ArrayList<>();
+        makeVouchersTestData();
 
-        adapter = new MyAdapter(requireContext(), dataList);
+        adapter = new MyAdapter(this, vouchersDataList);
         recyclerView.setAdapter(adapter);
 
-        db = FirebaseFirestore.getInstance();
-        loadVouchersFromFirebase();
-
-        return view;
-    }
-
-    private void searchList(String text) {
-        List<Voucher> dataSearchList = new ArrayList<>();
-        for (Voucher data : dataList) {
-            if (data.getTitle().toLowerCase().contains(text.toLowerCase())) {
-                dataSearchList.add(data);
-            }
+        Bundle b2 = getIntent().getExtras();
+        if(b2 != null){
+            locationId = b2.getString("locationId");
+            System.out.println(locationId);
         }
-        if (dataSearchList.isEmpty()) {
-            Toast.makeText(requireContext(), "Not Found", Toast.LENGTH_SHORT).show();
-        } else {
-            adapter.setSearchList(dataSearchList);
-        }
-    }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void loadVouchersFromFirebase() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Button backButton = this.findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
 
-        db.collection("vouchers")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        dataList.clear();
-
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            String voucherId = document.getString("voucherId");
-                            String title = document.getString("title");
-                            String details = document.getString("details");
-                            String status = document.getString("status");
-                            String createdAt = document.getString("createdAt");
-                            String locationId = document.getString("locationId");
-
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
-
-                            dataList.add(voucher);
-                        }
-
-                        //todo - sort then add to datalist
-                        // test data - locations
-                        ArrayList<Location> locations = new ArrayList<>();
-                        locations.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "")); // tofu
-                        locations.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
-                        locations.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
-
-                        getRoute(locations);
-
-//                        adapter.notifyDataSetChanged();
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 
     // Retrieve API key from Manifest
     public String getApiKeyFromManifest(String key) {
         String apiKey;
         try {
-            ApplicationInfo applicationInfo = requireContext().getPackageManager().getApplicationInfo(requireContext().getPackageName(), PackageManager.GET_META_DATA);
+            ApplicationInfo applicationInfo = this.getPackageManager().getApplicationInfo(this.getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = applicationInfo.metaData;
             apiKey = bundle.getString(key);
         } catch (PackageManager.NameNotFoundException e) {
@@ -145,9 +103,7 @@ public class Home extends Fragment {
         // Format string for URL request
         StringBuilder destString = new StringBuilder();
         for (Location item: destinations) {
-            GeoPoint geoObject = item.getGeolocation();
-            String coordinates = geoObject.getLatitude() + "," + geoObject.getLongitude();
-            destString.append("%7C").append(coordinates);
+            destString.append("%7C").append(item.getGeolocation());
         }
 
         String url = "https://maps.googleapis.com/maps/api/distancematrix/json" +
@@ -156,7 +112,7 @@ public class Home extends Fragment {
                 "&key="+dirApiKey;
 
 
-        RequestQueue queue = Volley.newRequestQueue(requireContext());
+        RequestQueue queue = Volley.newRequestQueue(this);
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
@@ -167,7 +123,6 @@ public class Home extends Fragment {
                         JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
                         JsonArray routes = responseObject.getAsJsonArray("rows").get(0).getAsJsonObject().getAsJsonArray("elements");
 
-                        System.out.println(response);
                         // Prepare location details to sort vouchers by distance
                         ArrayList<JsonObject> locationList = new ArrayList<>();
                         for (int i = 0; i < routes.size(); i++) {
@@ -195,8 +150,8 @@ public class Home extends Fragment {
     // Insertion sort for vouchers based on distance
     public void insertionSortVouchers(ArrayList<JsonObject> locationList) {
         int listSize = locationList.size();
-        List<Voucher> dataListCopy = List.copyOf(dataList);
-        dataList.clear();
+        List<Voucher> dataListCopy = List.copyOf(vouchersDataList);
+        vouchersDataList.clear();
 
         for (int step = 1; step < listSize; step++) {
             int currentValue = locationList.get(step).get("value").getAsInt();
@@ -220,13 +175,27 @@ public class Home extends Fragment {
             for (int i = 0; i < dataListCopy.size(); i++) {
                 String voucherLocId = dataListCopy.get(i).getLocationId();
                 if (voucherLocId.equals(locationId)){
-                    dataList.add(dataListCopy.get(i));
+                    vouchersDataList.add(dataListCopy.get(i));
                 }
             }
         }
 
         adapter.notifyDataSetChanged();
 
+    }
+
+    // todo (Maryse) - this is the call function to get vouchers based on location
+    //  locationId is available above
+    public void makeVouchersTestData(){
+        vouchersDataList.add(new Voucher("1", "Bread", "30% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
+        vouchersDataList.add(new Voucher("2", "Eat", "10% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
+        vouchersDataList.add(new Voucher("3", "Rice", "20% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
+        vouchersDataList.add(new Voucher("4", "Meat", "40% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
+        vouchersDataList.add(new Voucher("5", "Sushi", "33% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
+
+        //todo (Maryse) - handle successful repsonse
+        // get location based on vouchers
+        // call getRoute function and pass in the arrayList of locations
     }
 
 }
