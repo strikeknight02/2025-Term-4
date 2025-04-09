@@ -38,6 +38,10 @@ public class VoucherController extends ViewModel {
         voucherSourceInstance.getAllUserVouchers( method, redeemedVouchers );
     }
 
+    public void getLocationsBasedonVouchers(){
+
+    }
+
     public void getVoucherBySomething(String column, Object comparison){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getAllVouchers().setValue((ArrayList<Voucher>) vouchers); };
         databaseInstance.getData(column, comparison, method);
