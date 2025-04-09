@@ -10,7 +10,7 @@ public class Voucher {
     private String details = "";
     private String status = "";
     private String locationId = ""; // Foreign key to Location
-    private String createdAt = LocalDateTime.now().toString();
+    private String createdAt = "";
 
     //no-arg constructor
     public Voucher(){}
@@ -28,44 +28,46 @@ public class Voucher {
         return voucherId;
     }
 
-    public void setVoucherId(String voucherId) {
-        this.voucherId = voucherId;
-    }
-
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getDetails() {
         return details;
     }
 
-    public void setDetails(String details) {
-        this.details = details;
-    }
-
     public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public String getCreatedAt() {
+        return createdAt;
     }
 
     public String getLocationId() {
         return locationId;
     }
 
-    public void setLocationId(String locationId) {
-        this.locationId = locationId;
+    // Setters
+    public void setVoucherId(String voucherId) {
+        this.voucherId = voucherId;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setLocationId(String locationId) {
+        this.locationId = locationId;
     }
 
     public void setCreatedAt(String createdAt) {

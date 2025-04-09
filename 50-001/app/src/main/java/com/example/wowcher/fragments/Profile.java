@@ -52,6 +52,8 @@ public class Profile extends Fragment {
 
     VoucherController voucherModel;
 
+    TextView userNameText; // Declare the TextView
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -71,6 +73,8 @@ public class Profile extends Fragment {
         ownedVouchers = new ArrayList<>();
         adapter = new MyAdapter(requireContext(), ownedVouchers);
         recyclerView.setAdapter(adapter);
+
+        userNameText = view.findViewById(R.id.userNameText); // Bind the TextView
 
         db = FirebaseFirestore.getInstance();
 
@@ -131,7 +135,26 @@ public class Profile extends Fragment {
         return view;
     }
 
-    //OBSOLETE
+    private void loadUserName() {
+        if (user == null) return;
+
+        String userId = user.getUid();
+
+        db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String name = documentSnapshot.getString("username");
+                        userNameText.setText(name != null ? name : "No Name Found");
+                    } else {
+                        userNameText.setText("User not found");
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show());
+    }
+
+
     private void loadUserVouchers() {
         if (user == null) return;
 
