@@ -56,10 +56,13 @@ public class MainActivity extends AppCompatActivity {
 
             if (itemId == R.id.map) {
                 setCurrentFragment(mapFragment);
+
             } else if (itemId == R.id.voucher) {
                 setCurrentFragment(homeFragment);
+
             } else if (itemId == R.id.rewards) {
                 setCurrentFragment(voucherFragment);
+
             } else if (itemId == R.id.profile) {
                 setCurrentFragment(profileFragment);
             }
@@ -82,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setCurrentFragment(Fragment fragment) {
+    public void setCurrentFragment(Fragment fragment) {
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.flFragment, fragment)
