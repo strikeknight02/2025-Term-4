@@ -8,39 +8,6 @@
     android:orientation="vertical"
     tools:context=".VoucherDetailActivity">
 
-    <!-- Voucher Image -->
-    <ImageView
-        android:id="@+id/detailImage"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:src="@drawable/baseline_person_24"
-    android:layout_marginBottom="16dp"
-    android:scaleType="centerCrop"/>
-
-    <!-- Voucher Title -->
-    <!-- Voucher Status -->
-    <TextView
-        android:id="@+id/detailStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Status: Not Redeemed"
-        android:textSize="16sp"
-        android:textColor="@android:color/holo_green_dark"
-        android:layout_marginBottom="8dp"/>
-
-    <!-- Voucher ID -->
-    <TextView
-        android:id="@+id/detailVoucherId"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Voucher ID: 0"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"/>
-
-
-
-
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

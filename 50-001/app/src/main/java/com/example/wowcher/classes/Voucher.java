@@ -7,7 +7,7 @@ public class Voucher {
     private String title = "";
     private String details = "";
     private String status = "";
-    private String locationId = ""; // Foreign key to Location
+    private String locationId; // Foreign key to Location
     private String createdAt = "";
 
     public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt) {

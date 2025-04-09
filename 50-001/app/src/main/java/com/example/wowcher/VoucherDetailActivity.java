@@ -19,7 +19,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
     ImageView detailImage;
     Button backButton, redeemButton;
     String voucherTitle, voucherDetails, voucherStatus;
-    int voucherId;
+    String voucherId;
 
     FirebaseFirestore db;
     FirebaseAuth auth;
@@ -36,8 +36,8 @@ public class VoucherDetailActivity extends AppCompatActivity {
         detailImage = findViewById(R.id.detailImage);
         backButton = findViewById(R.id.backButton);
         redeemButton = findViewById(R.id.redeemButton);
-        detailVoucherId = findViewById(R.id.detailVoucherId);
-        detailStatus = findViewById(R.id.detailStatus);
+//        detailVoucherId = findViewById(R.id.detailVoucherId);
+//        detailStatus = findViewById(R.id.detailStatus);
 
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
@@ -45,7 +45,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
-            voucherId = getIntent().getIntExtra("Id", -1);
+            voucherId = bundle.getString("Id", "-1");
             voucherTitle = bundle.getString("Title", "No title");
             voucherDetails = bundle.getString("Desc", "No description");
             voucherStatus = bundle.getString("Status", "Not Redeemed");  // Add Status if needed
@@ -53,8 +53,8 @@ public class VoucherDetailActivity extends AppCompatActivity {
             // Display data in the UI
             detailTitle.setText(voucherTitle);
             detailDesc.setText(voucherDetails);
-            detailVoucherId.setText("Voucher ID: " + voucherId);
-            detailStatus.setText("Status: " + voucherStatus);
+//            detailVoucherId.setText("Voucher ID: " + voucherId);
+//            detailStatus.setText("Status: " + voucherStatus);
         }
 
         backButton.setOnClickListener(v -> finish());
