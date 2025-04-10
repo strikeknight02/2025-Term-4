@@ -360,7 +360,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
             GeoPoint geoObject = location.getGeolocation();
             LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
             // temp image, still figuring out how to handle the marker images
-            addMarkerToMap(latlngObject, R.drawable.marker_mcd);
+            addMarkerToMap(latlngObject, R.drawable.marker);
         }
     }
 }

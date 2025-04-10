@@ -159,13 +159,14 @@ public class VouchersListActivity extends AppCompatActivity {
 
             int j = step - 1;
 
-            // Compare key with each element on the left of it until an element smaller than it is found.
+            // Compare value with each element on the left of it
+            // until an element smaller than it is found.
             while (j >= 0 && currentValue < locationList.get(j).get("value").getAsInt()) {
                 locationList.set(j+1,locationList.get(j));
                 --j;
             }
 
-            // Place key at after the element just smaller than it.
+            // Place location object at after the element just smaller than it.
             locationList.set(j+1,currentObject);
         }
 
