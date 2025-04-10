@@ -146,18 +146,4 @@ public class VouchersListActivity extends AppCompatActivity {
         locationModel.getSomeLocations().observe(VouchersListActivity.this, locationObserver);
     }
 
-    //  locationId is available above
-    public void makeVouchersTestData(){
-        //get results of vouchers based on location
-        vouchersDataList.add(new Voucher("1", "Bread", "30% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-        vouchersDataList.add(new Voucher("2", "Eat", "10% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-        vouchersDataList.add(new Voucher("3", "Rice", "20% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-        vouchersDataList.add(new Voucher("4", "Meat", "40% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-        vouchersDataList.add(new Voucher("5", "Sushi", "33% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-
-        // handle successful response
-        // get location based on vouchers
-        // call getRoute function and pass in the arrayList of locations
-    }
-
 }

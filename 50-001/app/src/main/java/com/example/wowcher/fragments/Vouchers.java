@@ -70,7 +70,7 @@ public class Vouchers extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-//        generateAndUploadMissions(); // Add this to test/seed data
+//      generateAndUploadMissions(); // Add this to test/seed data
 
         // Find TextViews
         tierNameText = view.findViewById(R.id.tier_name);
@@ -109,46 +109,49 @@ public class Vouchers extends Fragment {
         rewardsModel = new ViewModelProvider(this, new RewardsControllerFactory(rewardsSourceInstance)).get(RewardsController.class);
         rewardsModel.getModelInstance(rewardsModel);
 
-        userModel.getUserInfoFromSource("userId", getCurrentUserId());
-        rewardsModel.getRewardsforAll();
+//DB Implementation
+//        //Get User Info From DB
+//        userModel.getUserInfoFromSource("userId", getCurrentUserId());
+//        //Get All Rewards (Except for user redeemed)
+//        rewardsModel.getRewardsforAll();
+//
+//        final Observer<ArrayList<Rewards>> rewardsObserver = new Observer<ArrayList<Rewards>> () {
+//            @Override
+//            public void onChanged(@Nullable final ArrayList<Rewards> rewardsList) {
+//                if(rewardsList != null){
+//                    // Update the rewardAdapter with the new rewards list
+//                    rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
+//                } else {
+//                    Toast.makeText(requireContext(), "Failed to load rewards", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        };
+//
+//        final Observer<User> userObserver = new Observer<User> () {
+//            @Override
+//            public void onChanged(@Nullable final User user) {
+//                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
+//                    String userTier = user.getTier();
+//                    int userPoints = user.getCurrentPoints();
+//
+//                    if (userTier != null) {
+//                        tierNameText.setText(userTier);
+//                    }
+//                    pointsNameText.setText(userPoints + " pts");
+//                } else {
+//                    Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show();
+//                }
+//
+//            }
+//        };
 
-        final Observer<ArrayList<Rewards>> rewardsObserver = new Observer<ArrayList<Rewards>> () {
-            @Override
-            public void onChanged(@Nullable final ArrayList<Rewards> rewardsList) {
-                if(rewardsList != null){
-                    // Update the rewardAdapter with the new rewards list
-                    rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(requireContext(), "Failed to load rewards", Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
+//        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
+//        rewardsModel.getAllRewards().observe(getViewLifecycleOwner(), rewardsObserver);
 
-        final Observer<User> userObserver = new Observer<User> () {
-            @Override
-            public void onChanged(@Nullable final User user) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
-                    String userTier = user.getTier();
-                    int userPoints = user.getPoints();
-
-                    if (userTier != null) {
-                        tierNameText.setText(userTier);
-                    }
-                    pointsNameText.setText(userPoints + " pts");
-                } else {
-                    Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        };
-
-        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
-        rewardsModel.getAllRewards().observe(getViewLifecycleOwner(), rewardsObserver);
-
-        //loadUserInfo();
+        loadUserInfo();
         //loadRewards();
         loadMissions();
-//        loadUserVoucherCount();
+        //loadUserVoucherCount();
 
         return view;
     }
@@ -157,6 +160,7 @@ public class Vouchers extends Fragment {
         return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
+    //OBSOLETE
     private void loadUserInfo() {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Get current user ID
 
@@ -183,6 +187,7 @@ public class Vouchers extends Fragment {
                 });
     }
 
+    //OBSOLETE?
     private void loadRewards(int userPoints) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Get current user ID
         db.collection("rewards")
@@ -245,8 +250,6 @@ public class Vouchers extends Fragment {
     public interface RedeemedCallback {
         void onChecked(boolean isRedeemed);
     }
-
-
 
     private void loadMissions() {
         db.collection("missions")
@@ -324,23 +327,5 @@ public class Vouchers extends Fragment {
         return isRedeemed[0];
     }
 
-
-
-
-
-
-//    private void loadUserVoucherCount() {
-//        String userId = getCurrentUserId();
-//
-//        db.collection("vouchers")
-//                .whereEqualTo("userId", userId)
-//                .get()
-//                .addOnSuccessListener(querySnapshot -> {
-//                    int count = querySnapshot.size();
-//                    voucherNameText.setText(count + " vouchers");
-//                })
-//                .addOnFailureListener(e ->
-//                        Toast.makeText(requireContext(), "Failed to load voucher count", Toast.LENGTH_SHORT).show()
-//                );
-//    }
 }
+

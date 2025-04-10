@@ -30,7 +30,6 @@ public class Voucher {
     public String getVoucherId() {
         return voucherId;
     }
-
     public String getTitle() {
         return title;
     }
@@ -42,15 +41,10 @@ public class Voucher {
     public String getStatus() {
         return status;
     }
-
-    public String getLocationId() {
-        return locationId;
-    }
-
+    public String getLocationId() {return locationId;}
     public String getCreatedAt() {
         return createdAt;
     }
-
     public long getPointsReward() {
         return pointsReward;
     }
@@ -59,7 +53,6 @@ public class Voucher {
     public void setVoucherId(String voucherId) {
         this.voucherId = voucherId;
     }
-
     public void setTitle(String title) {
         this.title = title;
     }
@@ -68,19 +61,15 @@ public class Voucher {
         this.details = details;
     }
 
-
     public void setStatus(String status) {
         this.status = status;
     }
-
     public void setLocationId(String locationId) {
         this.locationId = locationId;
     }
-
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
-
     public void setPointsReward(long pointsReward) {
         this.pointsReward = pointsReward;
     }

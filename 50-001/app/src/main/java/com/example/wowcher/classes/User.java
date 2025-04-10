@@ -27,7 +27,7 @@ public class User {
     // Updated constructor
     public User(String userId, String username, String email, String password, String mobileNumber, String role,
                 String tier, long totalPoints, long currentPoints, String createdAt,
-                int availableVouchers, ArrayList<String> previousVouchers) {
+                ArrayList<String> previousVouchers) {
 
         this.userId = userId;
         this.username = username;
@@ -72,9 +72,6 @@ public class User {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-
-    //public int getAvailableVouchers() { return availableVouchers; }
-    //public void setAvailableVouchers(int availableVouchers) { this.availableVouchers = availableVouchers; }
 
     public ArrayList<String> getPreviousVouchers() { return previousVouchers; }
     public void setPreviousVouchers(ArrayList<String>  previousVouchers) { this.previousVouchers = previousVouchers; }

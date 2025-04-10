@@ -81,7 +81,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
 
 
         // Redeem button functionality
-        redeemButton.setOnClickListener(v -> redeemVoucher());
+        //redeemButton.setOnClickListener(v -> redeemVoucher());
 
         String userId = user.getUid();
 
@@ -140,60 +140,60 @@ public class VoucherDetailActivity extends AppCompatActivity {
                 });
     }
 
-    private void redeemVoucher() {
-        String userId = user.getUid();
-
-        userModel.updateUser(userId, "previousVouchers", FieldValue.arrayUnion(voucherId));
-        Toast.makeText(this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
-                    redeemButton.setEnabled(false);
-                    redeemButton.setText("Owned");
-                    //detailStatus.setText("Status: Redeemed");
-
-        db.collection("users")
-                .document(userId)
-                .collection("redeemedVouchers")
-                .document(voucherId)
-                .set(voucherData)
-                .addOnSuccessListener(docRef -> {
-                    // Update user's points after redeeming the voucher
-                    db.collection("users")
-                            .document(userId)
-                            .get()
-                            .addOnSuccessListener(userSnapshot -> {
-                                long currentPoints = userSnapshot.contains("currentPoints") ? userSnapshot.getLong("currentPoints") : 0;
-                                long totalPoints = userSnapshot.contains("totalPoints") ? userSnapshot.getLong("totalPoints") : 0;
-
-                                long updatedCurrentPoints = currentPoints + voucherPoints;
-                                long updatedTotalPoints = totalPoints + voucherPoints;
-
-                                // Update the user's points in Firestore
-                                Map<String, Object> updates = new HashMap<>();
-                                updates.put("currentPoints", updatedCurrentPoints);
-                                updates.put("totalPoints", updatedTotalPoints);
-
-                                db.collection("users")
-                                        .document(userId)
-                                        .update(updates)
-                                        .addOnSuccessListener(unused -> {
-                                            // Successfully updated points
-                                            Toast.makeText(this, "Voucher redeemed! +" + voucherPoints + " points", Toast.LENGTH_SHORT).show();
-                                            redeemButton.setEnabled(false);
-                                            redeemButton.setText("Owned");
-                                            detailStatus.setText("Status: Redeemed");
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            // Handle any failure in updating points
-                                            Toast.makeText(this, "Failed to update points", Toast.LENGTH_SHORT).show();
-                                        });
-                            })
-                            .addOnFailureListener(e -> {
-                                // Handle any failure in fetching user points
-                                Toast.makeText(this, "Failed to fetch user points", Toast.LENGTH_SHORT).show();
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    // Handle any failure in redeeming voucher
-                    Toast.makeText(this, "Failed to redeem voucher", Toast.LENGTH_SHORT).show();
-                });
-    }
+//    private void redeemVoucher() {
+//        String userId = user.getUid();
+//
+//        userModel.updateUser(userId, "previousVouchers", FieldValue.arrayUnion(voucherId));
+//        Toast.makeText(this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
+//                    redeemButton.setEnabled(false);
+//                    redeemButton.setText("Owned");
+//                    //detailStatus.setText("Status: Redeemed");
+//
+//        db.collection("users")
+//                .document(userId)
+//                .collection("redeemedVouchers")
+//                .document(voucherId)
+//                .set(voucherData)
+//                .addOnSuccessListener(docRef -> {
+//                    // Update user's points after redeeming the voucher
+//                    db.collection("users")
+//                            .document(userId)
+//                            .get()
+//                            .addOnSuccessListener(userSnapshot -> {
+//                                long currentPoints = userSnapshot.contains("currentPoints") ? userSnapshot.getLong("currentPoints") : 0;
+//                                long totalPoints = userSnapshot.contains("totalPoints") ? userSnapshot.getLong("totalPoints") : 0;
+//
+//                                long updatedCurrentPoints = currentPoints + voucherPoints;
+//                                long updatedTotalPoints = totalPoints + voucherPoints;
+//
+//                                // Update the user's points in Firestore
+//                                Map<String, Object> updates = new HashMap<>();
+//                                updates.put("currentPoints", updatedCurrentPoints);
+//                                updates.put("totalPoints", updatedTotalPoints);
+//
+//                                db.collection("users")
+//                                        .document(userId)
+//                                        .update(updates)
+//                                        .addOnSuccessListener(unused -> {
+//                                            // Successfully updated points
+//                                            Toast.makeText(this, "Voucher redeemed! +" + voucherPoints + " points", Toast.LENGTH_SHORT).show();
+//                                            redeemButton.setEnabled(false);
+//                                            redeemButton.setText("Owned");
+//                                            detailStatus.setText("Status: Redeemed");
+//                                        })
+//                                        .addOnFailureListener(e -> {
+//                                            // Handle any failure in updating points
+//                                            Toast.makeText(this, "Failed to update points", Toast.LENGTH_SHORT).show();
+//                                        });
+//                            })
+//                            .addOnFailureListener(e -> {
+//                                // Handle any failure in fetching user points
+//                                Toast.makeText(this, "Failed to fetch user points", Toast.LENGTH_SHORT).show();
+//                            });
+//                })
+//                .addOnFailureListener(e -> {
+//                    // Handle any failure in redeeming voucher
+//                    Toast.makeText(this, "Failed to redeem voucher", Toast.LENGTH_SHORT).show();
+//                });
+//    }
 }

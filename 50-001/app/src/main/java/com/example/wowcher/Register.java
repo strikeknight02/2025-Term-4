@@ -108,7 +108,7 @@ public class Register extends AppCompatActivity {
                                 user.put("totalPoints", 0);
                                 user.put("currentPoints", 0);
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0, LocalDateTime.now().toString(), new ArrayList<String>() );
+                                    User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0, 0, LocalDateTime.now().toString(), new ArrayList<String>() );
                                     userModel.addUser(newUser);
                                     Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
                                 }

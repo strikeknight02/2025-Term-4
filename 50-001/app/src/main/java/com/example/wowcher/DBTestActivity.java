@@ -65,19 +65,7 @@ public class DBTestActivity extends AppCompatActivity {
         UserController userModel = new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
         userModel.getModelInstance(userModel);
 
-        User newUser = new User(
-                "12345",  // userId
-                "john_doe",  // username
-                "john.doe@example.com",  // email
-                "securepassword123",  // password
-                "9876543210",  // mobileNumber
-                "User",  // role
-                "Gold",  // tier
-                150,  // points
-                LocalDateTime.now().toString(),  // createdAt
-                2   // previousVouchers
-        );
-        userModel.addUser(newUser);
+        //userModel.addUser(newUser);
         ArrayList<String> redeemedVouchers= new ArrayList<>();
         redeemedVouchers.add("3bcaMDLohBFKWZ2Zglxg");
         redeemedVouchers.add("UnXzipX5lKm7kaDbBscq");
