@@ -1,15 +1,29 @@
 package com.example.wowcher;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.wowcher.classes.User;
+import com.example.wowcher.controller.UserController;
+import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.UserSource;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +39,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
     FirebaseAuth auth;
     FirebaseUser user;
 
+    UserController userModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +74,39 @@ public class VoucherDetailActivity extends AppCompatActivity {
 
         backButton.setOnClickListener(v -> finish());
 
-        if (user != null) {
-            checkIfVoucherAlreadyRedeemed();
-        }
+//        if (user != null) {
+//            //checkIfVoucherAlreadyRedeemed();
+//        }
 
         redeemButton.setOnClickListener(v -> redeemVoucher());
+
+        String userId = user.getUid();
+
+        //User
+        DBSource userSourceInstance = new UserSource(db);
+        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
+
+        userModel.getUserInfoFromSource("userId", userId);
+
+        final Observer<User> userObserver = new Observer<User> () {
+            @Override
+            public void onChanged(@Nullable final User user) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
+                    ArrayList<String> redeemedVouchers = user.getPreviousVouchers();
+
+                    if (redeemedVouchers.contains(voucherId)){
+                        redeemButton.setText("Owned");
+                        redeemButton.setEnabled(false);
+                        detailStatus.setText("Status: Redeemed");
+                    }
+                }
+
+            }
+        };
+
+        userModel.getUserInfo().observe(this, userObserver);
+
     }
 
     private void checkIfVoucherAlreadyRedeemed() {
@@ -88,24 +131,30 @@ public class VoucherDetailActivity extends AppCompatActivity {
     private void redeemVoucher() {
         String userId = user.getUid();
 
-        Map<String, Object> voucherData = new HashMap<>();
-        voucherData.put("voucherId", voucherId);
-        voucherData.put("title", voucherTitle);
-        voucherData.put("details", voucherDetails);
-        voucherData.put("timestamp", System.currentTimeMillis());
+//        Map<String, Object> voucherData = new HashMap<>();
+//        voucherData.put("voucherId", voucherId);
+//        voucherData.put("title", voucherTitle);
+//        voucherData.put("details", voucherDetails);
+//        voucherData.put("timestamp", System.currentTimeMillis());
 
-        db.collection("users")
-                .document(userId)
-                .collection("redeemedVouchers")
-                .document(String.valueOf(voucherId))
-                .set(voucherData)
-                .addOnSuccessListener(docRef -> {
-                    Toast.makeText(this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
+        userModel.updateUser(userId, "previousVouchers", FieldValue.arrayUnion(voucherId));
+        Toast.makeText(this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
                     redeemButton.setEnabled(false);
                     redeemButton.setText("Owned");
-                    detailStatus.setText("Status: Redeemed");
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to redeem voucher", Toast.LENGTH_SHORT).show());
+                    //detailStatus.setText("Status: Redeemed");
+
+//        db.collection("users")
+//                .document(userId)
+//                .collection("redeemedVouchers")
+//                .document(String.valueOf(voucherId))
+//                .set(voucherData)
+//                .addOnSuccessListener(docRef -> {
+//                    Toast.makeText(this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
+//                    redeemButton.setEnabled(false);
+//                    redeemButton.setText("Owned");
+//                    detailStatus.setText("Status: Redeemed");
+//                })
+//                .addOnFailureListener(e ->
+//                        Toast.makeText(this, "Failed to redeem voucher", Toast.LENGTH_SHORT).show());
     }
 }

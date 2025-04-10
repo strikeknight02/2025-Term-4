@@ -90,6 +90,7 @@ public class VoucherSource implements DBSource{
 
     //Voucher Specific
     public void getAllUserVouchers(Consumer<?> method, ArrayList<String> redeemedVouchers){
+        Log.d("THERE ARE REDEEMED", redeemedVouchers.toString());
         if(redeemedVouchers.isEmpty()){
             voucherCollection
                     .get()
