@@ -1,21 +1,25 @@
 package com.example.wowcher.classes;
 
 public class Voucher {
-    //primary key
+    // Primary key
     private String voucherId;
 
     private String title = "";
     private String details = "";
     private String status = "";
-    private int locationId = 0; // Foreign key to Location
+    private String locationId; // Foreign key to Location
     private String createdAt = "";
+    private long pointsReward = 0; // Points earned upon redemption
 
-    public Voucher(String voucherId, String title, String details, String status, int locationId, String createdAt) {
+    // Constructor
+    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, long pointsReward) {
+        this.voucherId = voucherId;
         this.title = title;
         this.details = details;
         this.status = status;
         this.locationId = locationId;
         this.createdAt = createdAt;
+        this.pointsReward = pointsReward;
     }
 
     // Getters
@@ -35,12 +39,16 @@ public class Voucher {
         return status;
     }
 
-    public int getLocationId() {
+    public String getLocationId() {
         return locationId;
     }
 
     public String getCreatedAt() {
         return createdAt;
+    }
+
+    public long getPointsReward() {
+        return pointsReward;
     }
 
     // Setters
@@ -60,11 +68,15 @@ public class Voucher {
         this.status = status;
     }
 
-    public void setLocationId(int locationId) {
+    public void setLocationId(String locationId) {
         this.locationId = locationId;
     }
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setPointsReward(long pointsReward) {
+        this.pointsReward = pointsReward;
     }
 }

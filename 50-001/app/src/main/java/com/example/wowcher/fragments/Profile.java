@@ -5,12 +5,16 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.wowcher.ClaimedVouchersActivity;
 import com.example.wowcher.Login;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
@@ -35,6 +39,9 @@ public class Profile extends Fragment {
     List<Voucher> ownedVouchers;
     FirebaseFirestore db;
 
+    TextView userNameText; // Declare the TextView
+    ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -43,7 +50,7 @@ public class Profile extends Fragment {
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
 
-        if (user == null){
+        if (user == null) {
             startActivity(new Intent(requireContext(), Login.class));
             requireActivity().finish();
         }
@@ -55,10 +62,39 @@ public class Profile extends Fragment {
         adapter = new MyAdapter(requireContext(), ownedVouchers);
         recyclerView.setAdapter(adapter);
 
+        userNameText = view.findViewById(R.id.userNameText); // Bind the TextView
+        claimedVouchersLayout = view.findViewById(R.id.constraintLayout2); // Bind the "Claimed Vouchers" section
+
         db = FirebaseFirestore.getInstance();
-        loadUserVouchers();
+        loadUserName(); // Load the user's name
+        loadUserVouchers(); // Load vouchers as before
+
+        // Set the click listener for the "Claimed Vouchers" section
+        claimedVouchersLayout.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ClaimedVouchersActivity.class);
+            startActivity(intent);
+        });
 
         return view;
+    }
+
+    private void loadUserName() {
+        if (user == null) return;
+
+        String userId = user.getUid();
+
+        db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String name = documentSnapshot.getString("username");
+                        userNameText.setText(name != null ? name : "No Name Found");
+                    } else {
+                        userNameText.setText("User not found");
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show());
     }
 
     private void loadUserVouchers() {
@@ -95,9 +131,10 @@ public class Profile extends Fragment {
                             String details = doc.getString("details");
                             String status = doc.getString("status");
                             String createdAt = doc.getString("createdAt");
-                            int locationId = doc.getLong("locationId").intValue();
+                            String locationId = doc.getString("locationId");
+                            Long pointsReward = doc.getLong("pointsReward");
 
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
+                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt,pointsReward);
                             ownedVouchers.add(voucher);
                         }
                     }
@@ -119,5 +156,4 @@ public class Profile extends Fragment {
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show());
     }
-
 }

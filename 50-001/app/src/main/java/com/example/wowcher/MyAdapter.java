@@ -34,28 +34,54 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
     }
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-//        holder.recImage.setImageResource(dataList.get(position).getDataImage());
-        holder.recTitle.setText(dataList.get(position).getTitle());
-        holder.recDesc.setText(dataList.get(position).getDetails());
-        holder.recID.setText(dataList.get(position).getVoucherId());
-        holder.recLang.setText(dataList.get(position).getStatus());
-        holder.recCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Voucher voucher = dataList.get(holder.getAdapterPosition());
-                Intent intent = new Intent(context, VoucherDetailActivity.class);
-                intent.putExtra("Id", voucher.getVoucherId()); // ✅ Send the ID
-                intent.putExtra("Title", voucher.getTitle());
-                intent.putExtra("Desc", voucher.getDetails());
-                context.startActivity(intent);
-            }
+        Voucher voucher = dataList.get(position);
+        holder.recTitle.setText(voucher.getTitle());
+        holder.recDesc.setText(voucher.getDetails());
+        holder.recID.setText(voucher.getVoucherId());
 
-        });
+        String voucherId = voucher.getVoucherId();
+        String userId = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userId)
+                .collection("redeemedVouchers")
+                .document(voucherId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Already redeemed
+                        holder.recLang.setText("Redeemed");
+                        holder.recCard.setClickable(false);
+                        holder.recCard.setAlpha(0.5f); // Optional: dim the card
+                    } else {
+                        // Not redeemed
+                        holder.recLang.setText("Available");
+                        holder.recCard.setClickable(true);
+                        holder.recCard.setAlpha(1f); // Restore brightness
+
+                        holder.recCard.setOnClickListener(view -> {
+                            Intent intent = new Intent(context, VoucherDetailActivity.class);
+                            intent.putExtra("Id", voucher.getVoucherId());
+                            intent.putExtra("Title", voucher.getTitle());
+                            intent.putExtra("Desc", voucher.getDetails());
+                            intent.putExtra("Points", voucher.getPointsReward());
+                            context.startActivity(intent);
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    holder.recLang.setText("Status Unknown");
+                    holder.recCard.setClickable(false);
+                });
     }
+
     @Override
     public int getItemCount() {
         return dataList.size();
     }
+
+
 }
 class MyViewHolder extends RecyclerView.ViewHolder{
     ImageView recImage;

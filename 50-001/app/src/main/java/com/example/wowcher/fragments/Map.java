@@ -2,13 +2,15 @@ package com.example.wowcher.fragments;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.wowcher.R;
-import com.example.wowcher.VoucherDetailActivity;
+import com.example.wowcher.VouchersListActivity;
+import com.example.wowcher.classes.Location;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,6 +27,7 @@ import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.firestore.GeoPoint;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -38,6 +41,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -50,17 +54,21 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import androidx.fragment.app.FragmentActivity;
 
 
 public class Map extends Fragment implements OnMapReadyCallback {
     //get access to location permission
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
+
     private GoogleMap mMap;
 
     FusedLocationProviderClient fusedLocationProviderClient;
 
-    private LatLng userLocation;
+    public static LatLng userLocation;
 
     private ArrayAdapter<String> autoCompleteAdapter;
 
@@ -76,6 +84,8 @@ public class Map extends Fragment implements OnMapReadyCallback {
 
     private Context currentContext;
 
+    private ArrayList<Location> locationList = new ArrayList<Location>();
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         currentView = inflater.inflate(R.layout.fragment_map, container, false);
@@ -89,7 +99,8 @@ public class Map extends Fragment implements OnMapReadyCallback {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(currentContext);
 
         // Retrieve API key for initialize Places to get data of places
-        String apiKey = getApiKeyFromManifest(currentContext);
+        String apiKey = getApiKeyFromManifest("com.google.android.geo.API_KEY");
+
         if (!Places.isInitialized() && apiKey != null) {
             Places.initialize(currentContext, apiKey);
         }
@@ -105,6 +116,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
         return currentView;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
@@ -124,6 +136,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
         } else {
             // Otherwise, retrieve current user location
             fetchUserLocation(currentContext, fusedLocationProviderClient);
+            makeLocationTestData();
         }
 
     }
@@ -212,11 +225,13 @@ public class Map extends Fragment implements OnMapReadyCallback {
                         userLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
                         // Initialize camera position of user location
-                        CameraPosition cameraPosition = CameraPosition.fromLatLngZoom(userLocation, 20f);
+                        CameraPosition cameraPosition = CameraPosition.fromLatLngZoom(userLocation, 15f);
                         moveCameraToLocation(cameraPosition);
 
-                        // Enable necessary map functions
-                        enableMapsSettings();
+                        // Enable maps functions
+                        mMap.setMyLocationEnabled(true);
+                        mMap.getUiSettings().setZoomControlsEnabled(true);
+
                     } else {
                         System.out.println("didnt get location");
                     }
@@ -239,11 +254,11 @@ public class Map extends Fragment implements OnMapReadyCallback {
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(@NonNull Marker marker) {
-                Intent intent = new Intent(currentContext, VoucherDetailActivity.class);
-//                intent.putExtra("Image", dataList.get(holder.getAdapterPosition()).getDataImage());
-//                intent.putExtra("Title", dataList.get(holder.getAdapterPosition()).getTitle());
-//                intent.putExtra("Desc", dataList.get(holder.getAdapterPosition()).getDetails());
-                currentContext.startActivity(intent);
+                Intent in = new Intent(requireContext(), VouchersListActivity.class);
+                Bundle b1 = new Bundle();
+                b1.putString("locationId", "Uwc62HtzeDrk97Gx3fxh");
+                in.putExtras(b1);
+                startActivity(in);
                 return false;
             }
         });
@@ -271,15 +286,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
-    // Suppressed permission check since this will only be used after permission is checked
-    @SuppressLint("MissingPermission")
-    public void enableMapsSettings() {
-        // Enable maps functions
-        mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-
-    }
-
     // Handles after requesting for permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -297,18 +303,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
-
-    // Retrieve API key
-    public static String getApiKeyFromManifest(Context context) {
-        try {
-            ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = applicationInfo.metaData;
-            return bundle.getString("com.google.android.geo.API_KEY");
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e("API key retrieval failed", "Error: " + e);
-            return null;
         }
     }
 
@@ -341,4 +335,32 @@ public class Map extends Fragment implements OnMapReadyCallback {
 
     }
 
+    public String getApiKeyFromManifest(String key) {
+        String apiKey;
+        try {
+            ApplicationInfo applicationInfo = currentContext.getPackageManager().getApplicationInfo(currentContext.getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = applicationInfo.metaData;
+            apiKey = bundle.getString(key);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e("API key retrieval failed", "Error: " + e);
+            return null;
+        }
+        return apiKey;
+    }
+
+    // todo (Maryse) - this is where the call is to get location based on vouchers
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void makeLocationTestData(){
+        locationList.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "")); // tofu
+        locationList.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
+        locationList.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
+
+        // todo (Maryse) - on successful, handle response
+        for (Location location: locationList) {
+            GeoPoint geoObject = location.getGeolocation();
+            LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
+            // temp image, still figuring out how to handle the marker images
+            addMarkerToMap(latlngObject, R.drawable.marker_mcd);
+        }
+    }
 }

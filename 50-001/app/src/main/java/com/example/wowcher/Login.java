@@ -127,5 +127,4 @@ public class Login extends AppCompatActivity {
                 });
     }
 
-public class Login {
 }

@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/page_1"
-        android:enabled="true"
-        android:icon="@drawable/baseline_home_24"
-        android:title="Home"/>
+        android:id="@+id/map"
+        android:title="Map"
+        android:icon="@drawable/baseline_home_24"/>
     <item
-        android:id="@+id/page_2"
-        android:enabled="true"
-        android:icon="@drawable/baseline_discount_24"
-        android:title="Vouchers"/>
+        android:id="@+id/voucher"
+        android:title="Voucher"
+        android:icon="@drawable/baseline_map_24"/>
     <item
-        android:id="@+id/page_3"
-        android:enabled="true"
-        android:icon="@drawable/baseline_card_giftcard_24"
-        android:title="Rewards"/>
+        android:id="@+id/rewards"
+        android:title="Rewards"
+        android:icon="@drawable/baseline_discount_24"/>
     <item
-        android:id="@+id/page_4"
-        android:enabled="true"
-        android:icon="@drawable/baseline_person_24"
-        android:title="Profile"/>
+        android:id="@+id/profile"
+        android:title="Profile"
+        android:icon="@drawable/baseline_person_24"/>
 </menu>
