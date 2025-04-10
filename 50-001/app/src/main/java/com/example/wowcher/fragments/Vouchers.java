@@ -38,7 +38,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Vouchers extends Fragment {
 
@@ -156,37 +158,40 @@ public class Vouchers extends Fragment {
     }
 
     private void loadUserInfo() {
-        String userId = getCurrentUserId();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Get current user ID
 
         db.collection("users").document(userId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String tier = documentSnapshot.getString("tier");
-                        Long points = documentSnapshot.getLong("points");
+                        Long points = documentSnapshot.getLong("currentPoints");
 
                         if (tier != null) {
                             tierNameText.setText(tier);
                         }
                         if (points != null) {
                             pointsNameText.setText(points + " pts");
+
+                            // Pass the points to loadRewards() method
+                            loadRewards(points.intValue());
                         }
                     }
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show()
-                );
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show();
+                });
     }
 
-    private void loadRewards() {
-        String userId = getCurrentUserId();  // Assuming rewards are specific to the user
+    private void loadRewards(int userPoints) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Get current user ID
         db.collection("rewards")
-                  .get()
+                .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
                         List<Rewards> rewardsList = new ArrayList<>();
+
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            // Retrieve reward attributes from Firestore document
                             int rewardId = documentSnapshot.getLong("rewardId").intValue();
                             String name = documentSnapshot.getString("name");
                             String description = documentSnapshot.getString("description");
@@ -194,21 +199,54 @@ public class Vouchers extends Fragment {
                             String expirationDate = documentSnapshot.getString("expirationDate");
                             boolean isAvailable = documentSnapshot.getBoolean("available");
 
-                            // Create Rewards object
-                            Rewards reward = new Rewards(rewardId, name, description, pointsRequired, expirationDate, isAvailable);
+                            // Check if the user has already redeemed this reward
+                            checkIfRewardRedeemed(userId, rewardId, isRedeemed -> {
+                                // If the reward is redeemed or the user doesn't have enough points, block it out
+                                boolean isRedeemable = userPoints >= pointsRequired && !isRedeemed;
 
-                            // Add to the list
-                            rewardsList.add(reward);
+                                // Create Rewards object with the redeemable status
+                                Rewards reward = new Rewards(rewardId, name, description, pointsRequired, expirationDate, isAvailable);
+
+                                // Add to the list
+                                rewardsList.add(reward);
+
+                                // If this is the last reward, notify adapter
+                                if (rewardsList.size() == queryDocumentSnapshots.size()) {
+                                    Log.d("Firestore", "Loaded rewards: " + rewardsList.size());
+                                    // Update the rewardAdapter with the new rewards list
+                                    rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
+                                }
+                            });
                         }
-                        Log.d("Firestore", "Loaded rewards: " + rewardsList.size());
-                        // Update the rewardAdapter with the new rewards list
-                        rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
                     }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(requireContext(), "Failed to load rewards", Toast.LENGTH_SHORT).show();
                 });
     }
+
+    private void checkIfRewardRedeemed(String userId, int rewardId, RedeemedCallback callback) {
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedRewards")
+                .document(String.valueOf(rewardId))
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    boolean isRedeemed = documentSnapshot.exists(); // If the document exists, it means the reward has been redeemed
+                    callback.onChecked(isRedeemed);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error checking redeemed status", e);
+                    callback.onChecked(false); // Consider not redeemed if there is an error
+                });
+    }
+
+    // Callback interface to handle the result of the redeemed check
+    public interface RedeemedCallback {
+        void onChecked(boolean isRedeemed);
+    }
+
+
 
     private void loadMissions() {
         db.collection("missions")
@@ -266,6 +304,30 @@ public class Vouchers extends Fragment {
                             Log.e("Firestore", "Error adding mission " + mission.getMissionId(), e));
         }
     }
+
+    private boolean isRewardRedeemed(String userId, int rewardId) {
+        final boolean[] isRedeemed = {false};
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedRewards")
+                .whereEqualTo("rewardId", rewardId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // If a document exists, it means the user has already redeemed this reward
+                        isRedeemed[0] = true;
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error checking redeemed status", e);
+                });
+        return isRedeemed[0];
+    }
+
+
+
+
+
 
 //    private void loadUserVoucherCount() {
 //        String userId = getCurrentUserId();

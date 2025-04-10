@@ -98,6 +98,15 @@ public class Register extends AppCompatActivity {
                             if (firebaseUser != null) {
                                 String userID = firebaseUser.getUid();
 
+                                DocumentReference documentReference = fstore.collection("users").document(userID);
+                                Map<String, Object> user = new HashMap<>();
+                                user.put("username", name);
+                                user.put("email", email);
+                                user.put("mobileNumber", mobile);
+                                user.put("role", "User");
+                                user.put("tier", "Bronze");
+                                user.put("totalPoints", 0);
+                                user.put("currentPoints", 0);
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                     User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0, LocalDateTime.now().toString(), new ArrayList<String>() );
                                     userModel.addUser(newUser);

@@ -11,12 +11,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.wowcher.ClaimedVouchersActivity;
 import com.example.wowcher.Login;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
@@ -53,6 +56,7 @@ public class Profile extends Fragment {
     VoucherController voucherModel;
 
     TextView userNameText; // Declare the TextView
+    ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
 
     @Nullable
     @Override
@@ -75,6 +79,7 @@ public class Profile extends Fragment {
         recyclerView.setAdapter(adapter);
 
         userNameText = view.findViewById(R.id.userNameText); // Bind the TextView
+        claimedVouchersLayout = view.findViewById(R.id.constraintLayout2); // Bind the "Claimed Vouchers" section
 
         db = FirebaseFirestore.getInstance();
 
@@ -132,6 +137,12 @@ public class Profile extends Fragment {
 
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
 
+        // Set the click listener for the "Claimed Vouchers" section
+        claimedVouchersLayout.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ClaimedVouchersActivity.class);
+            startActivity(intent);
+        });
+
         return view;
     }
 
@@ -153,7 +164,6 @@ public class Profile extends Fragment {
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show());
     }
-
 
     private void loadUserVouchers() {
         if (user == null) return;
@@ -191,8 +201,9 @@ public class Profile extends Fragment {
                             String status = doc.getString("status");
                             String createdAt = doc.getString("createdAt");
                             String locationId = doc.getString("locationId");
+                            Long pointsReward = doc.getLong("pointsReward");
 
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
+                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt,pointsReward);
                             ownedVouchers.add(voucher);
                         }
                     }
@@ -214,5 +225,4 @@ public class Profile extends Fragment {
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show());
     }
-
 }

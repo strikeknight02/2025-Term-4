@@ -3,25 +3,28 @@ package com.example.wowcher.classes;
 import java.time.LocalDateTime;
 
 public class Voucher {
-    //primary key
-    private String voucherId = "";
+    // Primary key
+    private String voucherId;
 
     private String title = "";
     private String details = "";
     private String status = "";
     private String locationId = ""; // Foreign key to Location
     private String createdAt = "";
+    private long pointsReward = 0; // Points earned upon redemption
 
     //no-arg constructor
     public Voucher(){}
 
-    //Voucher constructor
-    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt) {
+    // Constructor
+    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, long pointsReward) {
+        this.voucherId = voucherId;
         this.title = title;
         this.details = details;
         this.status = status;
         this.locationId = locationId;
         this.createdAt = createdAt;
+        this.pointsReward = pointsReward;
     }
 
     public String getVoucherId() {
@@ -40,12 +43,16 @@ public class Voucher {
         return status;
     }
 
+    public String getLocationId() {
+        return locationId;
+    }
+
     public String getCreatedAt() {
         return createdAt;
     }
 
-    public String getLocationId() {
-        return locationId;
+    public long getPointsReward() {
+        return pointsReward;
     }
 
     // Setters
@@ -72,5 +79,9 @@ public class Voucher {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setPointsReward(long pointsReward) {
+        this.pointsReward = pointsReward;
     }
 }
