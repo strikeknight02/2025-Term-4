@@ -66,12 +66,12 @@ public class Login extends AppCompatActivity {
         passwordField = findViewById(R.id.password);
         loginButton = findViewById(R.id.loginButton);
         registerButton = findViewById(R.id.registerButton);
-        nameText = findViewById(R.id.titleText);
-
-        // Ensure nameText is not null
-        if (nameText == null) {
-            Log.e("DEBUG", "TextView 'titleText' is NULL! Check activity_login.xml.");
-        }
+//        nameText = findViewById(R.id.titleText);
+//
+//        // Ensure nameText is not null
+//        if (nameText == null) {
+//            Log.e("DEBUG", "TextView 'titleText' is NULL! Check activity_login.xml.");
+//        }
 
 
 

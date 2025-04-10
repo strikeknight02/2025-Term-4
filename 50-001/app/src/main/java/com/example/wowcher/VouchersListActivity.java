@@ -20,6 +20,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,6 +33,13 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.wowcher.classes.Location;
 import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.LocationController;
+import com.example.wowcher.controller.LocationControllerFactory;
+import com.example.wowcher.controller.VoucherController;
+import com.example.wowcher.controller.VoucherControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.LocationSource;
+import com.example.wowcher.db.VoucherSource;
 import com.example.wowcher.fragments.Map;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -53,6 +62,9 @@ public class VouchersListActivity extends AppCompatActivity {
 
     FirebaseFirestore db;
 
+    VoucherController voucherModel;
+    LocationController locationModel;
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
@@ -61,13 +73,12 @@ public class VouchersListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_vouchers);
         recyclerView = this.findViewById(R.id.vouchersList);
 
+        db = FirebaseFirestore.getInstance();
+
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
         vouchersDataList = new ArrayList<>();
 
-        makeVouchersTestData();
-
-        adapter = new MyAdapter(this, vouchersDataList);
-        recyclerView.setAdapter(adapter);
+        //makeVouchersTestData();
 
         Bundle b2 = getIntent().getExtras();
         if(b2 != null){
@@ -78,122 +89,73 @@ public class VouchersListActivity extends AppCompatActivity {
         Button backButton = this.findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> finish());
 
-    }
+        //Voucher
+        DBSource voucherSourceInstance = new VoucherSource(db);
+        voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
+        voucherModel.getModelInstance(voucherModel);
 
-    // Retrieve API key from Manifest
-    public String getApiKeyFromManifest(String key) {
-        String apiKey;
-        try {
-            ApplicationInfo applicationInfo = this.getPackageManager().getApplicationInfo(this.getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = applicationInfo.metaData;
-            apiKey = bundle.getString(key);
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e("API key retrieval failed", "Error: " + e);
-            return null;
-        }
-        return apiKey;
-    }
+        //Location
+        DBSource locationSourceInstance = new LocationSource(db);
+        locationModel = new ViewModelProvider(this, new LocationControllerFactory(locationSourceInstance)).get(LocationController.class);
+        locationModel.getModelInstance(locationModel);
 
-    // Send URL request to retrieve routes for locations
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void getRoute(ArrayList<Location> destinations) {
-        // Get Directions API key
-        String dirApiKey = getApiKeyFromManifest("dirApiKey");
-
-        // Format string for URL request
-        StringBuilder destString = new StringBuilder();
-        for (Location item: destinations) {
-            destString.append("%7C").append(item.getGeolocation());
-        }
-
-        String url = "https://maps.googleapis.com/maps/api/distancematrix/json" +
-                "?destinations=" + destString +
-                "&origins=" + Map.userLocation.latitude + "," + Map.userLocation.longitude +
-                "&key="+dirApiKey;
-
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
-                    @Override
-                    public void onResponse(String response) {
-                        // Parse the response and get necessary data
-                        JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
-                        JsonArray routes = responseObject.getAsJsonArray("rows").get(0).getAsJsonObject().getAsJsonArray("elements");
-
-                        // Prepare location details to sort vouchers by distance
-                        ArrayList<JsonObject> locationList = new ArrayList<>();
-                        for (int i = 0; i < routes.size(); i++) {
-                            int value = routes.get(i).getAsJsonObject().getAsJsonObject("distance").get("value").getAsInt();
-                            JsonObject locationDetails = JsonParser.parseString("{" +
-                                    "locationId:"+destinations.get(i).getLocationId()+","+
-                                    "value:" + value +
-                                    "}").getAsJsonObject();
-                            locationList.add(locationDetails);
-                        }
-                        insertionSortVouchers(locationList);
-
-                    }
-                }, new Response.ErrorListener() {
+        final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
             @Override
-            public void onErrorResponse(VolleyError error) {
-                // Handle the error
-                System.out.println("Fail to retrieve routes");
-            }
-        });
+            public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
 
-        queue.add(stringRequest);
-    }
+                if(voucherList != null){
+                    if (!voucherList.isEmpty()) {
+                        adapter = new MyAdapter(VouchersListActivity.this, voucherList);
+                        recyclerView.setAdapter(adapter);
+                        vouchersDataList = voucherList;
+                    }
 
-    // Insertion sort for vouchers based on distance
-    public void insertionSortVouchers(ArrayList<JsonObject> locationList) {
-        int listSize = locationList.size();
-        List<Voucher> dataListCopy = List.copyOf(vouchersDataList);
-        vouchersDataList.clear();
-
-        for (int step = 1; step < listSize; step++) {
-            int currentValue = locationList.get(step).get("value").getAsInt();
-            JsonObject currentObject = locationList.get(step).getAsJsonObject();
-
-            int j = step - 1;
-
-            // Compare key with each element on the left of it until an element smaller than it is found.
-            while (j >= 0 && currentValue < locationList.get(j).get("value").getAsInt()) {
-                locationList.set(j+1,locationList.get(j));
-                --j;
-            }
-
-            // Place key at after the element just smaller than it.
-            locationList.set(j+1,currentObject);
-        }
-
-        // Compare to voucher location ids to add vouchers in order
-        for (JsonObject locationObject: locationList) {
-            String locationId = locationObject.get("locationId").getAsString();
-            for (int i = 0; i < dataListCopy.size(); i++) {
-                String voucherLocId = dataListCopy.get(i).getLocationId();
-                if (voucherLocId.equals(locationId)){
-                    vouchersDataList.add(dataListCopy.get(i));
+                    //adapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(VouchersListActivity.this, "Failed to load vouchers", Toast.LENGTH_SHORT).show();
                 }
             }
-        }
+        };
 
-        adapter.notifyDataSetChanged();
+        final Observer<ArrayList<Location>> locationObserver = new Observer<ArrayList<Location>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Location> locationList) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (locationList !=null)){
 
+                    if (!locationList.isEmpty()){
+                        ArrayList<String> tempArrLocId = new ArrayList<>();
+                        for (Location l: locationList){
+                            tempArrLocId.add(l.getLocationId());
+                        }
+
+                        voucherModel.getVouchersBasedOnLocation(tempArrLocId);
+                        voucherModel.getVouchersBasedOnLocation().observe(VouchersListActivity.this, voucherObserver);
+
+                        //getRoute(locationList);
+                    } else {
+                        Toast.makeText(VouchersListActivity.this, "Error loading locations!", Toast.LENGTH_SHORT).show();
+                    }
+
+
+                }
+
+            }
+        };
+
+        locationModel.getSpecificLocations("locationId", locationId);
+        locationModel.getSomeLocations().observe(VouchersListActivity.this, locationObserver);
     }
 
-    // todo (Maryse) - this is the call function to get vouchers based on location
     //  locationId is available above
     public void makeVouchersTestData(){
+        //get results of vouchers based on location
         vouchersDataList.add(new Voucher("1", "Bread", "30% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
         vouchersDataList.add(new Voucher("2", "Eat", "10% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
         vouchersDataList.add(new Voucher("3", "Rice", "20% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
         vouchersDataList.add(new Voucher("4", "Meat", "40% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
         vouchersDataList.add(new Voucher("5", "Sushi", "33% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
 
-        //todo (Maryse) - handle successful repsonse
+        // handle successful response
         // get location based on vouchers
         // call getRoute function and pass in the arrayList of locations
     }

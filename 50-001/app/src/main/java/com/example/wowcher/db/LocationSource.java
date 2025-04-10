@@ -107,8 +107,8 @@ public class LocationSource implements DBSource{
                                 locationList.add(location);
                             }
 
+                            Log.i("WTF", "WHAT " + locationList.toString());
                             if (method instanceof Consumer<?>){
-
                                 Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
                                 methodCast.accept(locationList);
                             } else {

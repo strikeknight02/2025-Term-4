@@ -8,9 +8,22 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
 import com.example.wowcher.VouchersListActivity;
 import com.example.wowcher.classes.Location;
+import com.example.wowcher.classes.User;
+import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.LocationController;
+import com.example.wowcher.controller.LocationControllerFactory;
+import com.example.wowcher.controller.UserController;
+import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.controller.VoucherController;
+import com.example.wowcher.controller.VoucherControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.LocationSource;
+import com.example.wowcher.db.UserSource;
+import com.example.wowcher.db.VoucherSource;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -27,6 +40,9 @@ import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 
 import android.Manifest;
@@ -58,6 +74,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 
 public class Map extends Fragment implements OnMapReadyCallback {
@@ -83,6 +101,13 @@ public class Map extends Fragment implements OnMapReadyCallback {
     private View currentView;
 
     private Context currentContext;
+
+    FirebaseAuth auth;
+    FirebaseUser user;
+    FirebaseFirestore db;
+    UserController userModel;
+    VoucherController voucherModel;
+    LocationController locationModel;
 
     private ArrayList<Location> locationList = new ArrayList<Location>();
 
@@ -113,6 +138,79 @@ public class Map extends Fragment implements OnMapReadyCallback {
         // Setup search bar
         searchBarSetup();
 
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+        db = FirebaseFirestore.getInstance();
+        //User
+        DBSource userSourceInstance = new UserSource(db);
+        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
+
+        //Voucher
+        DBSource voucherSourceInstance = new VoucherSource(db);
+        voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
+        voucherModel.getModelInstance(voucherModel);
+
+        //Location
+        DBSource locationSourceInstance = new LocationSource(db);
+        locationModel = new ViewModelProvider(this, new LocationControllerFactory(locationSourceInstance)).get(LocationController.class);
+        locationModel.getModelInstance(locationModel);
+
+        userModel.getUserInfoFromSource("userId", user.getUid());
+
+        final Observer<ArrayList<Location>> locationObserver = new Observer<ArrayList<Location>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Location> locationList) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (locationList !=null)){
+                    for (Location location: locationList) {
+                        GeoPoint geoObject = location.getGeolocation();
+                        LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
+                        // temp image, still figuring out how to handle the marker images
+                        addMarkerToMap(latlngObject, R.drawable.marker_mcd);
+                    }
+                }
+
+            }
+        };
+
+        final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
+
+                if(voucherList != null){
+
+                    ArrayList<String> voucherIdList = new ArrayList<>();
+                    for(Voucher v : voucherList){
+                        if (!voucherIdList.contains(v.getLocationId())){
+                            voucherIdList.add(v.getLocationId());
+                        }
+                    }
+
+                    Log.d("GETTING LOCATIONS", voucherIdList.toString());
+                    locationModel.getLocationsBasedOnVoucher(voucherIdList);
+                    locationModel.locationBasedVouchers().observe(getViewLifecycleOwner(), locationObserver);
+
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        final Observer<User> userObserver = new Observer<User> () {
+            @Override
+            public void onChanged(@Nullable final User user) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
+                    ArrayList<String> redeemedVouchers = user.getPreviousVouchers();
+                    voucherModel.getVouchersforAll(redeemedVouchers);
+                    voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
+                }
+
+            }
+        };
+
+
+        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
+
         return currentView;
     }
 
@@ -136,7 +234,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
         } else {
             // Otherwise, retrieve current user location
             fetchUserLocation(currentContext, fusedLocationProviderClient);
-            makeLocationTestData();
+            //makeLocationTestData();
         }
 
     }
@@ -346,21 +444,5 @@ public class Map extends Fragment implements OnMapReadyCallback {
             return null;
         }
         return apiKey;
-    }
-
-    // todo (Maryse) - this is where the call is to get location based on vouchers
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public void makeLocationTestData(){
-        locationList.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "")); // tofu
-        locationList.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
-        locationList.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
-
-        // todo (Maryse) - on successful, handle response
-        for (Location location: locationList) {
-            GeoPoint geoObject = location.getGeolocation();
-            LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
-            // temp image, still figuring out how to handle the marker images
-            addMarkerToMap(latlngObject, R.drawable.marker_mcd);
-        }
     }
 }

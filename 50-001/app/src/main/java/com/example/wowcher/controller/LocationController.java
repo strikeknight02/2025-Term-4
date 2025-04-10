@@ -16,11 +16,11 @@ public class LocationController extends ViewModel {
     private final DBSource databaseInstance;
     private LocationController instance;
 
-    MutableLiveData<ArrayList<Location>> allLocationList;
+    private MutableLiveData<ArrayList<Location>> allLocationList;
 
-    MutableLiveData<ArrayList<Location>> specificLocationList;
+    private MutableLiveData<ArrayList<Location>> specificLocationList;
 
-    private MutableLiveData<ArrayList<Voucher>> locationBasedOnVouchers;
+    private MutableLiveData<ArrayList<Location>> locationBasedOnVouchers = new MutableLiveData<ArrayList<Location>>();
 
     public LocationController(DBSource databaseInstance) {
         this.databaseInstance = databaseInstance;
@@ -44,9 +44,9 @@ public class LocationController extends ViewModel {
         return specificLocationList;
     }
 
-    public MutableLiveData<ArrayList<Voucher>> locationBasedVouchers(){
+    public MutableLiveData<ArrayList<Location>> locationBasedVouchers(){
         if (locationBasedOnVouchers == null){
-            locationBasedOnVouchers = new MutableLiveData<ArrayList<Voucher>>();
+            locationBasedOnVouchers = new MutableLiveData<ArrayList<Location>>();
         }
         return locationBasedOnVouchers;
     }
@@ -57,14 +57,14 @@ public class LocationController extends ViewModel {
     }
 
     public void getLocationsBasedOnVoucher(ArrayList<String> locationList){
-        Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.getSomeLocations().setValue((ArrayList<Location>) locations); };
+        Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.locationBasedVouchers().setValue((ArrayList<Location>) locations); };
         LocationSource locationDatabaseInstance = (LocationSource) databaseInstance;
         locationDatabaseInstance.getLocationBasedOnVoucher( method, locationList );
     }
 
-    public void getSpecificLocations(String category){
+    public void getSpecificLocations(String category, Object comparison){
         Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.getSomeLocations().setValue((ArrayList<Location>) locations); };
-        databaseInstance.getData("category", category, method );
+        databaseInstance.getData(category, comparison, method );
     }
 
     public void updateLocation(String locationID, String column, Object newValue){

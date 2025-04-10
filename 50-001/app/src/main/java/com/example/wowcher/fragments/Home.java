@@ -24,11 +24,14 @@ import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
 import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.LocationController;
+import com.example.wowcher.controller.LocationControllerFactory;
 import com.example.wowcher.controller.UserController;
 import com.example.wowcher.controller.UserControllerFactory;
 import com.example.wowcher.controller.VoucherController;
 import com.example.wowcher.controller.VoucherControllerFactory;
 import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.LocationSource;
 import com.example.wowcher.db.UserSource;
 import com.example.wowcher.db.VoucherSource;
 import com.google.firebase.auth.FirebaseAuth;
@@ -65,6 +68,7 @@ public class Home extends Fragment {
     FirebaseFirestore db;
     UserController userModel;
     VoucherController voucherModel;
+    LocationController locationModel;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
@@ -90,7 +94,21 @@ public class Home extends Fragment {
         voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
         voucherModel.getModelInstance(voucherModel);
 
+        //Location
+        DBSource locationSourceInstance = new LocationSource(db);
+        locationModel = new ViewModelProvider(this, new LocationControllerFactory(locationSourceInstance)).get(LocationController.class);
+        locationModel.getModelInstance(locationModel);
+
         userModel.getUserInfoFromSource("userId", user.getUid());
+
+        final Observer<ArrayList<Location>> locationObserver = new Observer<ArrayList<Location>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Location> locationList) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (locationList !=null)){
+                    getRoute(locationList);
+                }
+            }
+        };
 
         final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
             @Override
@@ -100,9 +118,21 @@ public class Home extends Fragment {
                     if (!voucherList.isEmpty()) {
                         adapter = new MyAdapter(requireContext(), voucherList);
                         recyclerView.setAdapter(adapter);
+
+                        dataList = voucherList;
                     } else {
                         Toast.makeText(requireContext(), "No Voucher to Load", Toast.LENGTH_SHORT).show();
                     }
+
+                    ArrayList<String> voucherIdList = new ArrayList<>();
+                    for(Voucher v : voucherList){
+                        if (!voucherIdList.contains(v.getLocationId())){
+                            voucherIdList.add(v.getLocationId());
+                        }
+                    }
+
+                    locationModel.getLocationsBasedOnVoucher(voucherIdList);
+                    locationModel.locationBasedVouchers().observe(getViewLifecycleOwner(), locationObserver);
 
                     adapter.notifyDataSetChanged();
                 } else {
@@ -169,15 +199,6 @@ public class Home extends Fragment {
                             dataList.add(voucher);
                         }
 
-                        //todo - sort then add to datalist
-                        // test data - locations
-                        ArrayList<Location> locations = new ArrayList<>();
-                        locations.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "")); // tofu
-                        locations.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
-                        locations.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
-
-                        getRoute(locations);
-
 //                        adapter.notifyDataSetChanged();
                     } else {
                         Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show();
@@ -241,6 +262,7 @@ public class Home extends Fragment {
                                     "}").getAsJsonObject();
                             locationList.add(locationDetails);
                         }
+                        System.out.println(locationList);
                         insertionSortVouchers(locationList);
 
                     }
@@ -258,6 +280,7 @@ public class Home extends Fragment {
     // Insertion sort for vouchers based on distance
     public void insertionSortVouchers(ArrayList<JsonObject> locationList) {
         int listSize = locationList.size();
+        System.out.println(dataList);
         List<Voucher> dataListCopy = List.copyOf(dataList);
         dataList.clear();
 
