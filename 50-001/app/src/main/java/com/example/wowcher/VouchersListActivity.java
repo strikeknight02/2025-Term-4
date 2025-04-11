@@ -187,11 +187,11 @@ public class VouchersListActivity extends AppCompatActivity {
     // todo (Maryse) - this is the call function to get vouchers based on location
     //  locationId is available above
     public void makeVouchersTestData(){
-        vouchersDataList.add(new Voucher("1", "Bread", "30% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-        vouchersDataList.add(new Voucher("2", "Eat", "10% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-        vouchersDataList.add(new Voucher("3", "Rice", "20% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-        vouchersDataList.add(new Voucher("4", "Meat", "40% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-        vouchersDataList.add(new Voucher("5", "Sushi", "33% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
+        vouchersDataList.add(new Voucher("1", "Bread", "30% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 8));
+        vouchersDataList.add(new Voucher("2", "Eat", "10% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 90));
+        vouchersDataList.add(new Voucher("3", "Rice", "20% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 80));
+        vouchersDataList.add(new Voucher("4", "Meat", "40% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 5));
+        vouchersDataList.add(new Voucher("5", "Sushi", "33% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 10));
 
         //todo (Maryse) - handle successful repsonse
         // get location based on vouchers

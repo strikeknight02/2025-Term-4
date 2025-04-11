@@ -103,7 +103,6 @@ public class Home extends Fragment {
                             Long pointsReward = document.getLong("pointsReward");
 
                             Voucher voucher = new Voucher(voucherId, title, details, status , locationId, createdAt, pointsReward);
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
 
                             dataList.add(voucher);
                         }
