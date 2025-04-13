@@ -10,9 +10,11 @@ public class Voucher {
     private String locationId; // Foreign key to Location
     private String createdAt = "";
     private long pointsReward = 0; // Points earned upon redemption
+    private String code = ""; // Unique voucher code
+    private String imageName = ""; // Name of the drawable resource (e.g., "voucher_tofu")
 
     // Constructor
-    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, long pointsReward) {
+    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, long pointsReward, String code, String imageName) {
         this.voucherId = voucherId;
         this.title = title;
         this.details = details;
@@ -20,6 +22,8 @@ public class Voucher {
         this.locationId = locationId;
         this.createdAt = createdAt;
         this.pointsReward = pointsReward;
+        this.code = code;
+        this.imageName = imageName;
     }
 
     // Getters
@@ -51,6 +55,14 @@ public class Voucher {
         return pointsReward;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
     // Setters
     public void setVoucherId(String voucherId) {
         this.voucherId = voucherId;
@@ -78,5 +90,13 @@ public class Voucher {
 
     public void setPointsReward(long pointsReward) {
         this.pointsReward = pointsReward;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 }

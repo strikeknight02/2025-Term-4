@@ -24,7 +24,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${mapApiKey}" />
+            android:value="AIzaSyBkfdhJhu_JdJYRGhuDiZFzNn_yJrOJSpw" />
 
         <activity
             android:name=".VoucherDetailActivity"
@@ -35,19 +35,19 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${mapApiKey}" />
+            android:value="AIzaSyBkfdhJhu_JdJYRGhuDiZFzNn_yJrOJSpw" />
 
         <meta-data
             android:name="dirApiKey"
-            android:value="${dirApiKey}" />
+            android:value="AIzaSyDtdEiDKhdvXFO0eXEkxj5HnO_5284ZcBU" />
 
         <activity
-            android:name=".VoucherDetailActivity"
+            android:name=".VouchersListActivity"
             android:exported="true">
         </activity>
 
         <activity
-            android:name=".VouchersListActivity"
+            android:name=".ClaimedVoucherActivity"
             android:exported="true">
         </activity>
 
@@ -56,11 +56,6 @@
             android:exported="true">
 
 
-        </activity>
-
-        <activity
-            android:name=".Login"
-            android:exported="true">
         </activity>
 
         <activity
@@ -99,17 +94,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-
-        </activity>
-
-        <activity
-            android:name=".Register"
-            android:exported="true">
-
-        </activity>
-        <activity
-            android:name=".DBTestActivity"
-            android:exported="true">
 
         </activity>
 

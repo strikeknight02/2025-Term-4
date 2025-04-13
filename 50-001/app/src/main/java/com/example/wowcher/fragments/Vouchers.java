@@ -22,6 +22,8 @@ import com.example.wowcher.classes.Missions;
 import com.example.wowcher.classes.Rewards;
 import com.example.wowcher.classes.Voucher;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -37,6 +39,10 @@ public class Vouchers extends Fragment {
     MyAdapter adapter;
 
     FirebaseFirestore db;
+
+
+    FirebaseAuth auth;
+    FirebaseUser user;
 
     TextView tierNameText, pointsNameText, voucherNameText;
 
@@ -186,101 +192,133 @@ public class Vouchers extends Fragment {
         void onChecked(boolean isRedeemed);
     }
 
+    private void fetchMissionsAgain() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-
-    private void loadMissions() {
         db.collection("missions")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        missionList.clear(); // clear existing missions to avoid duplicates
-
-                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            String missionId = documentSnapshot.getString("missionId");
-                            String missionName = documentSnapshot.getString("missionName");
-                            String description = documentSnapshot.getString("description");
-                            String criteria = documentSnapshot.getString("criteria");
-                            int pointsReward = documentSnapshot.getLong("pointsReward").intValue();
-                            int progress = documentSnapshot.getLong("progress").intValue();
-
-                            Missions mission = new Missions(missionId, missionName, description, criteria, pointsReward, progress);
-                            missionList.add(mission);
+                    List<Missions> missions = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        Missions mission = doc.toObject(Missions.class);
+                        if (mission != null) {
+                            missions.add(mission);
                         }
-
-                        Log.d("Firestore", "Loaded missions: " + missionList.size());
-                        missionAdapter.notifyDataSetChanged(); // Refresh adapter
                     }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to load missions", Toast.LENGTH_SHORT).show();
-                    Log.e("Firestore", "Error loading missions", e);
+                    missionAdapter.setMissionList(missions);
                 });
     }
 
 
-    private void generateAndUploadMissions() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        List<Missions> generatedMissions = new ArrayList<>();
 
-        for (int i = 1; i <= 10; i++) {
-            Missions mission = new Missions(
-                    "mission" + i,
-                    "Mission " + i,
-                    "Complete task number " + i,
-                    "Do something " + i + " times",
-                    10 * i, // Reward increases per mission
-                    0 // Initial progress
-            );
-            generatedMissions.add(mission);
-        }
+    private void loadMissions() {
+        String userId = getCurrentUserId();
 
-        for (Missions mission : generatedMissions) {
+        getRedeemedVoucherCount(redeemedVoucherCount -> {
             db.collection("missions")
-                    .document(mission.getMissionId())
-                    .set(mission)
-                    .addOnSuccessListener(aVoid ->
-                            Log.d("Firestore", "Mission " + mission.getMissionId() + " added"))
-                    .addOnFailureListener(e ->
-                            Log.e("Firestore", "Error adding mission " + mission.getMissionId(), e));
-        }
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            missionList.clear(); // Clear current missions
+
+                            for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
+                                String missionId = documentSnapshot.getString("missionId");
+                                String missionName = documentSnapshot.getString("missionName");
+                                String description = documentSnapshot.getString("description");
+                                Long criteria = documentSnapshot.getLong("criteria");
+                                Long pointsReward = documentSnapshot.getLong("pointsReward").longValue();
+                                Long progress = documentSnapshot.getLong("progress").longValue();
+
+                                Missions mission = new Missions(missionId, missionName, description, criteria, pointsReward, progress);
+
+                                if (mission.checkMissionProgress(redeemedVoucherCount)) {
+                                    mission.setProgress(100); // Completed
+                                }
+
+                                missionList.add(mission);
+                            }
+
+                            missionAdapter.notifyDataSetChanged();
+                            Log.d("Firestore", "Loaded missions with updated progress");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(requireContext(), "Failed to load missions", Toast.LENGTH_SHORT).show();
+                        Log.e("Firestore", "Error loading missions", e);
+                    });
+        });
     }
 
-    private boolean isRewardRedeemed(String userId, int rewardId) {
-        final boolean[] isRedeemed = {false};
+
+
+
+//    private void generateAndUploadMissions() {
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//        List<Missions> generatedMissions = new ArrayList<>();
+//
+//        for (int i = 1; i <= 10; i++) {
+//            Missions mission = new Missions(
+//                    "mission" + i,
+//                    "Mission " + i,
+//                    "Complete task number " + i,
+//                    "Do something " + i + " times",
+//                    10 * i, // Reward increases per mission
+//                    0 // Initial progress
+//            );
+//            generatedMissions.add(mission);
+//        }
+//
+//        for (Missions mission : generatedMissions) {
+//            db.collection("missions")
+//                    .document(mission.getMissionId())
+//                    .set(mission)
+//                    .addOnSuccessListener(aVoid ->
+//                            Log.d("Firestore", "Mission " + mission.getMissionId() + " added"))
+//                    .addOnFailureListener(e ->
+//                            Log.e("Firestore", "Error adding mission " + mission.getMissionId(), e));
+//        }
+//    }
+//
+//    private boolean isRewardRedeemed(String userId, int rewardId) {
+//        final boolean[] isRedeemed = {false};
+//        db.collection("users")
+//                .document(userId)
+//                .collection("redeemedRewards")
+//                .whereEqualTo("rewardId", rewardId)
+//                .get()
+//                .addOnSuccessListener(queryDocumentSnapshots -> {
+//                    if (!queryDocumentSnapshots.isEmpty()) {
+//                        // If a document exists, it means the user has already redeemed this reward
+//                        isRedeemed[0] = true;
+//                    }
+//                })
+//                .addOnFailureListener(e -> {
+//                    Log.e("Firestore", "Error checking redeemed status", e);
+//                });
+//        return isRedeemed[0];
+//    }
+
+    public interface RedeemedVoucherCountCallback {
+        void onCountLoaded(int count);
+    }
+
+
+    private void getRedeemedVoucherCount(RedeemedVoucherCountCallback callback) {
+        String userId = getCurrentUserId();
+
         db.collection("users")
                 .document(userId)
-                .collection("redeemedRewards")
-                .whereEqualTo("rewardId", rewardId)
+                .collection("redeemedVouchers")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        // If a document exists, it means the user has already redeemed this reward
-                        isRedeemed[0] = true;
-                    }
+                    int count = queryDocumentSnapshots.size();
+                    callback.onCountLoaded(count); // Return count via callback
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error checking redeemed status", e);
+                    Log.e("Firestore", "Failed to load redeemed vouchers", e);
+                    callback.onCountLoaded(0); // Return 0 if error occurs
                 });
-        return isRedeemed[0];
     }
 
-
-
-
-
-
-//    private void loadUserVoucherCount() {
-//        String userId = getCurrentUserId();
-//
-//        db.collection("vouchers")
-//                .whereEqualTo("userId", userId)
-//                .get()
-//                .addOnSuccessListener(querySnapshot -> {
-//                    int count = querySnapshot.size();
-//                    voucherNameText.setText(count + " vouchers");
-//                })
-//                .addOnFailureListener(e ->
-//                        Toast.makeText(requireContext(), "Failed to load voucher count", Toast.LENGTH_SHORT).show()
-//                );
-//    }
 }

@@ -67,7 +67,7 @@ public class Profile extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         loadUserName(); // Load the user's name
-        loadUserVouchers(); // Load vouchers as before
+//        loadUserVouchers(); // Load vouchers as before
 
         // Set the click listener for the "Claimed Vouchers" section
         claimedVouchersLayout.setOnClickListener(v -> {
@@ -97,63 +97,4 @@ public class Profile extends Fragment {
                         Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show());
     }
 
-    private void loadUserVouchers() {
-        if (user == null) return;
-
-        String userId = user.getUid();
-
-        db.collection("user_vouchers")
-                .whereEqualTo("userId", userId)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    Set<Integer> voucherIds = new HashSet<>();
-                    for (QueryDocumentSnapshot doc : querySnapshot) {
-                        Long vId = doc.getLong("voucherId");
-                        if (vId != null) voucherIds.add(vId.intValue());
-                    }
-
-                    fetchVouchersById(voucherIds);
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to load user vouchers", Toast.LENGTH_SHORT).show());
-    }
-
-    private void fetchVouchersById(Set<Integer> voucherIds) {
-        db.collection("vouchers")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    ownedVouchers.clear();
-
-                    for (QueryDocumentSnapshot doc : querySnapshot) {
-                        String voucherId = doc.getString("voucherId");
-                        if (voucherId != null && voucherIds.contains(voucherId)) {
-                            String title = doc.getString("title");
-                            String details = doc.getString("details");
-                            String status = doc.getString("status");
-                            String createdAt = doc.getString("createdAt");
-                            String locationId = doc.getString("locationId");
-                            Long pointsReward = doc.getLong("pointsReward");
-
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt,pointsReward);
-                            ownedVouchers.add(voucher);
-                        }
-                    }
-
-                    // Toggle visibility
-                    RecyclerView recyclerView = requireView().findViewById(R.id.redeemedVouchersRecyclerView);
-                    View noVouchersText = requireView().findViewById(R.id.noVouchersText);
-
-                    if (ownedVouchers.isEmpty()) {
-                        recyclerView.setVisibility(View.GONE);
-                        noVouchersText.setVisibility(View.VISIBLE);
-                    } else {
-                        recyclerView.setVisibility(View.VISIBLE);
-                        noVouchersText.setVisibility(View.GONE);
-                    }
-
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show());
-    }
 }

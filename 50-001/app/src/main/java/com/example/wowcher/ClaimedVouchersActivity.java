@@ -20,7 +20,7 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     List<Voucher> dataList;
-    MyAdapter adapter;
+    ClaimedVoucherAdapter adapter;
 
     FirebaseFirestore db;
     FirebaseAuth auth;
@@ -34,7 +34,7 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1)); // Use 1 column grid layout for simplicity
 
         dataList = new ArrayList<>();
-        adapter = new MyAdapter(this, dataList); // Initialize your adapter
+        adapter = new ClaimedVoucherAdapter(this, dataList); // Initialize your adapter
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
@@ -64,8 +64,10 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
                             String createdAt = document.getString("createdAt");
                             String locationId = document.getString("locationId");
                             Long pointsReward = document.getLong("points");
+                            String code = document.getString("code");
+                            String imageName = document.getString("image");
 
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt,pointsReward);
+                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt,pointsReward,code,imageName);
                             dataList.add(voucher); // Add the voucher to the list
                         }
 
