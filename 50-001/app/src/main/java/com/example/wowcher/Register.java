@@ -99,31 +99,10 @@ public class Register extends AppCompatActivity {
                                 String userID = firebaseUser.getUid();
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0, LocalDateTime.now().toString(), new ArrayList<String>() );
+                                    User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0,0, LocalDateTime.now().toString(), new ArrayList<>(), new ArrayList<>() );
                                     userModel.addUser(newUser);
                                     Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
                                 }
-
-                                //OBSOLETE
-//                                DocumentReference documentReference = fstore.collection("users").document(userID);
-//                                Map<String, Object> user = new HashMap<>();
-//                                user.put("username", name);
-//                                user.put("email", email);
-//                                user.put("mobileNumber", mobile);
-//                                user.put("role", "User");
-//                                user.put("tier", "Bronze");
-//                                user.put("points", 0);
-//                                user.put("createdAt", LocalDateTime.now().toString());
-//                                user.put("availableVouchers", new ArrayList<String>());
-//                                user.put("previousVouchers", new ArrayList<String>());
-//                                user.put("password", password);
-//
-//                                documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                    @Override
-//                                    public void onSuccess(Void unused) {
-//                                        Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
-//                                    }
-//                                });
 
                                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(intent);

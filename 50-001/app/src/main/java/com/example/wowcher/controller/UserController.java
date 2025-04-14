@@ -56,7 +56,7 @@ public class UserController extends ViewModel {
 
     //Get User Info From Database
     public void getUserInfoFromSource(String column, Object comparison){
-        Consumer<ArrayList<User>> method = (ArrayList<User> userList) -> { if(userList.size() >0) {instance.getUserInfo().setValue(userList.get(0));} else {
+        Consumer<ArrayList<User>> method = (ArrayList<User> userList) -> { if(!userList.isEmpty()) {instance.getUserInfo().setValue(userList.get(0));} else {
             Log.d("BRO", "NOT WORKING");} };
         databaseInstance.getData(column, comparison, method );
     }

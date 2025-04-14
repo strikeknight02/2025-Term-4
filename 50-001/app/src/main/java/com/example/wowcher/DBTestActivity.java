@@ -113,7 +113,7 @@ public class DBTestActivity extends AppCompatActivity {
 //            @Override
 //            public void onChanged(User user) {
 //                TextView wordView = new TextView(getApplicationContext());
-//                wordView.setText(user.getPreviousVouchers().toString());
+//                wordView.setText(user.getRedeemedVouchers().toString());
 //                rootView.addView(wordView);
 //            }
 //        };

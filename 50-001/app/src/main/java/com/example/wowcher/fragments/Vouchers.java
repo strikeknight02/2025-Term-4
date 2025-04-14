@@ -127,7 +127,7 @@ public class Vouchers extends Fragment {
             public void onChanged(@Nullable final User user) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
                     String userTier = user.getTier();
-                    int userPoints = user.getPoints();
+                    int userPoints = user.getCurrentPoints();
 
                     if (userTier != null) {
                         tierNameText.setText(userTier);
@@ -143,10 +143,8 @@ public class Vouchers extends Fragment {
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
         rewardsModel.getAllRewards().observe(getViewLifecycleOwner(), rewardsObserver);
 
-        //loadUserInfo();
-        //loadRewards();
+        //TODO Replace Missions
         loadMissions();
-//        loadUserVoucherCount();
 
         return view;
     }
@@ -155,61 +153,7 @@ public class Vouchers extends Fragment {
         return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
-    private void loadUserInfo() {
-        String userId = getCurrentUserId();
-
-        db.collection("users").document(userId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        String tier = documentSnapshot.getString("tier");
-                        Long points = documentSnapshot.getLong("points");
-
-                        if (tier != null) {
-                            tierNameText.setText(tier);
-                        }
-                        if (points != null) {
-                            pointsNameText.setText(points + " pts");
-                        }
-                    }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show()
-                );
-    }
-
-    private void loadRewards() {
-        String userId = getCurrentUserId();  // Assuming rewards are specific to the user
-        db.collection("rewards")
-                  .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        List<Rewards> rewardsList = new ArrayList<>();
-                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            // Retrieve reward attributes from Firestore document
-                            int rewardId = documentSnapshot.getLong("rewardId").intValue();
-                            String name = documentSnapshot.getString("name");
-                            String description = documentSnapshot.getString("description");
-                            int pointsRequired = documentSnapshot.getLong("pointsRequired").intValue();
-                            String expirationDate = documentSnapshot.getString("expirationDate");
-                            boolean isAvailable = documentSnapshot.getBoolean("available");
-
-                            // Create Rewards object
-                            Rewards reward = new Rewards(rewardId, name, description, pointsRequired, expirationDate, isAvailable);
-
-                            // Add to the list
-                            rewardsList.add(reward);
-                        }
-                        Log.d("Firestore", "Loaded rewards: " + rewardsList.size());
-                        // Update the rewardAdapter with the new rewards list
-                        rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to load rewards", Toast.LENGTH_SHORT).show();
-                });
-    }
-
+    //OBSOLETE
     private void loadMissions() {
         db.collection("missions")
                 .get()
@@ -221,7 +165,7 @@ public class Vouchers extends Fragment {
                             String missionId = documentSnapshot.getString("missionId");
                             String missionName = documentSnapshot.getString("missionName");
                             String description = documentSnapshot.getString("description");
-                            String criteria = documentSnapshot.getString("criteria");
+                            int criteria = documentSnapshot.getLong("criteria").intValue();
                             int pointsReward = documentSnapshot.getLong("pointsReward").intValue();
                             int progress = documentSnapshot.getLong("progress").intValue();
 
@@ -239,7 +183,6 @@ public class Vouchers extends Fragment {
                 });
     }
 
-
     private void generateAndUploadMissions() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         List<Missions> generatedMissions = new ArrayList<>();
@@ -249,7 +192,7 @@ public class Vouchers extends Fragment {
                     "mission" + i,
                     "Mission " + i,
                     "Complete task number " + i,
-                    "Do something " + i + " times",
+                    i,
                     10 * i, // Reward increases per mission
                     0 // Initial progress
             );
@@ -267,18 +210,4 @@ public class Vouchers extends Fragment {
         }
     }
 
-//    private void loadUserVoucherCount() {
-//        String userId = getCurrentUserId();
-//
-//        db.collection("vouchers")
-//                .whereEqualTo("userId", userId)
-//                .get()
-//                .addOnSuccessListener(querySnapshot -> {
-//                    int count = querySnapshot.size();
-//                    voucherNameText.setText(count + " vouchers");
-//                })
-//                .addOnFailureListener(e ->
-//                        Toast.makeText(requireContext(), "Failed to load voucher count", Toast.LENGTH_SHORT).show()
-//                );
-//    }
 }

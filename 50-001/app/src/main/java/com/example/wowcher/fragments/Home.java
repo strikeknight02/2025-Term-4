@@ -104,8 +104,11 @@ public class Home extends Fragment {
         final Observer<ArrayList<Location>> locationObserver = new Observer<ArrayList<Location>> () {
             @Override
             public void onChanged(@Nullable final ArrayList<Location> locationList) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (locationList !=null)){
+                if (locationList != null){
+                    Log.d("GETTING LOCATIONS IN HOME", "get get get");
                     getRoute(locationList);
+                } else {
+                    Log.d("NOTHING", "get get get");
                 }
             }
         };
@@ -113,7 +116,7 @@ public class Home extends Fragment {
         final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
             @Override
             public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
-
+                Log.d("GETTING VOUCHERS IN HOME", "get get get");
                 if(voucherList != null){
                     if (!voucherList.isEmpty()) {
                         adapter = new MyAdapter(requireContext(), voucherList);
@@ -144,9 +147,16 @@ public class Home extends Fragment {
         final Observer<User> userObserver = new Observer<User> () {
             @Override
             public void onChanged(@Nullable final User user) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
-                    ArrayList<String> redeemedVouchers = user.getPreviousVouchers();
-                    voucherModel.getVouchersforAll(redeemedVouchers);
+                if (user != null){
+                    Log.d("GETTING USER IN HOME", "get get get");
+                    ArrayList<Voucher> redeemedVouchers = user.getRedeemedVouchers();
+
+                    ArrayList<String> redeemedVoucherIds = new ArrayList<>();
+                    for (Voucher v : redeemedVouchers){
+                        redeemedVoucherIds.add(v.getVoucherId());
+                    }
+
+                    voucherModel.getVouchersforAll(redeemedVoucherIds);
                     voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
                 }
 
@@ -155,12 +165,9 @@ public class Home extends Fragment {
 
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
 
-        //OBSOLETE
-        //loadUserVouchers();
         return view;
     }
 
-    //OBSOLETE
     private void searchList(String text) {
         List<Voucher> dataSearchList = new ArrayList<>();
         for (Voucher data : dataList) {
@@ -173,37 +180,6 @@ public class Home extends Fragment {
         } else {
             adapter.setSearchList(dataSearchList);
         }
-    }
-    //OBSOLETE
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void loadVouchersFromFirebase() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        db.collection("vouchers")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        dataList.clear();
-
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            String voucherId = document.getString("voucherId");
-                            String title = document.getString("title");
-                            String details = document.getString("details");
-                            String status = document.getString("status");
-                            String createdAt = document.getString("createdAt");
-                            String locationId = document.getString("locationId");
-
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
-
-                            dataList.add(voucher);
-                        }
-
-//                        adapter.notifyDataSetChanged();
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 
     // Retrieve API key from Manifest

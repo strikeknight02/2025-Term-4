@@ -200,8 +200,13 @@ public class Map extends Fragment implements OnMapReadyCallback {
             @Override
             public void onChanged(@Nullable final User user) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
-                    ArrayList<String> redeemedVouchers = user.getPreviousVouchers();
-                    voucherModel.getVouchersforAll(redeemedVouchers);
+                    ArrayList<Voucher> redeemedVouchers = user.getRedeemedVouchers();
+                    ArrayList<String> redeemedVoucherIds = new ArrayList<>();
+                    for (Voucher v : redeemedVouchers){
+                        redeemedVoucherIds.add(v.getVoucherId());
+                    }
+
+                    voucherModel.getVouchersforAll(redeemedVoucherIds);
                     voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
                 }
 
