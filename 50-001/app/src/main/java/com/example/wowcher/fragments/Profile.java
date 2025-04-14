@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -39,6 +40,7 @@ public class Profile extends Fragment {
     List<Voucher> ownedVouchers;
     FirebaseFirestore db;
 
+    Button elevatedButton;
     TextView userNameText; // Declare the TextView
     ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
 
@@ -72,6 +74,13 @@ public class Profile extends Fragment {
         // Set the click listener for the "Claimed Vouchers" section
         claimedVouchersLayout.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ClaimedVouchersActivity.class);
+            startActivity(intent);
+        });
+
+        elevatedButton = view.findViewById(R.id.elevatedButton);
+        elevatedButton.setOnClickListener(v -> {
+            auth.signOut();
+            Intent intent = new Intent(getActivity(), Login.class);
             startActivity(intent);
         });
 
