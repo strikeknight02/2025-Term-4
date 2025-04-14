@@ -51,7 +51,7 @@ public class UserController extends ViewModel {
     //Get All
     public void getUsers(){
         Consumer<ArrayList<User>> method = (ArrayList<User> users) -> { instance.getAllUsers().setValue((ArrayList<User>) users); };
-        databaseInstance.getAllData( method );
+        databaseInstance.getAllData( method , "");
     }
 
     //Get User Info From Database

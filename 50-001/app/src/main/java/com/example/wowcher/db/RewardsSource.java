@@ -34,7 +34,7 @@ public class RewardsSource implements DBSource{
         this.rewardsCollection = db.collection("rewards");
     }
     @Override
-    public void getAllData(Consumer<?> method) {
+    public void getAllData(Consumer<?> method, Object extras) {
         rewardsCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

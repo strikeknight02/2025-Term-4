@@ -205,7 +205,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
                     for (Voucher v : redeemedVouchers){
                         redeemedVoucherIds.add(v.getVoucherId());
                     }
-
+                    Log.e("WHERE", redeemedVouchers.toString());
                     voucherModel.getVouchersforAll(redeemedVoucherIds);
                     voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
                 }

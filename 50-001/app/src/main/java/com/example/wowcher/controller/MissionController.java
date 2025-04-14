@@ -40,9 +40,9 @@ public class MissionController extends ViewModel {
         return specificMissionList;
     }
 
-    public void getMissionforAll(){
+    public void getMissionForAll(ArrayList<String> missionIdList){
         Consumer<ArrayList<Missions>> method = (ArrayList<Missions> Missions) -> { instance.getAllMission().setValue((ArrayList<Missions>) Missions); };
-        databaseInstance.getAllData( method );
+        databaseInstance.getAllData( method , !missionIdList.isEmpty()? missionIdList : "");
     }
 
     public void getSpecificMission(String column, String value){

@@ -35,7 +35,7 @@ public class VoucherSource implements DBSource{
     }
 
     @Override
-    public void getAllData(Consumer<?> method){
+    public void getAllData(Consumer<?> method, Object extras){
         voucherCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

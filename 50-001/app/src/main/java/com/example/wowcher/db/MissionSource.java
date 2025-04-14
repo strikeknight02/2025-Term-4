@@ -23,6 +23,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class MissionSource implements DBSource{
@@ -34,17 +35,48 @@ public class MissionSource implements DBSource{
         this.missionCollection = db.collection("missions");
     }
     @Override
-    public void getAllData(Consumer<?> method) {
-        missionCollection
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<Missions> missionList = new ArrayList<Missions>();
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+    public void getAllData(Consumer<?> method, Object extras) {
+        if (!extras.equals("")){
+            missionCollection
+                    .whereNotIn("missionId", (List<? extends Object>) extras)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            ArrayList<Missions> missionList = new ArrayList<Missions>();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                    Missions mission = document.toObject(Missions.class);
+                                    missionList.add(mission);
+                                }
+                                if (method instanceof Consumer<?>){
+
+                                    Consumer<ArrayList<Missions>> methodCast = (Consumer<ArrayList<Missions>>) method;
+                                    methodCast.accept(missionList);
+                                } else {
+                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                                }
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
+
+
+            missionCollection
+                    .whereNotIn("missionId", (List<? extends Object>) extras)
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.w(TAG, "Listen failed.", e);
+                                return;
+                            }
+
+                            ArrayList<Missions> missionList = new ArrayList<Missions>();
+                            for (QueryDocumentSnapshot document : value) {
                                 Missions mission = document.toObject(Missions.class);
                                 missionList.add(mission);
                             }
@@ -55,36 +87,62 @@ public class MissionSource implements DBSource{
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
-                    }
-                });
+                    });
+        } else {
+            missionCollection
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            ArrayList<Missions> missionList = new ArrayList<Missions>();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                    Missions mission = document.toObject(Missions.class);
+                                    missionList.add(mission);
+                                }
+                                if (method instanceof Consumer<?>){
 
-        missionCollection
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
+                                    Consumer<ArrayList<Missions>> methodCast = (Consumer<ArrayList<Missions>>) method;
+                                    methodCast.accept(missionList);
+                                } else {
+                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                                }
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
                         }
+                    });
 
-                        ArrayList<Missions> missionList = new ArrayList<Missions>();
-                        for (QueryDocumentSnapshot document : value) {
-                            Missions mission = document.toObject(Missions.class);
-                            missionList.add(mission);
-                        }
-                        if (method instanceof Consumer<?>){
 
-                            Consumer<ArrayList<Missions>> methodCast = (Consumer<ArrayList<Missions>>) method;
-                            methodCast.accept(missionList);
-                        } else {
-                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
+            missionCollection
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.w(TAG, "Listen failed.", e);
+                                return;
+                            }
+
+                            ArrayList<Missions> missionList = new ArrayList<Missions>();
+                            for (QueryDocumentSnapshot document : value) {
+                                Missions mission = document.toObject(Missions.class);
+                                missionList.add(mission);
+                            }
+                            if (method instanceof Consumer<?>){
+
+                                Consumer<ArrayList<Missions>> methodCast = (Consumer<ArrayList<Missions>>) method;
+                                methodCast.accept(missionList);
+                            } else {
+                                Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                            }
                         }
-                    }
-                });
+                    });
+        }
+
     }
 
     @Override

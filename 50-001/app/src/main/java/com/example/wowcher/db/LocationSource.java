@@ -36,7 +36,7 @@ public class LocationSource implements DBSource{
     }
 
     @Override
-    public void getAllData(Consumer<?> method) {
+    public void getAllData(Consumer<?> method, Object extras) {
         locationCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

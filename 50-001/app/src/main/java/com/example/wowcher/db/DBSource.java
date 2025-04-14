@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 public interface DBSource {
 
-    void getAllData(Consumer<?> method);
+    void getAllData(Consumer<?> method, Object extras);
     void getData(String column, Object comparison, Consumer<?> method);
     void create(Object t);
     void delete(String reference);

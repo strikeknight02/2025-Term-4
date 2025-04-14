@@ -25,11 +25,14 @@ import com.example.wowcher.classes.Missions;
 import com.example.wowcher.classes.Rewards;
 import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.MissionController;
+import com.example.wowcher.controller.MissionControllerFactory;
 import com.example.wowcher.controller.RewardsController;
 import com.example.wowcher.controller.RewardsControllerFactory;
 import com.example.wowcher.controller.UserController;
 import com.example.wowcher.controller.UserControllerFactory;
 import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.MissionSource;
 import com.example.wowcher.db.RewardsSource;
 import com.example.wowcher.db.UserSource;
 
@@ -49,6 +52,7 @@ public class Vouchers extends Fragment {
     FirebaseFirestore db;
     UserController userModel;
     RewardsController rewardsModel;
+    MissionController missionsModel;
 
     TextView tierNameText, pointsNameText, voucherNameText;
 
@@ -107,8 +111,26 @@ public class Vouchers extends Fragment {
         rewardsModel = new ViewModelProvider(this, new RewardsControllerFactory(rewardsSourceInstance)).get(RewardsController.class);
         rewardsModel.getModelInstance(rewardsModel);
 
+        //Missions
+        DBSource missionsSourceInstance = new MissionSource(db);
+        missionsModel = new ViewModelProvider(this, new MissionControllerFactory(missionsSourceInstance)).get(MissionController.class);
+        missionsModel.getModelInstance(missionsModel);
+
         userModel.getUserInfoFromSource("userId", getCurrentUserId());
         rewardsModel.getRewardsforAll();
+
+        final Observer<ArrayList<Missions>> missionObserver = new Observer<ArrayList<Missions>>() {
+            @Override
+            public void onChanged(ArrayList<Missions> missions) {
+                if (missions != null){
+                    missionAdapter.setMissionList(missions);
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load missions", Toast.LENGTH_SHORT).show();
+                    Log.e("Firestore", "Error loading missions");
+                }
+
+            }
+        };
 
         final Observer<ArrayList<Rewards>> rewardsObserver = new Observer<ArrayList<Rewards>> () {
             @Override
@@ -133,6 +155,14 @@ public class Vouchers extends Fragment {
                         tierNameText.setText(userTier);
                     }
                     pointsNameText.setText(userPoints + " pts");
+
+                    ArrayList<Missions> redeemedMissions =  user.getRedeemedMissions();
+                    ArrayList<String> redeemedMissionIds = new ArrayList<>();
+                    for (Missions m: redeemedMissions){
+                        redeemedMissionIds.add(m.getMissionId());
+                    }
+
+                    missionsModel.getMissionForAll(redeemedMissionIds);
                 } else {
                     Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show();
                 }
@@ -140,11 +170,12 @@ public class Vouchers extends Fragment {
             }
         };
 
+        missionsModel.getAllMission().observe(getViewLifecycleOwner(), missionObserver);
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
         rewardsModel.getAllRewards().observe(getViewLifecycleOwner(), rewardsObserver);
 
         //TODO Replace Missions
-        loadMissions();
+        //loadMissions();
 
         return view;
     }

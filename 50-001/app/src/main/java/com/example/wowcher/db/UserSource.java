@@ -36,7 +36,7 @@ public class UserSource implements DBSource{
     }
 
     @Override
-    public void getAllData(Consumer<?> method){
+    public void getAllData(Consumer<?> method, Object extras){
         userCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -114,6 +114,7 @@ public class UserSource implements DBSource{
                                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                                 ArrayList<Voucher> voucherList = new ArrayList<>();
                                                 for (QueryDocumentSnapshot document : task.getResult()){
+                                                    Log.d("MINI DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
                                                     Voucher voucher = document.toObject(Voucher.class);
                                                     voucherList.add(voucher);
                                                 }

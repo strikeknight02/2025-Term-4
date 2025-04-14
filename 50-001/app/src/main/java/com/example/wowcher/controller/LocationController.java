@@ -53,7 +53,7 @@ public class LocationController extends ViewModel {
 
     public void getLocationforAll(){
         Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.getAllLocations().setValue((ArrayList<Location>) locations); };
-        databaseInstance.getAllData( method );
+        databaseInstance.getAllData( method ,"");
     }
 
     public void getLocationsBasedOnVoucher(ArrayList<String> locationList){

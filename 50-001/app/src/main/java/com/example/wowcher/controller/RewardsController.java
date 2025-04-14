@@ -41,7 +41,7 @@ public class RewardsController extends ViewModel {
 
     public void getRewardsforAll(){
         Consumer<ArrayList<Rewards>> method = (ArrayList<Rewards> rewardss) -> { instance.getAllRewards().setValue((ArrayList<Rewards>) rewardss); };
-        databaseInstance.getAllData( method );
+        databaseInstance.getAllData( method , "");
     }
 
     public void getSpecificRewards(String column, String value){
