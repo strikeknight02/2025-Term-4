@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -14,18 +15,31 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.wowcher.classes.Missions;
 import com.example.wowcher.R;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
 
     private final Context context;
     private List<Missions> missionList;
 
+    FirebaseFirestore db;
+    FirebaseAuth auth;
+    FirebaseUser user;
+
     // Constructor
     public MissionAdapter(Context context, List<Missions> missionList) {
         this.context = context;
         this.missionList = missionList;
+
+        // Initialize Firebase instances
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
     }
 
     // Set the mission list
@@ -45,31 +59,121 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
     public void onBindViewHolder(@NonNull MissionViewHolder holder, int position) {
         Missions mission = missionList.get(position);
 
-        // Set mission details to the views
         holder.missionNameTextView.setText(mission.getMissionName());
         holder.descriptionTextView.setText(mission.getDescription());
-        holder.pointsRewardTextView.setText("Reward: " + mission.getPointsReward() + " points");
-//        holder.criteriaTextView.setText("Criteria: " + mission.getCriteria());
+        holder.pointsRewardTextView.setText(String.valueOf(mission.getPointsReward()));
 
-        // Set the progress in the progress indicator
-        holder.missionProgress.setProgress(mission.getProgress());
+        // Check if the mission is completed
+        boolean isCompleted = mission.getProgress() == 100;
+        String missionId = mission.getMissionId(); // Use missionId to check redemption status
 
-        // Set the progress text ("3 of 7")
-        String progressText = mission.getProgress() + " of 100";  // Assuming progress is percentage based (0-100)
-        holder.progressTextView.setText(progressText);
+        // Check if the mission is already redeemed
+        checkIfMissionRedeemed(missionId, holder, mission);
 
-        // Set click listener for each mission card
-        holder.missionCard.setOnClickListener(view -> {
-//            Intent intent = new Intent(context, MissionDetailActivity.class);
-//            // Pass mission details to the next activity
-//            intent.putExtra("MissionId", mission.getMissionId());
-//            intent.putExtra("MissionName", mission.getMissionName());
-//            intent.putExtra("MissionDescription", mission.getDescription());
-//            intent.putExtra("MissionPointsReward", mission.getPointsReward());
-//            intent.putExtra("MissionCriteria", mission.getCriteria());
-//            intent.putExtra("MissionProgress", mission.getProgress());
-//            context.startActivity(intent);
-        });
+        // If the mission is completed and not redeemed, enable it for redemption
+        if (isCompleted) {
+            holder.itemView.setAlpha(1f);
+            holder.itemView.setClickable(true);
+            holder.itemView.setOnClickListener(v -> {
+                // Add click logic for completed mission
+                Toast.makeText(v.getContext(), "Mission Complete! You earned " + mission.getPointsReward() + " points!", Toast.LENGTH_SHORT).show();
+                redeemMission(missionId, mission.getPointsReward(), holder);
+            });
+        } else {
+            // Dimmed out and not clickable if not completed
+            holder.itemView.setAlpha(0.4f);
+            holder.itemView.setClickable(false);
+            holder.itemView.setOnClickListener(null);
+        }
+    }
+
+    private void checkIfMissionRedeemed(String missionId, MissionViewHolder holder, Missions mission) {
+        if (user == null) return;
+
+        String userId = user.getUid();
+
+        // Check if the mission is already redeemed by the user
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedMissions")
+                .document(missionId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Mission is already redeemed, disable the card
+                        holder.itemView.setAlpha(0.3f);
+                        holder.itemView.setClickable(false);
+                        holder.itemView.setOnClickListener(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(context, "Error checking redemption status", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void redeemMission(String missionId, long missionPoints, MissionViewHolder holder) {
+        if (user == null) {
+            Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = user.getUid();
+
+        // Store the redeemed mission in Firestore
+        Map<String, Object> redeemedData = new HashMap<>();
+        redeemedData.put("redeemedAt", System.currentTimeMillis());
+
+        // Add the redeemed mission record under the user's redeemedMissions collection
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedMissions")
+                .document(missionId)
+                .set(redeemedData)
+                .addOnSuccessListener(aVoid -> {
+                    // Update the user's points after redeeming the mission
+                    updateUserPoints(missionPoints, userId, holder);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(context, "Failed to redeem mission", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void updateUserPoints(long missionPoints, String userId, MissionViewHolder holder) {
+        // Retrieve the current points of the user
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(userSnapshot -> {
+                    long currentPoints = userSnapshot.contains("currentPoints") ? userSnapshot.getLong("currentPoints") : 0;
+                    long totalPoints = userSnapshot.contains("totalPoints") ? userSnapshot.getLong("totalPoints") : 0;
+
+                    // Calculate updated points
+                    long updatedCurrentPoints = currentPoints + missionPoints;
+                    long updatedTotalPoints = totalPoints + missionPoints;
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("currentPoints", updatedCurrentPoints);
+                    updates.put("totalPoints", updatedTotalPoints);
+
+                    // Update the user's points in Firestore
+                    db.collection("users")
+                            .document(userId)
+                            .update(updates)
+                            .addOnSuccessListener(unused -> {
+                                // Successfully updated points
+                                Toast.makeText(context, "Mission redeemed! +" + missionPoints + " points", Toast.LENGTH_SHORT).show();
+                                // Disable the card after redemption
+                                holder.itemView.setAlpha(0.3f);
+                                holder.itemView.setClickable(false);
+                                holder.itemView.setOnClickListener(null);
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(context, "Failed to update points", Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(context, "Failed to fetch user points", Toast.LENGTH_SHORT).show();
+                });
     }
 
     @Override
@@ -77,7 +181,6 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
         return missionList.size();
     }
 }
-
 class MissionViewHolder extends RecyclerView.ViewHolder {
 
     TextView missionNameTextView;
@@ -93,7 +196,7 @@ class MissionViewHolder extends RecyclerView.ViewHolder {
         missionNameTextView = itemView.findViewById(R.id.mission_title);
         descriptionTextView = itemView.findViewById(R.id.mission_progress_text);
         pointsRewardTextView = itemView.findViewById(R.id.mission_points);
-         progressTextView = itemView.findViewById(R.id.mission_progress_text);  // Initialize the progress text view
+        progressTextView = itemView.findViewById(R.id.mission_progress_text);  // Initialize the progress text view
         missionProgress = itemView.findViewById(R.id.mission_progress);
         missionCard = itemView.findViewById(R.id.mission_card);
     }

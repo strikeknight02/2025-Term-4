@@ -100,22 +100,24 @@ public class Home extends Fragment {
                             String status = document.getString("status");
                             String createdAt = document.getString("createdAt");
                             String locationId = document.getString("locationId");
+                            Long pointsReward = document.getLong("pointsReward");
+                            String code = document.getString("code");
+                            String imageName = document.getString("imageName");
 
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
+                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt,pointsReward,code,imageName);
 
                             dataList.add(voucher);
                         }
+//                        //todo - sort then add to datalist
+//                        // test data - locations
+//                        ArrayList<Location> locations = new ArrayList<>();
+//                        locations.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "")); // tofu
+//                        locations.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
+//                        locations.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
+//
+//                        getRoute(locations);
 
-                        //todo - sort then add to datalist
-                        // test data - locations
-                        ArrayList<Location> locations = new ArrayList<>();
-                        locations.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "")); // tofu
-                        locations.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
-                        locations.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
-
-                        getRoute(locations);
-
-//                        adapter.notifyDataSetChanged();
+                        adapter.notifyDataSetChanged();
                     } else {
                         Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show();
                     }
@@ -188,8 +190,6 @@ public class Home extends Fragment {
                 System.out.println("Fail to retrieve routes");
             }
         });
-
-        queue.add(stringRequest);
     }
 
     // Insertion sort for vouchers based on distance

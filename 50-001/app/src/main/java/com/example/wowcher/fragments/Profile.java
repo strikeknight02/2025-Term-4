@@ -5,13 +5,17 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.wowcher.ClaimedVouchersActivity;
 import com.example.wowcher.Login;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
@@ -36,7 +40,9 @@ public class Profile extends Fragment {
     List<Voucher> ownedVouchers;
     FirebaseFirestore db;
 
+    Button elevatedButton;
     TextView userNameText; // Declare the TextView
+    ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
 
     @Nullable
     @Override
@@ -59,10 +65,24 @@ public class Profile extends Fragment {
         recyclerView.setAdapter(adapter);
 
         userNameText = view.findViewById(R.id.userNameText); // Bind the TextView
+        claimedVouchersLayout = view.findViewById(R.id.constraintLayout2); // Bind the "Claimed Vouchers" section
 
         db = FirebaseFirestore.getInstance();
         loadUserName(); // Load the user's name
-        loadUserVouchers(); // Load vouchers as before
+//        loadUserVouchers(); // Load vouchers as before
+
+        // Set the click listener for the "Claimed Vouchers" section
+        claimedVouchersLayout.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ClaimedVouchersActivity.class);
+            startActivity(intent);
+        });
+
+        elevatedButton = view.findViewById(R.id.elevatedButton);
+        elevatedButton.setOnClickListener(v -> {
+            auth.signOut();
+            Intent intent = new Intent(getActivity(), Login.class);
+            startActivity(intent);
+        });
 
         return view;
     }
@@ -84,66 +104,6 @@ public class Profile extends Fragment {
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show());
-    }
-
-
-    private void loadUserVouchers() {
-        if (user == null) return;
-
-        String userId = user.getUid();
-
-        db.collection("user_vouchers")
-                .whereEqualTo("userId", userId)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    Set<Integer> voucherIds = new HashSet<>();
-                    for (QueryDocumentSnapshot doc : querySnapshot) {
-                        Long vId = doc.getLong("voucherId");
-                        if (vId != null) voucherIds.add(vId.intValue());
-                    }
-
-                    fetchVouchersById(voucherIds);
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to load user vouchers", Toast.LENGTH_SHORT).show());
-    }
-
-    private void fetchVouchersById(Set<Integer> voucherIds) {
-        db.collection("vouchers")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    ownedVouchers.clear();
-
-                    for (QueryDocumentSnapshot doc : querySnapshot) {
-                        String voucherId = doc.getString("voucherId");
-                        if (voucherId != null && voucherIds.contains(voucherId)) {
-                            String title = doc.getString("title");
-                            String details = doc.getString("details");
-                            String status = doc.getString("status");
-                            String createdAt = doc.getString("createdAt");
-                            String locationId = doc.getString("locationId");
-
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt);
-                            ownedVouchers.add(voucher);
-                        }
-                    }
-
-                    // Toggle visibility
-                    RecyclerView recyclerView = requireView().findViewById(R.id.redeemedVouchersRecyclerView);
-                    View noVouchersText = requireView().findViewById(R.id.noVouchersText);
-
-                    if (ownedVouchers.isEmpty()) {
-                        recyclerView.setVisibility(View.GONE);
-                        noVouchersText.setVisibility(View.VISIBLE);
-                    } else {
-                        recyclerView.setVisibility(View.VISIBLE);
-                        noVouchersText.setVisibility(View.GONE);
-                    }
-
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show());
     }
 
 }
