@@ -8,6 +8,7 @@ public class Missions {
     private int pointsReward;
     private int progress;
 
+    //No-arg constructor
     public Missions() {} // Needed for Firestore deserialization
 
     public Missions(String missionId, String missionName, String description, int criteria, int pointsReward, int progress) {
