@@ -38,7 +38,6 @@ public class ClaimedVoucherAdapter extends RecyclerView.Adapter<MyViewHolder> {
         Voucher voucher = dataList.get(position);
         holder.recTitle.setText(voucher.getTitle());
         holder.recDesc.setText(voucher.getDetails());
-        holder.recID.setText(voucher.getVoucherId());
 
         String voucherId = voucher.getVoucherId();
         String userId = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -52,9 +51,8 @@ public class ClaimedVoucherAdapter extends RecyclerView.Adapter<MyViewHolder> {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // Not redeemed
-                        holder.recLang.setText("Available");
-                        holder.recCard.setClickable(true);
-                        holder.recCard.setAlpha(1f); // Restore brightness
+                        holder.recLang.setText("Redeemed");
+                        holder.recCard.setAlpha(0.5f);
 
                         holder.recCard.setOnClickListener(view -> {
                             Intent intent = new Intent(context, ClaimedVoucherActivity.class);
@@ -100,6 +98,5 @@ class ClaimedVoucherHolder extends RecyclerView.ViewHolder{
         recDesc = itemView.findViewById(R.id.recDesc);
         recLang = itemView.findViewById(R.id.recLang);
         recCard = itemView.findViewById(R.id.recCard);
-        recID = itemView.findViewById(R.id.recID);
     }
 }

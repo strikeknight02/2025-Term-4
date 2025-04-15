@@ -155,7 +155,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
         db = FirebaseFirestore.getInstance();
         //User
         DBSource userSourceInstance = new UserSource(db);
-        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel = new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
         userModel.getModelInstance(userModel);
 
         //Voucher
@@ -170,30 +170,35 @@ public class Map extends Fragment implements OnMapReadyCallback {
 
         userModel.getUserInfoFromSource("userId", user.getUid());
 
-        final Observer<ArrayList<Location>> locationObserver = new Observer<ArrayList<Location>> () {
+        final Observer<ArrayList<Location>> locationObserver = new Observer<ArrayList<Location>>() {
             @Override
             public void onChanged(@Nullable final ArrayList<Location> locationList) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (locationList !=null)){
-                    for (Location location: locationList) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (locationList != null)) {
+                    for (Location location : locationList) {
                         GeoPoint geoObject = location.getGeolocation();
                         LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
-                        // temp image, still figuring out how to handle the marker images
-                        addMarkerToMap(latlngObject, R.drawable.marker_mcd);
+                        String imageName = "marker_" + location.getImageName();
+                        int imageResId = currentContext.getResources().getIdentifier(imageName, "drawable", currentContext.getPackageName());
+                        if (imageResId != 0) {
+                            addMarkerToMap(latlngObject, imageResId, location);
+                        } else {
+                            addMarkerToMap(latlngObject, R.drawable.lebron_james, location);
+                        }
                     }
                 }
 
             }
         };
 
-        final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
+        final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>>() {
             @Override
             public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
 
-                if(voucherList != null){
+                if (voucherList != null) {
                     //TODO ENSURE IT UPDATES AFTER REDEMPTION
                     ArrayList<String> voucherIdList = new ArrayList<>();
-                    for(Voucher v : voucherList){
-                        if (!voucherIdList.contains(v.getLocationId())){
+                    for (Voucher v : voucherList) {
+                        if (!voucherIdList.contains(v.getLocationId())) {
                             voucherIdList.add(v.getLocationId());
                         }
                     }
@@ -208,10 +213,10 @@ public class Map extends Fragment implements OnMapReadyCallback {
             }
         };
 
-        final Observer<User> userObserver = new Observer<User> () {
+        final Observer<User> userObserver = new Observer<User>() {
             @Override
             public void onChanged(@Nullable final User user) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user != null)) {
                     ArrayList<String> redeemedVouchers = user.getRedeemedVouchers();
 
                     //TODO supposed to get all now?
@@ -275,7 +280,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
     }
 
     // Function to setup the search bar
-    public void searchBarSetup(){
+    public void searchBarSetup() {
         // Search Bar View
         AutoCompleteTextView autoCompleteTextView = currentView.findViewById(R.id.searchbar);
 
@@ -329,6 +334,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
             }
         });
     }
+
     // Check if user location service is enabled
     public void checkLocationEnabled() {
         LocationManager lm = (LocationManager) currentContext.getSystemService(Context.LOCATION_SERVICE);
@@ -488,9 +494,9 @@ public class Map extends Fragment implements OnMapReadyCallback {
                         String imageName = "marker_" + location.getImageName();
                         int imageResId = currentContext.getResources().getIdentifier(imageName, "drawable", currentContext.getPackageName());
                         if (imageResId != 0) {
-                            addMarkerToMap(latlngObject, imageResId,location);
+                            addMarkerToMap(latlngObject, imageResId, location);
                         } else {
-                            addMarkerToMap(latlngObject, R.drawable.lebron_james,location);
+                            addMarkerToMap(latlngObject, R.drawable.lebron_james, location);
                         }
                         // Temporary marker image
 
@@ -499,4 +505,4 @@ public class Map extends Fragment implements OnMapReadyCallback {
                 .addOnFailureListener(e ->
                         Log.e("Firestore", "Error fetching locations", e));
     }
-    }
+}

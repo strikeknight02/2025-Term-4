@@ -64,7 +64,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
             holder.recTitle.setText(voucher.getTitle());
             holder.recDesc.setText(voucher.getDetails());
-            holder.recID.setText(voucher.getVoucherId());
+            //holder.recID.setText(voucher.getVoucherId());
 
             if (errorMessage != null) {
                 holder.recLang.setText("Status Unknown");
@@ -135,6 +135,5 @@ class MyViewHolder extends RecyclerView.ViewHolder{
         recDesc = itemView.findViewById(R.id.recDesc);
         recLang = itemView.findViewById(R.id.recLang);
         recCard = itemView.findViewById(R.id.recCard);
-        recID = itemView.findViewById(R.id.recID);
     }
 }

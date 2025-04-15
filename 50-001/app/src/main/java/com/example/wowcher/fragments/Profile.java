@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.wowcher.ClaimedRewardActivity;
 import com.example.wowcher.ClaimedRewardsActivity;
 import com.example.wowcher.ClaimedVouchersActivity;
 import com.example.wowcher.HelpActivity;
@@ -101,7 +102,7 @@ public class Profile extends Fragment {
             String displayName = user.getDisplayName();
             userNameText.setText(displayName != null ? displayName : "No Name Found");
         }
-
+        //TODO Add user name
 
         // Handle "Claimed Vouchers" click
         claimedVouchersLayout.setOnClickListener(v -> {

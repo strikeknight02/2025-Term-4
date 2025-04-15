@@ -73,7 +73,7 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
         voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
         voucherModel.getModelInstance(voucherModel);
 
-        userModel.getUserInfoFromSource("userId", userId);
+        userModel.getUserInfoFromSource("userId", auth.getCurrentUser().getUid());
 
         final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
             @Override
@@ -82,7 +82,7 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
                 if(voucherList != null) {
                     if(!voucherList.isEmpty()){
                         dataList.clear();
-                        adapter = new ClaimedVoucherAdapter(this, voucherList); // Initialize your adapter
+                        adapter = new ClaimedVoucherAdapter(ClaimedVouchersActivity.this, voucherList); // Initialize your adapter
                         recyclerView.setAdapter(adapter);
                     } else {
                         Toast.makeText(ClaimedVouchersActivity.this, "NO VOUCHERS REDEEMED", Toast.LENGTH_LONG).show();

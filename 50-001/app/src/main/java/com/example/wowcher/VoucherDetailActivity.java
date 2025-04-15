@@ -119,7 +119,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
                         if (v.equals(voucherId)){
                             redeemButton.setText("Owned");
                             redeemButton.setEnabled(false);
-                            detailStatus.setText("Status: Redeemed");
+                            //detailStatus.setText("Status: Redeemed");
                         }
                     }
                 }else{
@@ -145,7 +145,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
         // Redirect to HomeActivity
         //finish(); // Close the current activity
 
-        long currentPoints = userSnapshot.contains("currentPoints") ? userSnapshot.getLong("currentPoints") : 0;
+        //long currentPoints = userSnapshot.contains("currentPoints") ? userSnapshot.getLong("currentPoints") : 0;
 //                                long totalPoints = userSnapshot.contains("totalPoints") ? userSnapshot.getLong("totalPoints") : 0;
 //
 //                                long updatedCurrentPoints = currentPoints + voucherPoints;
