@@ -1,6 +1,6 @@
 package com.example.wowcher.classes;
 
-public class Rewards {
+public class Reward {
 
     // Attributes
     private int rewardId;        // Unique ID for the reward
@@ -11,7 +11,7 @@ public class Rewards {
     private boolean isAvailable; // Whether the reward is still available
 
     // Constructor
-    public Rewards(int rewardId, String name, String description, int pointsRequired, String expirationDate, boolean isAvailable) {
+    public Reward(int rewardId, String name, String description, int pointsRequired, String expirationDate, boolean isAvailable) {
         this.rewardId = rewardId;
         this.name = name;
         this.description = description;

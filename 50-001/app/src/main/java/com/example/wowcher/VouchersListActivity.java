@@ -195,7 +195,7 @@ public class VouchersListActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     vouchersDataList.clear();
-                    Log.d("DEBUG", "Vouchers found: " + queryDocumentSnapshots.size());
+                    Log.d("DEBUG", "Rewards found: " + queryDocumentSnapshots.size());
 
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Log.d("DEBUG", "Raw document ID: " + doc.getId());

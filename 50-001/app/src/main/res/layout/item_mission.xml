@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mission_card"
     android:layout_width="280dp"
-    android:layout_height="200dp"
+    android:layout_height="250dp"
     android:layout_marginEnd="12dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
@@ -91,6 +91,27 @@
             android:layout_height="wrap_content"
             android:text="Description"
             android:textColor="#757575"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="5dp"
+            android:layout_marginTop="5dp"
+
+            >
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/complete_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Incomplete"
+                android:padding="10dp"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@color/mc_red"
+                />
+        </com.google.android.material.card.MaterialCardView>
+
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

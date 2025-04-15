@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".fragments.Vouchers">
+    tools:context=".fragments.Rewards">
 
     <!-- App Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -69,7 +69,7 @@
                 <!--                    android:layout_height="wrap_content"-->
                 <!--                    android:drawableStart="@drawable/baseline_search_24"-->
                 <!--                    android:drawablePadding="8dp"-->
-                <!--                    android:hint="Search Redeemed Vouchers"-->
+                <!--                    android:hint="Search Redeemed Rewards"-->
                 <!--                    android:inputType="text"-->
                 <!--                    android:paddingEnd="40dp" />-->
             </com.google.android.material.textfield.TextInputLayout>
@@ -90,7 +90,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerLayout" />
 
-    <!-- No Vouchers Available Message -->
+    <!-- No Rewards Available Message -->
     <TextView
         android:id="@+id/noVouchersMessage"
         android:layout_width="wrap_content"

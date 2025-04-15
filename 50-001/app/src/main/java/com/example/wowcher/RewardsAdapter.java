@@ -11,30 +11,28 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.wowcher.classes.Rewards;
-import com.example.wowcher.R;
+import com.example.wowcher.classes.Reward;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.List;
 
 public class RewardsAdapter extends RecyclerView.Adapter<RewardViewHolder> {
 
     private final Context context;
-    private List<Rewards> rewardList;
+    private List<Reward> rewardList;
     private FirebaseFirestore db;
 
     // Constructor
-    public RewardsAdapter(Context context, List<Rewards> rewardList) {
+    public RewardsAdapter(Context context, List<Reward> rewardList) {
         this.context = context;
         this.rewardList = rewardList;
         db = FirebaseFirestore.getInstance();
     }
 
     // Set search results or filtered list
-    public void setSearchList(List<Rewards> rewardSearchList) {
+    public void setSearchList(List<Reward> rewardSearchList) {
         this.rewardList = rewardSearchList;
         notifyDataSetChanged();
     }
@@ -49,7 +47,7 @@ public class RewardsAdapter extends RecyclerView.Adapter<RewardViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RewardViewHolder holder, int position) {
         // Get the current reward object from the list
-        Rewards reward = rewardList.get(position);
+        Reward reward = rewardList.get(position);
 
         // Set the values to the TextViews
         holder.rewardName.setText(reward.getName());  // Reward Name

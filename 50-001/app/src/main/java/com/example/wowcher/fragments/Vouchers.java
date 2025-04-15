@@ -1,394 +1,234 @@
 package com.example.wowcher.fragments;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
-import com.example.wowcher.RewardsAdapter;
-import com.example.wowcher.MissionAdapter;
-import com.example.wowcher.classes.Missions;
-import com.example.wowcher.classes.Rewards;
 import com.example.wowcher.classes.Voucher;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.example.wowcher.classes.Location;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import androidx.appcompat.widget.SearchView;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Vouchers extends Fragment {
 
+
     RecyclerView recyclerView;
     List<Voucher> dataList;
     MyAdapter adapter;
+    SearchView searchView;
 
     FirebaseFirestore db;
 
-
-
-    FirebaseAuth auth;
-    FirebaseUser user;
-
-    TextView tierNameText, pointsNameText, voucherNameText;
-
-    RecyclerView rewardsRecyclerView;
-    RewardsAdapter rewardAdapter;
-    List<Rewards> rewardList = new ArrayList<>();
-
-    RecyclerView missionsRecyclerView;
-
-    MissionAdapter missionAdapter;
-    List<Missions> missionList = new ArrayList<>();
-
-
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_vouchers, container, false);
 
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        recyclerView = view.findViewById(R.id.recyclerView);
 
-//        generateAndUploadMissions(); // Add this to test/seed data
-
-        // Find TextViews
-        tierNameText = view.findViewById(R.id.tier_name);
-        pointsNameText = view.findViewById(R.id.points_name);
-        voucherNameText = view.findViewById(R.id.voucher_name);
-
-        rewardsRecyclerView = view.findViewById(R.id.rewards_recyclerView);
-        rewardAdapter = new RewardsAdapter(requireContext(), rewardList);
-        rewardsRecyclerView.setAdapter(rewardAdapter);
-
-        // Set up the horizontal layout for the rewardsRecyclerView
-        LinearLayoutManager horizontalLayoutManagerForRewards = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        rewardsRecyclerView.setLayoutManager(horizontalLayoutManagerForRewards);
-
-
-        missionsRecyclerView = view.findViewById(R.id.mission_recyclerView);
-        missionAdapter = new MissionAdapter(requireContext(), missionList);
-        missionsRecyclerView.setAdapter(missionAdapter);
-
-        // Set up the vertical or other layout for missionsRecyclerView
-        LinearLayoutManager horizontalLayoutManagerForMissions = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        missionsRecyclerView.setLayoutManager(horizontalLayoutManagerForMissions);
-
-
+        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
         dataList = new ArrayList<>();
+
         adapter = new MyAdapter(requireContext(), dataList);
+        recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-
-//        generateAndUploadMissions();
-        loadUserInfo();
-        loadMissions();
-//        loadUserVoucherCount();
+        loadVouchersFromFirebase();
 
         return view;
     }
 
-    private String getCurrentUserId() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private void searchList(String text) {
+        List<Voucher> dataSearchList = new ArrayList<>();
+        for (Voucher data : dataList) {
+            if (data.getTitle().toLowerCase().contains(text.toLowerCase())) {
+                dataSearchList.add(data);
+            }
+        }
+        if (dataSearchList.isEmpty()) {
+            Toast.makeText(requireContext(), "Not Found", Toast.LENGTH_SHORT).show();
+        } else {
+            adapter.setSearchList(dataSearchList);
+        }
     }
 
-    private void loadUserInfo() {
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Get current user ID
-
-        db.collection("users").document(userId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        String tier = documentSnapshot.getString("tier");
-                        Long points = documentSnapshot.getLong("currentPoints");
-
-                        if (tier != null) {
-                            tierNameText.setText(tier);
-                        }
-                        if (points != null) {
-                            pointsNameText.setText(points + " pts");
-
-                            // Pass the points to loadRewards() method
-                            loadRewards(points.intValue());
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void loadRewards(int userPoints) {
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Get current user ID
-        db.collection("rewards")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        List<Rewards> rewardsList = new ArrayList<>();
-
-                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            int rewardId = documentSnapshot.getLong("rewardId").intValue();
-                            String name = documentSnapshot.getString("name");
-                            String description = documentSnapshot.getString("description");
-                            int pointsRequired = documentSnapshot.getLong("pointsRequired").intValue();
-                            String expirationDate = documentSnapshot.getString("expirationDate");
-                            boolean isAvailable = documentSnapshot.getBoolean("available");
-
-                            // Check if the user has already redeemed this reward
-                            checkIfRewardRedeemed(userId, rewardId, isRedeemed -> {
-                                // If the reward is redeemed or the user doesn't have enough points, block it out
-                                boolean isRedeemable = userPoints >= pointsRequired && !isRedeemed;
-
-                                // Create Rewards object with the redeemable status
-                                Rewards reward = new Rewards(rewardId, name, description, pointsRequired, expirationDate, isAvailable);
-
-                                if(description.length() >= 20){
-                                    reward.setDescription(description.substring(0, 20) + "...");
-                                }
-                                // Add to the list
-                                rewardsList.add(reward);
-
-                                // If this is the last reward, notify adapter
-                                if (rewardsList.size() == queryDocumentSnapshots.size()) {
-                                    Log.d("Firestore", "Loaded rewards: " + rewardsList.size());
-                                    // Update the rewardAdapter with the new rewards list
-                                    rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
-                                }
-                            });
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to load rewards", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void checkIfRewardRedeemed(String userId, int rewardId, RedeemedCallback callback) {
-        db.collection("users")
-                .document(userId)
-                .collection("redeemedRewards")
-                .document(String.valueOf(rewardId))
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    boolean isRedeemed = documentSnapshot.exists(); // If the document exists, it means the reward has been redeemed
-                    callback.onChecked(isRedeemed);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error checking redeemed status", e);
-                    callback.onChecked(false); // Consider not redeemed if there is an error
-                });
-    }
-
-    // Callback interface to handle the result of the redeemed check
-    public interface RedeemedCallback {
-        void onChecked(boolean isRedeemed);
-    }
-
-    private void fetchMissionsAgain() {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void loadVouchersFromFirebase() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        db.collection("missions")
+        db.collection("vouchers")
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Missions> missions = new ArrayList<>();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        Missions mission = doc.toObject(Missions.class);
-                        if (mission != null) {
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        dataList.clear();
 
-                            missions.add(mission);
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String voucherId = document.getString("voucherId");
+                            String title = document.getString("title");
+                            String details = document.getString("details");
+                            String status = document.getString("status");
+                            String createdAt = document.getString("createdAt");
+                            String locationId = document.getString("locationId");
+                            Long pointsReward = document.getLong("pointsReward");
+                            String code = document.getString("code");
+                            String imageName = document.getString("imageName");
+
+                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt,pointsReward,code,imageName);
+
+                            dataList.add(voucher);
                         }
+//                        //todo - sort then add to datalist
+//                        // test data - locations
+//                        ArrayList<Location> locations = new ArrayList<>();
+//                        locations.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "")); // tofu
+//                        locations.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
+//                        locations.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
+//
+ //                        getRoute(locations);
+
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to load vouchers", Toast.LENGTH_SHORT).show();
                     }
-                    missionAdapter.setMissionList(missions);
                 });
     }
 
+    // Retrieve API key from Manifest
+    public String getApiKeyFromManifest(String key) {
+        String apiKey;
+        try {
+            ApplicationInfo applicationInfo = requireContext().getPackageManager().getApplicationInfo(requireContext().getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = applicationInfo.metaData;
+            apiKey = bundle.getString(key);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e("API key retrieval failed", "Error: " + e);
+            return null;
+        }
+        return apiKey;
+    }
+
+    // Send URL request to retrieve routes for locations
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void getRoute(ArrayList<Location> destinations) {
+        // Get Directions API key
+        String dirApiKey = getApiKeyFromManifest("dirApiKey");
+
+        // Format string for URL request
+        StringBuilder destString = new StringBuilder();
+        for (Location item: destinations) {
+            GeoPoint geoObject = item.getGeolocation();
+            String coordinates = geoObject.getLatitude() + "," + geoObject.getLongitude();
+            destString.append("%7C").append(coordinates);
+        }
+
+        String url = "https://maps.googleapis.com/maps/api/distancematrix/json" +
+                "?destinations=" + destString +
+                "&origins=" + Map.userLocation.latitude + "," + Map.userLocation.longitude +
+                "&key="+dirApiKey;
 
 
-    private void loadMissions() {
-        String userId = getCurrentUserId();
+        RequestQueue queue = Volley.newRequestQueue(requireContext());
 
-        getRedeemedVoucherCount(redeemedVoucherCount -> {
-            db.collection("missions")
-                    .get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            missionList.clear(); // Clear current missions
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
+                    @Override
+                    public void onResponse(String response) {
+                        // Parse the response and get necessary data
+                        JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
+                        JsonArray routes = responseObject.getAsJsonArray("rows").get(0).getAsJsonObject().getAsJsonArray("elements");
 
-                            for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                                String missionId = documentSnapshot.getString("missionId");
-                                String missionName = documentSnapshot.getString("missionName");
-                                String description = documentSnapshot.getString("description");
-                                Long criteria = documentSnapshot.getLong("criteria");
-                                Long pointsReward = documentSnapshot.getLong("pointsReward");
-                                Long progress = documentSnapshot.getLong("progress");
-                                String type = documentSnapshot.getString("type");
-                                String locationId = documentSnapshot.getString("locationId");
-                                String tier = documentSnapshot.getString("requiredTier");
-
-
-                                Missions mission = new Missions(missionId, missionName, description, criteria, pointsReward, progress,type,locationId,tier);
-
-                                missionList.add(mission);
-                            }
-
-                            missionAdapter.notifyDataSetChanged();
-                            Log.d("Firestore", "Loaded missions with updated progress");
+                        System.out.println(response);
+                        // Prepare location details to sort vouchers by distance
+                        ArrayList<JsonObject> locationList = new ArrayList<>();
+                        for (int i = 0; i < routes.size(); i++) {
+                            int value = routes.get(i).getAsJsonObject().getAsJsonObject("distance").get("value").getAsInt();
+                            JsonObject locationDetails = JsonParser.parseString("{" +
+                                    "locationId:"+destinations.get(i).getLocationId()+","+
+                                    "value:" + value +
+                                    "}").getAsJsonObject();
+                            locationList.add(locationDetails);
                         }
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(requireContext(), "Failed to load missions", Toast.LENGTH_SHORT).show();
-                        Log.e("Firestore", "Error loading missions", e);
-                    });
+                        insertionSortVouchers(locationList);
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // Handle the error
+                System.out.println("Fail to retrieve routes");
+            }
         });
     }
 
+    // Insertion sort for vouchers based on distance
+    public void insertionSortVouchers(ArrayList<JsonObject> locationList) {
+        int listSize = locationList.size();
+        List<Voucher> dataListCopy = List.copyOf(dataList);
+        dataList.clear();
 
-//    public void generateAndUploadMissions() {
-//        List<Missions> missions = new ArrayList<>();
-//
-//        List<String> brands = Arrays.asList(
-//                "Dairy Queen", "A&W", "Nando's", "Pizza Hut", "Sbarro",
-//                "Burger King", "Dunkin'", "Taco Bell", "Cinnabon", "Starbucks"
-//        );
-//
-//        // 1. Generic missions (for any voucher collection)
-//        missions.add(new Missions(null, "Collect 1 Voucher", "Collect 1 voucher to complete this mission.",
-//                1, 100, 0, "collect_voucher", null, null));
-//
-//        missions.add(new Missions(null, "Collect 5 Vouchers", "Collect 5 vouchers to complete this mission.",
-//                5, 200, 0, "collect_voucher", null, null));
-//
-//        // 2. Brand-specific voucher collection missions
-//        for (String brand : brands) {
-//            missions.add(new Missions(
-//                    null,
-//                    "Collect 2 Vouchers from " + brand,
-//                    "Collect 2 vouchers from " + brand + " to complete this mission.",
-//                    2,
-//                    250,
-//                    0,
-//                    "location_voucher",
-//                    brand,
-//                    null
-//            ));
-//        }
-//
-//        // 3. Tier-based missions
-//        missions.add(new Missions(null, "Reach Bronze Tier", "Reach Bronze Tier to complete this mission.",
-//                0, 150, 0, "tier", null, "bronze"));
-//
-//        missions.add(new Missions(null, "Reach Silver Tier", "Reach Silver Tier to complete this mission.",
-//                0, 250, 0, "tier", null, "silver"));
-//
-//        missions.add(new Missions(null, "Reach Gold Tier", "Reach Gold Tier to complete this mission.",
-//                0, 400, 0, "tier", null, "gold"));
-//
-//        missions.add(new Missions(null, "Reach Platinum Tier", "Reach Platinum Tier to complete this mission.",
-//                0, 600, 0, "tier", null, "platinum"));
-//
-//        // Upload to Firestore with autogenerated IDs
-//        for (Missions mission : missions) {
-//            DocumentReference docRef = db.collection("missions").document();
-//            String generatedId = docRef.getId();
-//            mission.setMissionId(generatedId);
-//            docRef.set(mission)
-//                    .addOnSuccessListener(aVoid -> {
-//                        System.out.println("Mission uploaded: " + generatedId);
-//                    })
-//                    .addOnFailureListener(e -> {
-//                        System.err.println("Failed to upload mission: " + e.getMessage());
-//                    });
-//        }
-//    }
+        for (int step = 1; step < listSize; step++) {
+            int currentValue = locationList.get(step).get("value").getAsInt();
+            JsonObject currentObject = locationList.get(step).getAsJsonObject();
 
+            int j = step - 1;
 
+            // Compare key with each element on the left of it until an element smaller than it is found.
+            while (j >= 0 && currentValue < locationList.get(j).get("value").getAsInt()) {
+                locationList.set(j+1,locationList.get(j));
+                --j;
+            }
 
+            // Place key at after the element just smaller than it.
+            locationList.set(j+1,currentObject);
+        }
 
-//    private void generateAndUploadMissions() {
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//        List<Missions> generatedMissions = new ArrayList<>();
-//
-//        for (int i = 1; i <= 10; i++) {
-//            Missions mission = new Missions(
-//                    "mission" + i,
-//                    "Mission " + i,
-//                    "Complete task number " + i,
-//                    "Do something " + i + " times",
-//                    10 * i, // Reward increases per mission
-//                    0 // Initial progress
-//            );
-//            generatedMissions.add(mission);
-//        }
-//
-//        for (Missions mission : generatedMissions) {
-//            db.collection("missions")
-//                    .document(mission.getMissionId())
-//                    .set(mission)
-//                    .addOnSuccessListener(aVoid ->
-//                            Log.d("Firestore", "Mission " + mission.getMissionId() + " added"))
-//                    .addOnFailureListener(e ->
-//                            Log.e("Firestore", "Error adding mission " + mission.getMissionId(), e));
-//        }
-//    }
-//
-//    private boolean isRewardRedeemed(String userId, int rewardId) {
-//        final boolean[] isRedeemed = {false};
-//        db.collection("users")
-//                .document(userId)
-//                .collection("redeemedRewards")
-//                .whereEqualTo("rewardId", rewardId)
-//                .get()
-//                .addOnSuccessListener(queryDocumentSnapshots -> {
-//                    if (!queryDocumentSnapshots.isEmpty()) {
-//                        // If a document exists, it means the user has already redeemed this reward
-//                        isRedeemed[0] = true;
-//                    }
-//                })
-//                .addOnFailureListener(e -> {
-//                    Log.e("Firestore", "Error checking redeemed status", e);
-//                });
-//        return isRedeemed[0];
-//    }
+        // Compare to voucher location ids to add vouchers in order
+        for (JsonObject locationObject: locationList) {
+            String locationId = locationObject.get("locationId").getAsString();
+            for (int i = 0; i < dataListCopy.size(); i++) {
+                String voucherLocId = dataListCopy.get(i).getLocationId();
+                if (voucherLocId.equals(locationId)){
+                    dataList.add(dataListCopy.get(i));
+                }
+            }
+        }
 
-    public interface RedeemedVoucherCountCallback {
-        void onCountLoaded(int count);
+        adapter.notifyDataSetChanged();
+
     }
 
 
-    private void getRedeemedVoucherCount(RedeemedVoucherCountCallback callback) {
-        String userId = getCurrentUserId();
-
-        db.collection("users")
-                .document(userId)
-                .collection("redeemedVouchers")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    int count = queryDocumentSnapshots.size();
-                    callback.onCountLoaded(count); // Return count via callback
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Failed to load redeemed vouchers", e);
-                    callback.onCountLoaded(0); // Return 0 if error occurs
-                });
-    }
 
 }

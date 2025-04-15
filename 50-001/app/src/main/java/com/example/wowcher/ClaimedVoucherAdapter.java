@@ -14,7 +14,6 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wowcher.classes.Voucher;
-import com.example.wowcher.fragments.Home;
 
 public class ClaimedVoucherAdapter extends RecyclerView.Adapter<MyViewHolder> {
     private Context context;
