@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment;
 import com.example.wowcher.fragments.Vouchers;
 import com.example.wowcher.fragments.Map;
 import com.example.wowcher.fragments.Profile;
-import com.example.wowcher.fragments.Rewards;
+import com.example.wowcher.fragments.Home;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,9 +44,9 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
-        Fragment homeFragment = new Vouchers();
+        Fragment homeFragment = new Home();
         Fragment mapFragment = new Map();
-        Fragment voucherFragment = new Rewards();
+        Fragment voucherFragment = new Vouchers();
         Fragment profileFragment = new Profile();
 
         setCurrentFragment(mapFragment);
