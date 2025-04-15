@@ -2,6 +2,7 @@ package com.example.wowcher;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
@@ -105,13 +107,18 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
     //TODO Change this also
     private void checkIfVoucherRedeemed(String userId, String voucherId, VoucherRedeemedCallback callback) {
         DocumentReference voucherRef = db.collection("users")
-                .document(userId)
-                .collection("redeemedVouchers")
-                .document(voucherId);
+                .document(userId);
 
         voucherRef.get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    boolean isRedeemed = documentSnapshot.exists();
+                    ArrayList<String> voucherList = (ArrayList<String>) documentSnapshot.get("redeemedVouchers");
+                    boolean isRedeemed = false;
+                    if (voucherList !=null){
+                        isRedeemed = voucherList.contains(voucherId);
+                    } else {
+                        Log.e("SOMETHING WRONG", "CANNOT GET REDEEMED");
+                    }
+
                     callback.onChecked(isRedeemed, null);
                 })
                 .addOnFailureListener(e -> {
