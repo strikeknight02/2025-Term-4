@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -96,6 +97,20 @@ public class Register extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
                             if (firebaseUser != null) {
+                                // ✅ Update FirebaseAuth user profile with display name
+                                firebaseUser.updateProfile(new UserProfileChangeRequest.Builder()
+                                                .setDisplayName(name) // Set the username as display name
+                                                .build())
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    Log.d("Register", "User display name updated.");
+                                                }
+                                            }
+                                        });
+
+                                // Save other user data in Firestore
                                 String userID = firebaseUser.getUid();
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -104,6 +119,7 @@ public class Register extends AppCompatActivity {
                                     Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
                                 }
 
+                                // Redirect to MainActivity
                                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(intent);
                                 finish();
@@ -119,4 +135,5 @@ public class Register extends AppCompatActivity {
                     }
                 });
     }
+
 }

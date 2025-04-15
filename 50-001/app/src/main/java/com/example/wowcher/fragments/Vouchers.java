@@ -37,6 +37,9 @@ import com.example.wowcher.db.RewardsSource;
 import com.example.wowcher.db.UserSource;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -44,6 +47,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Vouchers extends Fragment {
 
@@ -57,6 +64,11 @@ public class Vouchers extends Fragment {
     MissionController missionsModel;
 
     int userCurrentPoints;
+
+
+
+    FirebaseAuth auth;
+    FirebaseUser user;
 
     TextView tierNameText, pointsNameText, voucherNameText;
 
@@ -141,6 +153,12 @@ public class Vouchers extends Fragment {
                 if(rewardsList != null){
 
                     //rewardsList.removeIf(r -> r.getPointsRequired() > userCurrentPoints);
+for(Rewards r : rewardsList){
+    if(r.getDescription().length() >= 20){
+        r.setDescription(r.getDescription().substring(0, 20) + "...");
+    }
+}
+
 
                     // Update the rewardAdapter with the new rewards list
                     rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
@@ -211,6 +229,9 @@ public class Vouchers extends Fragment {
                                 // Create Rewards object with the redeemable status
                                 Rewards reward = new Rewards(rewardId, name, description, pointsRequired, expirationDate, isAvailable);
 
+                                if(description.length() >= 20){
+                                    reward.setDescription(description.substring(0, 20) + "...");
+                                }
                                 // Add to the list
                                 rewardsList.add(reward);
 
@@ -249,25 +270,46 @@ public class Vouchers extends Fragment {
     public interface RedeemedCallback {
         void onChecked(boolean isRedeemed);
     }
-    private boolean isRewardRedeemed(String userId, int rewardId) {
-        final boolean[] isRedeemed = {false};
-        db.collection("users")
-                .document(userId)
-                .collection("redeemedRewards")
-                .whereEqualTo("rewardId", rewardId)
+
+    private void fetchMissionsAgain() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        db.collection("missions")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        // If a document exists, it means the user has already redeemed this reward
-                        isRedeemed[0] = true;
+                    List<Missions> missions = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        Missions mission = doc.toObject(Missions.class);
+                        if (mission != null) {
+
+                            missions.add(mission);
+                        }
                     }
+                    missionAdapter.setMissionList(missions);
+                });
+    }
+
+    public interface RedeemedVoucherCountCallback {
+        void onCountLoaded(int count);
+    }
+
+
+    private void getRedeemedVoucherCount(RedeemedVoucherCountCallback callback) {
+        String userId = getCurrentUserId();
+
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedVouchers")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int count = queryDocumentSnapshots.size();
+                    callback.onCountLoaded(count); // Return count via callback
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error checking redeemed status", e);
+                    Log.e("Firestore", "Failed to load redeemed vouchers", e);
+                    callback.onCountLoaded(0); // Return 0 if error occurs
                 });
-        return isRedeemed[0];
     }
+
 }
-
-
-

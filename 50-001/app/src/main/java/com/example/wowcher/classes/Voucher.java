@@ -11,14 +11,16 @@ public class Voucher {
     private String status = "";
     private String locationId = ""; // Foreign key to Location
     private String createdAt = "";
-
     private int pointsReward = 0; // Points earned upon redemption
+    private String code = ""; // Unique voucher code
+    private String imageName = ""; // Name of the drawable resource (e.g., "voucher_tofu")
 
     //no-arg constructor
+    // Needed for Firestore deserialization
     public Voucher(){}
 
     // Constructor
-    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, int pointsReward) {
+    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, int pointsReward, String code, String imageName) {
         this.voucherId = voucherId;
         this.title = title;
         this.details = details;
@@ -26,6 +28,8 @@ public class Voucher {
         this.locationId = locationId;
         this.createdAt = createdAt;
         this.pointsReward = pointsReward;
+        this.code = code;
+        this.imageName = imageName;
     }
 
     public String getVoucherId() {
@@ -48,6 +52,14 @@ public class Voucher {
     }
     public int getPointsReward() {
         return pointsReward;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getImageName() {
+        return imageName;
     }
 
     // Setters
@@ -73,5 +85,13 @@ public class Voucher {
     }
     public void setPointsReward(int pointsReward) {
         this.pointsReward = pointsReward;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 }

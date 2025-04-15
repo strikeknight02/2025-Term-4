@@ -3,6 +3,8 @@ package com.example.wowcher;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -32,7 +34,7 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     List<Voucher> dataList;
-    MyAdapter adapter;
+    ClaimedVoucherAdapter adapter;
 
     FirebaseFirestore db;
     FirebaseAuth auth;
@@ -43,17 +45,23 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_claimedvouchers);
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
 
         recyclerView = findViewById(R.id.recyclerView); // Get reference to RecyclerView
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1)); // Use 1 column grid layout for simplicity
 
         dataList = new ArrayList<>();
-        adapter = new MyAdapter(this, dataList); // Initialize your adapter
-        recyclerView.setAdapter(adapter);
+        //loadVouchersFromFirebase(); // Load vouchers when the activity starts
 
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
-        String userId = auth.getCurrentUser().getUid();
+        // Bind the back icon and set the click listener
+        ImageView backIcon = findViewById(R.id.wowcher_icon);
+        backIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish(); // Go back to the previous screen
+            }
+        });
 
         //User
         DBSource userSourceInstance = new UserSource(db);
@@ -74,8 +82,8 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
                 if(voucherList != null) {
                     if(!voucherList.isEmpty()){
                         dataList.clear();
-                        adapter.setSearchList(voucherList);
-                        adapter.notifyDataSetChanged();
+                        adapter = new ClaimedVoucherAdapter(this, voucherList); // Initialize your adapter
+                        recyclerView.setAdapter(adapter);
                     } else {
                         Toast.makeText(ClaimedVouchersActivity.this, "NO VOUCHERS REDEEMED", Toast.LENGTH_LONG).show();
                     }

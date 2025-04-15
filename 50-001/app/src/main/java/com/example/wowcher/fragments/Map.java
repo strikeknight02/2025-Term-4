@@ -43,7 +43,14 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -71,7 +78,12 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
@@ -220,6 +232,27 @@ public class Map extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(@NonNull Marker marker) {
+                Location attributes = (Location) marker.getTag(); // Get the attributes from the marker
+
+                if (attributes != null) {
+                    Log.d("DEBUG", "Marker clicked for locationId: " + attributes.getLocationId());
+
+                    Intent in = new Intent(requireContext(), VouchersListActivity.class);
+                    Bundle b1 = new Bundle();
+                    b1.putString("locationId", attributes.getLocationId());
+                    in.putExtras(b1);
+                    startActivity(in);
+                } else {
+                    Log.w("DEBUG", "Marker has no tag!");
+                }
+
+                return false;
+            }
+        });
+
         checkLocationEnabled();
 
         // Check for location permissions
@@ -236,7 +269,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
         } else {
             // Otherwise, retrieve current user location
             fetchUserLocation(currentContext, fusedLocationProviderClient);
-            //makeLocationTestData();
+            fetchLocationsAndDisplayMarkers();
         }
 
     }
@@ -296,7 +329,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
             }
         });
     }
-
     // Check if user location service is enabled
     public void checkLocationEnabled() {
         LocationManager lm = (LocationManager) currentContext.getSystemService(Context.LOCATION_SERVICE);
@@ -345,25 +377,16 @@ public class Map extends Fragment implements OnMapReadyCallback {
     }
 
     // Add marker to user location
-    public void addMarkerToMap(LatLng location, int imageId) {
+    public void addMarkerToMap(LatLng location, int imageId, Location attributes) {
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(location)
                 .icon(BitmapDescriptorFactory.fromBitmap(customMarker(imageId)))
                 .flat(true);
 
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(@NonNull Marker marker) {
-                Intent in = new Intent(requireContext(), VouchersListActivity.class);
-                Bundle b1 = new Bundle();
-                b1.putString("locationId", "Uwc62HtzeDrk97Gx3fxh");
-                in.putExtras(b1);
-                startActivity(in);
-                return false;
-            }
-        });
-
-        mMap.addMarker(markerOptions);
+        Marker marker = mMap.addMarker(markerOptions);
+        if (marker != null) {
+            marker.setTag(attributes); // Attach the location data to this specific marker
+        }
     }
 
     // Create custom marker from image from drawable
@@ -389,22 +412,19 @@ public class Map extends Fragment implements OnMapReadyCallback {
     // Handles after requesting for permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE_ASK_PERMISSIONS:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission Granted
-                    // Retrieve user location
-                    fetchUserLocation(currentContext, fusedLocationProviderClient);
-                } else {
-                    // Permission Denied
-                    Toast.makeText(currentContext, "Location Permission Denied", Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_ASK_PERMISSIONS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission Granted
+                fetchUserLocation(currentContext, fusedLocationProviderClient);
+            } else {
+                // Permission Denied or grantResults is empty
+                Toast.makeText(currentContext, "Location Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
+
 
     // Handle selecting location from recommended search
     public void selectLocation(String selectedPlace, Context context) {
@@ -414,7 +434,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
             List<Address> addressList = geocoder.getFromLocationName(selectedPlace, 1);
 
             // Handle if selected location is found
-            if (!addressList.isEmpty()) {
+            if (addressList != null) {
                 Address address = addressList.get(0);
 
                 selectedLocation = new LatLng(address.getLatitude(), address.getLongitude());
@@ -447,4 +467,36 @@ public class Map extends Fragment implements OnMapReadyCallback {
         }
         return apiKey;
     }
-}
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void fetchLocationsAndDisplayMarkers() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("locations")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Location> locationList = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Location location = document.toObject(Location.class);
+                        locationList.add(location);
+                    }
+
+                    // Now you can use your original loop
+                    for (Location location : locationList) {
+
+                        GeoPoint geoObject = location.getGeolocation();
+                        LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
+                        String imageName = "marker_" + location.getImageName();
+                        int imageResId = currentContext.getResources().getIdentifier(imageName, "drawable", currentContext.getPackageName());
+                        if (imageResId != 0) {
+                            addMarkerToMap(latlngObject, imageResId,location);
+                        } else {
+                            addMarkerToMap(latlngObject, R.drawable.lebron_james,location);
+                        }
+                        // Temporary marker image
+
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Log.e("Firestore", "Error fetching locations", e));
+    }
+    }

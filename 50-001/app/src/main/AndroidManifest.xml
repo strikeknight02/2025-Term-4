@@ -22,6 +22,17 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBkfdhJhu_JdJYRGhuDiZFzNn_yJrOJSpw" />
+
+        <activity
+            android:name=".VoucherDetailActivity"
+            android:exported="true">
+
+        </activity>
+
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
             android:value="${mapApiKey}" />
 
         <meta-data
@@ -29,18 +40,20 @@
             android:value="${dirApiKey}" />
 
         <activity
-            android:name=".VoucherDetailActivity"
+            android:name=".VouchersListActivity"
             android:exported="true">
         </activity>
 
         <activity
-            android:name=".VouchersListActivity"
+            android:name=".ClaimedVoucherActivity"
             android:exported="true">
         </activity>
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
+
         </activity>
 
         <activity
@@ -78,6 +91,8 @@
                 <action android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+
         </activity>
 
         <meta-data

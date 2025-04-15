@@ -14,14 +14,14 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <!-- Colored Top Section -->
         <LinearLayout
             android:id="@+id/voucher_colored_section"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="145dp"
             android:orientation="vertical"
             android:padding="16dp"
             android:background="#E040FB">
@@ -47,10 +47,11 @@
         <!-- White Bottom Section -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="16dp"
-            android:background="#FFFFFF">
+            android:background="#FFFFFF"
+            android:gravity="center">
 
             <TextView
                 android:id="@+id/voucher_points_required"
@@ -58,8 +59,9 @@
                 android:layout_height="wrap_content"
                 android:text="1000 Points"
                 android:textColor="#673AB7"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="25dp"
+                android:textStyle="bold"
+                android:gravity="center"/>
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -230,7 +230,7 @@ public class Home extends Fragment {
                                     "}").getAsJsonObject();
                             locationList.add(locationDetails);
                         }
-                        System.out.println(locationList);
+
                         insertionSortVouchers(locationList);
 
                     }
@@ -248,7 +248,6 @@ public class Home extends Fragment {
     // Insertion sort for vouchers based on distance
     public void insertionSortVouchers(ArrayList<JsonObject> locationList) {
         int listSize = locationList.size();
-        System.out.println(dataList);
         List<Voucher> dataListCopy = List.copyOf(dataList);
         dataList.clear();
 

@@ -84,6 +84,7 @@ public class VouchersListActivity extends AppCompatActivity {
         if(b2 != null){
             locationId = b2.getString("locationId");
             System.out.println(locationId);
+            loadVouchersForLocation(locationId);
         }
 
         Button backButton = this.findViewById(R.id.backButton);
