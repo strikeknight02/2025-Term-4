@@ -145,14 +145,9 @@ public class Home extends Fragment {
             @Override
             public void onChanged(@Nullable final User user) {
                 if (user != null){
-                    ArrayList<Voucher> redeemedVouchers = user.getRedeemedVouchers();
+                    ArrayList<String> redeemedVouchers = user.getRedeemedVouchers();
 
-                    ArrayList<String> redeemedVoucherIds = new ArrayList<>();
-                    for (Voucher v : redeemedVouchers){
-                        redeemedVoucherIds.add(v.getVoucherId());
-                    }
-
-                    voucherModel.getVouchersforAll(redeemedVoucherIds);
+                    voucherModel.getVouchersforAll(redeemedVouchers);
                     voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
                 }
 

@@ -99,7 +99,7 @@ public class Register extends AppCompatActivity {
                                 String userID = firebaseUser.getUid();
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0,0, LocalDateTime.now().toString(), new ArrayList<>(), new ArrayList<>() );
+                                    User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0,0, LocalDateTime.now().toString(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>() );
                                     userModel.addUser(newUser);
                                     Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
                                 }

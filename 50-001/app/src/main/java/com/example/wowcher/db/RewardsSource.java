@@ -23,6 +23,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class RewardsSource implements DBSource{
@@ -35,16 +36,46 @@ public class RewardsSource implements DBSource{
     }
     @Override
     public void getAllData(Consumer<?> method, Object extras) {
-        rewardsCollection
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+        if (!extras.equals("")){
+            rewardsCollection
+                    .whereNotIn("rewardId", (List<? extends Object>) extras)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                    Rewards rewards = document.toObject(Rewards.class);
+                                    rewardsList.add(rewards);
+                                }
+                                if (method instanceof Consumer<?>){
+
+                                    Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                                    methodCast.accept(rewardsList);
+                                } else {
+                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                                }
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
+
+            rewardsCollection
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.w(TAG, "Listen failed.", e);
+                                return;
+                            }
+
+                            ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
+                            for (QueryDocumentSnapshot document : value) {
                                 Rewards rewards = document.toObject(Rewards.class);
                                 rewardsList.add(rewards);
                             }
@@ -55,36 +86,61 @@ public class RewardsSource implements DBSource{
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
-                    }
-                });
+                    });
+        } else {
+            rewardsCollection
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                    Rewards rewards = document.toObject(Rewards.class);
+                                    rewardsList.add(rewards);
+                                }
+                                if (method instanceof Consumer<?>){
 
-        rewardsCollection
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
+                                    Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                                    methodCast.accept(rewardsList);
+                                } else {
+                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                                }
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
                         }
+                    });
 
-                        ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
-                        for (QueryDocumentSnapshot document : value) {
-                            Rewards rewards = document.toObject(Rewards.class);
-                            rewardsList.add(rewards);
-                        }
-                        if (method instanceof Consumer<?>){
+            rewardsCollection
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.w(TAG, "Listen failed.", e);
+                                return;
+                            }
 
-                            Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
-                            methodCast.accept(rewardsList);
-                        } else {
-                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                            ArrayList<Rewards> rewardsList = new ArrayList<Rewards>();
+                            for (QueryDocumentSnapshot document : value) {
+                                Rewards rewards = document.toObject(Rewards.class);
+                                rewardsList.add(rewards);
+                            }
+                            if (method instanceof Consumer<?>){
+
+                                Consumer<ArrayList<Rewards>> methodCast = (Consumer<ArrayList<Rewards>>) method;
+                                methodCast.accept(rewardsList);
+                            } else {
+                                Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                            }
                         }
-                    }
-                });
+                    });
+        }
+
     }
 
     @Override

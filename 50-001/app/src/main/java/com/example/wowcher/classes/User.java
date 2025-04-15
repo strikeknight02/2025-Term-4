@@ -19,14 +19,19 @@ public class User {
     public int totalPoints = 0; // Default points
     public int currentPoints = 0; //Current Points
     public String createdAt = LocalDateTime.now().toString();
-    public ArrayList<Voucher> redeemedVouchers = new ArrayList<Voucher>();
-    public ArrayList<Missions> redeemedMissions = new ArrayList<Missions>();
+
+    public ArrayList<String> redeemedVouchers = new ArrayList<String>();
+    public ArrayList<String> redeemedMissions = new ArrayList<String>();
+
+    public ArrayList<String> redeemedRewards = new ArrayList<String>();
 
     // No-arg constructor
     public User() {}
 
     // User constructor
-    public User(String userId, String username, String email, String password, String mobileNumber, String role, String tier, int totalPoints, int currentPoints, String createdAt, ArrayList<Voucher> redeemedVouchers, ArrayList<Missions> redeemedMissions) {
+    public User(String userId, String username, String email, String password, String mobileNumber, String role,
+                String tier, int totalPoints, int currentPoints, String createdAt,
+                ArrayList<String> redeemedVouchers, ArrayList<String> redeemedMissions, ArrayList<String> redeemedRewards) {
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -39,6 +44,7 @@ public class User {
         this.createdAt = createdAt;
         this.redeemedVouchers = redeemedVouchers;
         this.redeemedMissions = redeemedMissions;
+        this.redeemedRewards = redeemedRewards;
     }
 
     // Getters and Setters
@@ -63,18 +69,21 @@ public class User {
     public String getTier() { return tier; }
     public void setTier(String tier) { this.tier = tier; }
 
-    public long getTotalPoints() { return totalPoints; }
+    public int getTotalPoints() { return totalPoints; }
     public void setTotalPoints(int totalPoints) { this.totalPoints = totalPoints; }
 
-    public long getCurrentPoints() { return currentPoints; }
+    public int getCurrentPoints() { return currentPoints; }
     public void setCurrentPoints(int currentPoints) { this.currentPoints = currentPoints; }
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 
-    public ArrayList<Voucher> getRedeemedVouchers() {return redeemedVouchers;}
-    public void setRedeemedVouchers(ArrayList<Voucher> redeemedVouchers) {this.redeemedVouchers = redeemedVouchers;}
+    public ArrayList<String> getRedeemedVouchers() {return redeemedVouchers;}
+    public void setRedeemedVouchers(ArrayList<String> redeemedVouchers) {this.redeemedVouchers = redeemedVouchers;}
 
-    public ArrayList<Missions> getRedeemedMissions() {return redeemedMissions;}
-    public void setRedeemedMissions(ArrayList<Missions> redeemedMissions) {this.redeemedMissions = redeemedMissions;}
+    public ArrayList<String> getRedeemedMissions() {return redeemedMissions;}
+    public void setRedeemedMissions(ArrayList<String> redeemedMissions) {this.redeemedMissions = redeemedMissions;}
+
+    public ArrayList<String> getRedeemedRewards() {return redeemedRewards;}
+    public void setRedeemedRewards(ArrayList<String> redeemedRewards) {this.redeemedRewards = redeemedRewards;}
 }

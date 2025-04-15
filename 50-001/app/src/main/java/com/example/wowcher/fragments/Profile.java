@@ -81,52 +81,54 @@ public class Profile extends Fragment {
         userNameText = view.findViewById(R.id.userNameText); // Bind the TextView
         claimedVouchersLayout = view.findViewById(R.id.constraintLayout2); // Bind the "Claimed Vouchers" section
 
-        db = FirebaseFirestore.getInstance();
-
-        //User
-        DBSource userSourceInstance = new UserSource(db);
-        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
-        userModel.getModelInstance(userModel);
-
-        userModel.getUserInfoFromSource("userId", user.getUid());
-
-        //loadUserVouchers();
-        final Observer<User> userObserver = new Observer<User> () {
-            @Override
-            public void onChanged(@Nullable final User user) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
-
-                    String name = user.getUsername();
-                    userNameText.setText(name != null ? name : "No Name Found");
-
-                    ArrayList<Voucher> redeemedVouchers = user.getRedeemedVouchers();
-                    // Toggle visibility
-                    RecyclerView recyclerView = requireView().findViewById(R.id.redeemedVouchersRecyclerView);
-                    View noVouchersText = requireView().findViewById(R.id.noVouchersText);
-
-                    ownedVouchers.clear();
-                    ownedVouchers.addAll(redeemedVouchers);
-
-                    if(!redeemedVouchers.isEmpty()){
-                        recyclerView.setVisibility(View.VISIBLE);
-                        noVouchersText.setVisibility(View.GONE);
-
-                        adapter.notifyDataSetChanged();
-                    } else {
-                        recyclerView.setVisibility(View.GONE);
-                        noVouchersText.setVisibility(View.VISIBLE);
-                    }
-
-
-                } else {
-                    userNameText.setText("User not found");
-                    Toast.makeText(requireContext(), "Failed to load user", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        };
-
-        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
+        //TODO CHECK IF STILL NEEDED
+//        db = FirebaseFirestore.getInstance();
+//
+//        //User
+//        DBSource userSourceInstance = new UserSource(db);
+//        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+//        userModel.getModelInstance(userModel);
+//
+//        userModel.getUserInfoFromSource("userId", user.getUid());
+//
+//        final Observer<User> userObserver = new Observer<User> () {
+//            @Override
+//            public void onChanged(@Nullable final User user) {
+//                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
+//
+//                    String name = user.getUsername();
+//                    userNameText.setText(name != null ? name : "No Name Found");
+//
+//                    ArrayList<String> redeemedVouchers = user.getRedeemedVouchers();
+//
+//                    // Toggle visibility
+//                    RecyclerView recyclerView = requireView().findViewById(R.id.redeemedVouchersRecyclerView);
+//                    View noVouchersText = requireView().findViewById(R.id.noVouchersText);
+//
+//
+//                    ownedVouchers.clear();
+//                    adapter.setSearchList();
+//
+//                    if(!redeemedVouchers.isEmpty()){
+//                        recyclerView.setVisibility(View.VISIBLE);
+//                        noVouchersText.setVisibility(View.GONE);
+//
+//                        adapter.notifyDataSetChanged();
+//                    } else {
+//                        recyclerView.setVisibility(View.GONE);
+//                        noVouchersText.setVisibility(View.VISIBLE);
+//                    }
+//
+//
+//                } else {
+//                    userNameText.setText("User not found");
+//                    Toast.makeText(requireContext(), "Failed to load user", Toast.LENGTH_SHORT).show();
+//                }
+//
+//            }
+//        };
+//
+//        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
 
         // Set the click listener for the "Claimed Vouchers" section
         claimedVouchersLayout.setOnClickListener(v -> {

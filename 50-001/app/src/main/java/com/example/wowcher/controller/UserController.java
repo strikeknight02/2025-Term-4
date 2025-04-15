@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.UserSource;
 
 
 import java.util.ArrayList;

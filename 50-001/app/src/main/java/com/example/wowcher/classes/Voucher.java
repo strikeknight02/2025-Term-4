@@ -11,13 +11,14 @@ public class Voucher {
     private String status = "";
     private String locationId = ""; // Foreign key to Location
     private String createdAt = "";
-    private long pointsReward = 0; // Points earned upon redemption
+
+    private int pointsReward = 0; // Points earned upon redemption
 
     //no-arg constructor
     public Voucher(){}
 
     // Constructor
-    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, long pointsReward) {
+    public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, int pointsReward) {
         this.voucherId = voucherId;
         this.title = title;
         this.details = details;
@@ -45,7 +46,7 @@ public class Voucher {
     public String getCreatedAt() {
         return createdAt;
     }
-    public long getPointsReward() {
+    public int getPointsReward() {
         return pointsReward;
     }
 
@@ -70,7 +71,7 @@ public class Voucher {
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
-    public void setPointsReward(long pointsReward) {
+    public void setPointsReward(int pointsReward) {
         this.pointsReward = pointsReward;
     }
 }

@@ -60,7 +60,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
         detailImage = findViewById(R.id.detailImage);
         backButton = findViewById(R.id.backButton);
         redeemButton = findViewById(R.id.redeemButton);
-        redeemButton.setEnabled(false); // Disable by default
+        redeemButton.setEnabled(true); //by default
 
         // Initialize Firebase instances
         db = FirebaseFirestore.getInstance();
@@ -99,10 +99,9 @@ public class VoucherDetailActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable final User user) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
-                    ArrayList<Voucher> redeemedVouchers = user.getRedeemedVouchers();
-// TODO check if redeem button is set enabled by default
-                    for (Voucher v : redeemedVouchers){
-                        if (v.getVoucherId().equals(voucherId)){
+                    ArrayList<String> redeemedVouchers = user.getRedeemedVouchers();
+                    for (String v : redeemedVouchers){
+                        if (v.equals(voucherId)){
                             redeemButton.setText("Owned");
                             redeemButton.setEnabled(false);
                             detailStatus.setText("Status: Redeemed");
@@ -126,14 +125,14 @@ public class VoucherDetailActivity extends AppCompatActivity {
         voucherModel= new ViewModelProvider(this, new VoucherControllerFactory(userSourceInstance)).get(VoucherController.class);
         voucherModel.getModelInstance(voucherModel);
 
-        voucherModel.getUserRedeemedVouchers("voucherId",voucherId);
+        voucherModel.getVoucherBySomething("voucherId", voucherId);
 
         final Observer<Voucher> voucherObserver = new Observer<Voucher> () {
             @Override
             public void onChanged(@Nullable final Voucher voucher) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (voucher !=null)) {
 
-                    userModel.updateUser(userId, "redeemedVouchers", voucher);
+                    userModel.updateUser(userId, "redeemedVouchers", FieldValue.arrayUnion(voucherId));
                     Toast.makeText(VoucherDetailActivity.this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
                     redeemButton.setEnabled(false);
                     redeemButton.setText("Owned");

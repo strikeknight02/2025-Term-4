@@ -178,7 +178,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
             public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
 
                 if(voucherList != null){
-
+                    //TODO ENSURE IT UPDATES AFTER REDEMPTION
                     ArrayList<String> voucherIdList = new ArrayList<>();
                     for(Voucher v : voucherList){
                         if (!voucherIdList.contains(v.getLocationId())){
@@ -200,13 +200,10 @@ public class Map extends Fragment implements OnMapReadyCallback {
             @Override
             public void onChanged(@Nullable final User user) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
-                    ArrayList<Voucher> redeemedVouchers = user.getRedeemedVouchers();
-                    ArrayList<String> redeemedVoucherIds = new ArrayList<>();
-                    for (Voucher v : redeemedVouchers){
-                        redeemedVoucherIds.add(v.getVoucherId());
-                    }
-                    Log.e("WHERE", redeemedVouchers.toString());
-                    voucherModel.getVouchersforAll(redeemedVoucherIds);
+                    ArrayList<String> redeemedVouchers = user.getRedeemedVouchers();
+
+                    //TODO supposed to get all now?
+                    voucherModel.getVouchersforAll(redeemedVouchers);
                     voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
                 }
 

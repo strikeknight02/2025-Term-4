@@ -10,8 +10,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.example.wowcher.classes.Missions;
+import com.example.wowcher.classes.Rewards;
 import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -103,41 +105,6 @@ public class UserSource implements DBSource{
 
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
                                 User user = document.toObject(User.class);
-                                userCollection
-                                        .document(document.getId())
-                                        .collection("redeemedVouchers")
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-
-                                            @RequiresApi(api = Build.VERSION_CODES.O)
-                                            @Override
-                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                ArrayList<Voucher> voucherList = new ArrayList<>();
-                                                for (QueryDocumentSnapshot document : task.getResult()){
-                                                    Log.d("MINI DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                                    Voucher voucher = document.toObject(Voucher.class);
-                                                    voucherList.add(voucher);
-                                                }
-                                                user.setRedeemedVouchers(voucherList);
-                                            }
-                                        });
-                                userCollection
-                                        .document(document.getId())
-                                        .collection("redeemedMissions")
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-
-                                            @RequiresApi(api = Build.VERSION_CODES.O)
-                                            @Override
-                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                ArrayList<Missions> missionList = new ArrayList<>();
-                                                for (QueryDocumentSnapshot document : task.getResult()){
-                                                    Missions voucher = document.toObject(Missions.class);
-                                                    missionList.add(voucher);
-                                                }
-                                                user.setRedeemedMissions(missionList);
-                                            }
-                                        });
 
                                 UserList.add(user);
                             }
@@ -156,6 +123,7 @@ public class UserSource implements DBSource{
                 });
 
         db.collection("users")
+                .whereEqualTo(column, comparison)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -169,40 +137,6 @@ public class UserSource implements DBSource{
 
                             Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
                             User user = document.toObject(User.class);
-                            userCollection
-                                    .document(document.getId())
-                                    .collection("redeemedVouchers")
-                                    .get()
-                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-
-                                        @RequiresApi(api = Build.VERSION_CODES.O)
-                                        @Override
-                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                            ArrayList<Voucher> voucherList = new ArrayList<>();
-                                            for (QueryDocumentSnapshot document : task.getResult()){
-                                                Voucher voucher = document.toObject(Voucher.class);
-                                                voucherList.add(voucher);
-                                            }
-                                            user.setRedeemedVouchers(voucherList);
-                                        }
-                                    });
-                            userCollection
-                                    .document(document.getId())
-                                    .collection("redeemedMissions")
-                                    .get()
-                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-
-                                        @RequiresApi(api = Build.VERSION_CODES.O)
-                                        @Override
-                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                            ArrayList<Missions> missionList = new ArrayList<>();
-                                            for (QueryDocumentSnapshot document : task.getResult()){
-                                                Missions voucher = document.toObject(Missions.class);
-                                                missionList.add(voucher);
-                                            }
-                                            user.setRedeemedMissions(missionList);
-                                        }
-                                    });
                             UserList.add(user);
                         }
 
@@ -272,44 +206,7 @@ public class UserSource implements DBSource{
 
     @Override
     public void update( String reference, String column, Object newValues) {
-        if (column.equals("redeemedMissions") || column.equals("redeemedVouchers")){
-            userCollection
-                    .document(reference)
-                    .collection(column)
-                    .add(newValues)
-                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            String newID = documentReference.getId();
-                            userCollection
-                                    .document(reference)
-                                    .collection(column)
-                                    .document(newID)
-                                    .update(column.equals("redeemedMissions")? "missionId" : "voucherId", newID)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Log.d(TAG, "DocumentSnapshot successfully updated with ID!");
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Log.w(TAG, "Error updating document with ID", e);
-                                        }
-                                    });
-
-                            Log.d("SUCCESSFUL UPDATE", "DocumentSnapshot successfully updated!");
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w("UNSUCCESSFUL UPDATE", "Error updating document", e);
-                        }
-                    });
-        } else {
-            userCollection
+         userCollection
                     .document(reference)
                     .update(column, newValues)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -324,7 +221,6 @@ public class UserSource implements DBSource{
                             Log.w("UNSUCCESSFUL UPDATE", "Error updating document", e);
                         }
                     });
-        }
 
     }
 

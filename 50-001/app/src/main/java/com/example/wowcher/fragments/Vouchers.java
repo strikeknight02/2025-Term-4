@@ -56,6 +56,8 @@ public class Vouchers extends Fragment {
     RewardsController rewardsModel;
     MissionController missionsModel;
 
+    int userCurrentPoints;
+
     TextView tierNameText, pointsNameText, voucherNameText;
 
     RecyclerView rewardsRecyclerView;
@@ -119,7 +121,6 @@ public class Vouchers extends Fragment {
         missionsModel.getModelInstance(missionsModel);
 
         userModel.getUserInfoFromSource("userId", getCurrentUserId());
-        rewardsModel.getRewardsforAll();
 
         final Observer<ArrayList<Missions>> missionObserver = new Observer<ArrayList<Missions>>() {
             @Override
@@ -138,7 +139,8 @@ public class Vouchers extends Fragment {
             @Override
             public void onChanged(@Nullable final ArrayList<Rewards> rewardsList) {
                 if(rewardsList != null){
-                    //TODO Implement Redeemed Rewards and then check
+
+                    //rewardsList.removeIf(r -> r.getPointsRequired() > userCurrentPoints);
 
                     // Update the rewardAdapter with the new rewards list
                     rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
@@ -154,19 +156,17 @@ public class Vouchers extends Fragment {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
                     String userTier = user.getTier();
                     int userPoints = user.getCurrentPoints();
+                    userCurrentPoints = userPoints;
 
                     if (userTier != null) {
                         tierNameText.setText(userTier);
                     }
                     pointsNameText.setText(userPoints + " pts");
 
-                    ArrayList<Missions> redeemedMissions =  user.getRedeemedMissions();
-                    ArrayList<String> redeemedMissionIds = new ArrayList<>();
-                    for (Missions m: redeemedMissions){
-                        redeemedMissionIds.add(m.getMissionId());
-                    }
-
-                    missionsModel.getMissionForAll(redeemedMissionIds);
+                    ArrayList<String> redeemedMissions =  user.getRedeemedMissions();
+                    ArrayList<String> redeemedRewards = user.getRedeemedRewards();
+                    rewardsModel.getRewardsforAll(redeemedRewards);
+                    missionsModel.getMissionForAll(redeemedMissions);
                 } else {
                     Toast.makeText(requireContext(), "Failed to load user info", Toast.LENGTH_SHORT).show();
                 }
@@ -177,9 +177,6 @@ public class Vouchers extends Fragment {
         missionsModel.getAllMission().observe(getViewLifecycleOwner(), missionObserver);
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
         rewardsModel.getAllRewards().observe(getViewLifecycleOwner(), rewardsObserver);
-
-        //TODO Replace Missions
-        //loadMissions();
 
         return view;
     }
@@ -252,64 +249,6 @@ public class Vouchers extends Fragment {
     public interface RedeemedCallback {
         void onChecked(boolean isRedeemed);
     }
-
-    private void loadMissions() {
-        db.collection("missions")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        missionList.clear(); // clear existing missions to avoid duplicates
-
-                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            String missionId = documentSnapshot.getString("missionId");
-                            String missionName = documentSnapshot.getString("missionName");
-                            String description = documentSnapshot.getString("description");
-                            String criteria = documentSnapshot.getString("criteria");
-                            int pointsReward = documentSnapshot.getLong("pointsReward").intValue();
-                            int progress = documentSnapshot.getLong("progress").intValue();
-
-                            Missions mission = new Missions(missionId, missionName, description, criteria, pointsReward, progress);
-                            missionList.add(mission);
-                        }
-
-                        Log.d("Firestore", "Loaded missions: " + missionList.size());
-                        missionAdapter.notifyDataSetChanged(); // Refresh adapter
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to load missions", Toast.LENGTH_SHORT).show();
-                    Log.e("Firestore", "Error loading missions", e);
-                });
-    }
-
-    private void generateAndUploadMissions() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        List<Missions> generatedMissions = new ArrayList<>();
-
-        for (int i = 1; i <= 10; i++) {
-            Missions mission = new Missions(
-                    "mission" + i,
-                    "Mission " + i,
-                    "Complete task number " + i,
-                    i,
-                    10 * i, // Reward increases per mission
-                    0 // Initial progress
-            );
-            generatedMissions.add(mission);
-        }
-
-        for (Missions mission : generatedMissions) {
-            db.collection("missions")
-                    .document(mission.getMissionId())
-                    .set(mission)
-                    .addOnSuccessListener(aVoid ->
-                            Log.d("Firestore", "Mission " + mission.getMissionId() + " added"))
-                    .addOnFailureListener(e ->
-                            Log.e("Firestore", "Error adding mission " + mission.getMissionId(), e));
-        }
-    }
-
-}
     private boolean isRewardRedeemed(String userId, int rewardId) {
         final boolean[] isRedeemed = {false};
         db.collection("users")
@@ -328,6 +267,7 @@ public class Vouchers extends Fragment {
                 });
         return isRedeemed[0];
     }
-
 }
+
+
 
