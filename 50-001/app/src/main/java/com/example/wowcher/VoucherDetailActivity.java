@@ -34,9 +34,10 @@ import java.util.Map;
 public class VoucherDetailActivity extends AppCompatActivity {
 
     TextView detailDesc, detailTitle, detailVoucherId, detailStatus;
-    ImageView detailImage;
-    Button backButton, redeemButton;
+    ImageView detailImage, backButton;
+    Button redeemButton;
     String voucherTitle, voucherDetails, voucherStatus;
+    long voucherPoints;
     String voucherId;
 
     FirebaseFirestore db;
@@ -49,34 +50,38 @@ public class VoucherDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set up layout first
         setContentView(R.layout.activity_detail);
 
+        // Initialize UI components
         detailDesc = findViewById(R.id.detailDesc);
         detailTitle = findViewById(R.id.detailTitle);
         detailImage = findViewById(R.id.detailImage);
         backButton = findViewById(R.id.backButton);
         redeemButton = findViewById(R.id.redeemButton);
-//        detailVoucherId = findViewById(R.id.detailVoucherId);
-//        detailStatus = findViewById(R.id.detailStatus);
+        redeemButton.setEnabled(false); // Disable by default
 
+        // Initialize Firebase instances
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
 
+        // Fetch data from the Intent
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             voucherId = bundle.getString("Id", "-1");
             voucherTitle = bundle.getString("Title", "No title");
             voucherDetails = bundle.getString("Desc", "No description");
-            voucherStatus = bundle.getString("Status", "Not Redeemed");  // Add Status if needed
+            voucherStatus = bundle.getString("Status", "Not Redeemed");
+            voucherPoints = bundle.getLong("Points", 10);
 
-            // Display data in the UI
+            // Set the voucher details in the UI
             detailTitle.setText(voucherTitle);
             detailDesc.setText(voucherDetails);
-//            detailVoucherId.setText("Voucher ID: " + voucherId);
-//            detailStatus.setText("Status: " + voucherStatus);
         }
 
+        // Back button functionality
         backButton.setOnClickListener(v -> finish());
 
         redeemButton.setOnClickListener(v -> redeemVoucher(voucherId));
@@ -95,7 +100,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
             public void onChanged(@Nullable final User user) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
                     ArrayList<Voucher> redeemedVouchers = user.getRedeemedVouchers();
-
+// TODO check if redeem button is set enabled by default
                     for (Voucher v : redeemedVouchers){
                         if (v.getVoucherId().equals(voucherId)){
                             redeemButton.setText("Owned");

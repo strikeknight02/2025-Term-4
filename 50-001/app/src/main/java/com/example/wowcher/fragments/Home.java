@@ -105,10 +105,7 @@ public class Home extends Fragment {
             @Override
             public void onChanged(@Nullable final ArrayList<Location> locationList) {
                 if (locationList != null){
-                    Log.d("GETTING LOCATIONS IN HOME", "get get get");
                     getRoute(locationList);
-                } else {
-                    Log.d("NOTHING", "get get get");
                 }
             }
         };
@@ -116,7 +113,7 @@ public class Home extends Fragment {
         final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
             @Override
             public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
-                Log.d("GETTING VOUCHERS IN HOME", "get get get");
+
                 if(voucherList != null){
                     if (!voucherList.isEmpty()) {
                         adapter = new MyAdapter(requireContext(), voucherList);
@@ -148,7 +145,6 @@ public class Home extends Fragment {
             @Override
             public void onChanged(@Nullable final User user) {
                 if (user != null){
-                    Log.d("GETTING USER IN HOME", "get get get");
                     ArrayList<Voucher> redeemedVouchers = user.getRedeemedVouchers();
 
                     ArrayList<String> redeemedVoucherIds = new ArrayList<>();
@@ -164,6 +160,7 @@ public class Home extends Fragment {
         };
 
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
+
 
         return view;
     }

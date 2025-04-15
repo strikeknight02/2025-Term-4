@@ -1,9 +1,7 @@
 package com.example.wowcher.classes;
 
 import android.os.Build;
-
 import androidx.annotation.RequiresApi;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -22,7 +20,6 @@ public class User {
     public int currentPoints = 0; //Current Points
     public String createdAt = LocalDateTime.now().toString();
     public ArrayList<Voucher> redeemedVouchers = new ArrayList<Voucher>();
-
     public ArrayList<Missions> redeemedMissions = new ArrayList<Missions>();
 
     // No-arg constructor
@@ -44,99 +41,40 @@ public class User {
         this.redeemedMissions = redeemedMissions;
     }
 
-    public String getUsername() {
-        return username;
-    }
+    // Getters and Setters
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public String getUserId() {
-        return userId;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getMobileNumber() { return mobileNumber; }
+    public void setMobileNumber(String mobileNumber) { this.mobileNumber = mobileNumber; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getTier() { return tier; }
+    public void setTier(String tier) { this.tier = tier; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public long getTotalPoints() { return totalPoints; }
+    public void setTotalPoints(int totalPoints) { this.totalPoints = totalPoints; }
 
-    public String getMobileNumber() {
-        return mobileNumber;
-    }
+    public long getCurrentPoints() { return currentPoints; }
+    public void setCurrentPoints(int currentPoints) { this.currentPoints = currentPoints; }
 
-    public void setMobileNumber(String mobileNumber) {
-        this.mobileNumber = mobileNumber;
-    }
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 
-    public String getRole() {
-        return role;
-    }
+    public ArrayList<Voucher> getRedeemedVouchers() {return redeemedVouchers;}
+    public void setRedeemedVouchers(ArrayList<Voucher> redeemedVouchers) {this.redeemedVouchers = redeemedVouchers;}
 
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getTier() {
-        return tier;
-    }
-
-    public void setTier(String tier) {
-        this.tier = tier;
-    }
-
-    public int getTotalPoints(){
-        return totalPoints;
-    }
-
-    public void setTotalPoints(int totalPoints){
-        this.totalPoints = totalPoints;
-    }
-
-    public int getCurrentPoints() {
-        return currentPoints;
-    }
-
-    public void setCurrentPoints(int currentPoints) {
-        this.currentPoints = currentPoints;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public ArrayList<Voucher> getRedeemedVouchers() {
-        return redeemedVouchers;
-    }
-
-    public void setRedeemedVouchers(ArrayList<Voucher> redeemedVouchers) {
-        this.redeemedVouchers = redeemedVouchers;
-    }
-
-    public ArrayList<Missions> getRedeemedMissions() {
-        return redeemedMissions;
-    }
-
-    public void setRedeemedMissions(ArrayList<Missions> redeemedMissions) {
-        this.redeemedMissions = redeemedMissions;
-    }
+    public ArrayList<Missions> getRedeemedMissions() {return redeemedMissions;}
+    public void setRedeemedMissions(ArrayList<Missions> redeemedMissions) {this.redeemedMissions = redeemedMissions;}
 }
