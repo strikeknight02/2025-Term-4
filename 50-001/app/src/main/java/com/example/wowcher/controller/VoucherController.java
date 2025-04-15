@@ -56,14 +56,12 @@ public class VoucherController extends ViewModel {
         voucherSourceInstance.getAllData( method, redeemedVouchers );
     }
 
-    //TODO CHANGE INTO SOMETHING ELSE
+    //TODO CHECK THROUGH USAGES
     public void getUserRedeemedVouchers(String column, ArrayList<String> redeemedVouchers){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getAllVouchers().setValue( vouchers); };
         VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
         voucherSourceInstance.getAllRedeemedVouchers( method, redeemedVouchers );
     }
-
-
 
     public void getVouchersBasedOnLocation(ArrayList<String> locationIds){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getVouchersBasedOnLocation().setValue((ArrayList<Voucher>) vouchers); };

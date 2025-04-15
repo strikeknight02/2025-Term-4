@@ -97,12 +97,28 @@ public class Profile extends Fragment {
         claimedRewardsLayout = view.findViewById(R.id.constraintLayout3); // Bind the "Claimed Vouchers" section
 
         db = FirebaseFirestore.getInstance();
+        //User
+        DBSource userSourceInstance = new UserSource(db);
+        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
 
-        if (user != null) {
-            String displayName = user.getDisplayName();
-            userNameText.setText(displayName != null ? displayName : "No Name Found");
-        }
-        //TODO Add user name
+        userModel.getUserInfoFromSource("userId", user.getUid());
+
+        final Observer<User> userObserver = new Observer<User> () {
+            @Override
+            public void onChanged(@Nullable final User userObj) {
+                if (userObj != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                    String name = userObj.getUsername();
+                    userNameText.setText(name != null ? name : "No Name Found");
+                } else {
+                    String displayName = user.getDisplayName();
+                    userNameText.setText(displayName != null ? displayName : "No Name Found");
+                    Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
 
         // Handle "Claimed Vouchers" click
         claimedVouchersLayout.setOnClickListener(v -> {
@@ -132,26 +148,5 @@ public class Profile extends Fragment {
 
         return view;
     }
-
-
-    private void loadUserName() {
-        if (user == null) return;
-
-        String userId = user.getUid();
-
-        db.collection("users").document(userId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        String name = documentSnapshot.getString("username");
-                        userNameText.setText(name != null ? name : "No Name Found");
-                    } else {
-                        userNameText.setText("User not found");
-                    }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show());
-    }
-
 
 }

@@ -58,6 +58,8 @@ public class ClaimedRewardsActivity extends AppCompatActivity {
         // Get the current user's UID from FirebaseAuth
         String userId = auth.getCurrentUser().getUid();  // Dynamically fetch the UID
 
+        //TODO Get Redeemed vouchers
+
         // Get redeemed vouchers for the specific user from the `redeemedVouchers` subcollection
         db.collection("users")
                 .document(userId)

@@ -141,41 +141,6 @@ public class VoucherDetailActivity extends AppCompatActivity {
         voucherModel.getModelInstance(voucherModel);
 
         voucherModel.getVoucherBySomething("voucherId", voucherId);
-        //TODO Update points after redemption
-        // Redirect to HomeActivity
-        //finish(); // Close the current activity
-
-        //long currentPoints = userSnapshot.contains("currentPoints") ? userSnapshot.getLong("currentPoints") : 0;
-//                                long totalPoints = userSnapshot.contains("totalPoints") ? userSnapshot.getLong("totalPoints") : 0;
-//
-//                                long updatedCurrentPoints = currentPoints + voucherPoints;
-//                                long updatedTotalPoints = totalPoints + voucherPoints;
-//
-//                                // Update the user's points in Firestore
-//                                Map<String, Object> updates = new HashMap<>();
-//                                updates.put("currentPoints", updatedCurrentPoints);
-//                                updates.put("totalPoints", updatedTotalPoints);
-//
-//                                db.collection("users")
-//                                        .document(userId)
-//                                        .update(updates)
-//                                        .addOnSuccessListener(unused -> {
-//                                            // Successfully updated points
-//                                            Toast.makeText(this, "Voucher redeemed! +" + voucherPoints + " points", Toast.LENGTH_SHORT).show();
-//                                            redeemButton.setEnabled(false);
-//                                            redeemButton.setText("Owned");
-//                                            detailStatus.setText("Status: Redeemed");
-//                                        })
-//                                        .addOnFailureListener(e -> {
-//                                            // Handle any failure in updating points
-//                                            Toast.makeText(this, "Failed to update points", Toast.LENGTH_SHORT).show();
-//                                        });
-//                            })
-//                            .addOnFailureListener(e -> {
-//                                // Handle any failure in fetching user points
-//                                Toast.makeText(this, "Failed to fetch user points", Toast.LENGTH_SHORT).show();
-//                            });
-
 
         final Observer<Voucher> voucherObserver = new Observer<Voucher> () {
             @Override
@@ -186,7 +151,9 @@ public class VoucherDetailActivity extends AppCompatActivity {
                     Toast.makeText(VoucherDetailActivity.this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
                     redeemButton.setEnabled(false);
                     redeemButton.setText("Owned");
-                    //detailStatus.setText("Status: Redeemed");
+                    userModel.updateUser(userId, "currentPoints", FieldValue.increment((long) voucher.getPointsReward()));
+                    userModel.updateUser(userId, "totalPoints", FieldValue.increment((long) voucher.getPointsReward()));
+                    finish(); // Close the current activity
                 } else {
                     Toast.makeText(VoucherDetailActivity.this, "Failed to redeem voucher", Toast.LENGTH_SHORT).show();
                 }
@@ -194,7 +161,6 @@ public class VoucherDetailActivity extends AppCompatActivity {
         };
 
         voucherModel.getRedeemedVouchers().observe(this, voucherObserver);
-
     }
 
     private String generateRandomCode(int length) {

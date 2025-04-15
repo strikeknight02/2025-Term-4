@@ -69,6 +69,8 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
         String userId = user.getUid();
         String missionId = mission.getMissionId();
 
+        //TODO send prayers
+
         // First check: if mission is already redeemed, disable it and return early
         db.collection("users")
                 .document(userId)
@@ -272,10 +274,10 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
     }
 
     private String getTierForPoints(long totalPoints) {
-        if (totalPoints >= 1500) return "platinum";
-        else if (totalPoints >= 1000) return "gold";
-        else if (totalPoints >= 500) return "silver";
-        else return "bronze";
+        if (totalPoints >= 1500) return "Platinum";
+        else if (totalPoints >= 1000) return "Gold";
+        else if (totalPoints >= 500) return "Silver";
+        else return "Bronze";
     }
 
     @Override

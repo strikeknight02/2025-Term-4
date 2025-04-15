@@ -156,7 +156,6 @@ public class Home extends Fragment {
 
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
 
-
         return view;
     }
 

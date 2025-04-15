@@ -40,6 +40,8 @@ public class RewardDetailActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
+        //TODO Add User Model
+        //TODO Add Rewards Model
 
         rewardName = getIntent().getStringExtra("RewardName");
         rewardDescription = getIntent().getStringExtra("RewardDescription");

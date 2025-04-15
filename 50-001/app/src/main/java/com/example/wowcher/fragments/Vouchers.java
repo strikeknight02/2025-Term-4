@@ -63,10 +63,6 @@ public class Vouchers extends Fragment {
     RewardsController rewardsModel;
     MissionController missionsModel;
 
-    int userCurrentPoints;
-
-
-
     FirebaseAuth auth;
     FirebaseUser user;
 
@@ -152,13 +148,18 @@ public class Vouchers extends Fragment {
             public void onChanged(@Nullable final ArrayList<Rewards> rewardsList) {
                 if(rewardsList != null){
 
-                    //rewardsList.removeIf(r -> r.getPointsRequired() > userCurrentPoints);
-for(Rewards r : rewardsList){
-    if(r.getDescription().length() >= 20){
-        r.setDescription(r.getDescription().substring(0, 20) + "...");
-    }
-}
+                    String pointsText = pointsNameText.getText().toString();
+                    if (!pointsText.isEmpty()){
+                        System.out.println(pointsText.substring(0,3));
+                        int value = Integer.parseInt(pointsText.substring(0,3));
+                        rewardsList.removeIf(r -> r.getPointsRequired() > value);
+                    }
 
+                    for(Rewards r : rewardsList){
+                        if(r.getDescription().length() >= 20){
+                            r.setDescription(r.getDescription().substring(0, 20) + "...");
+                        }
+                    }
 
                     // Update the rewardAdapter with the new rewards list
                     rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
@@ -174,14 +175,13 @@ for(Rewards r : rewardsList){
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user !=null)){
                     String userTier = user.getTier();
                     int userPoints = user.getCurrentPoints();
-                    userCurrentPoints = userPoints;
 
                     if (userTier != null) {
                         tierNameText.setText(userTier);
                     }
                     pointsNameText.setText(userPoints + " pts");
 
-                    ArrayList<String> redeemedMissions =  user.getRedeemedMissions();
+                    ArrayList<String> redeemedMissions = user.getRedeemedMissions();
                     ArrayList<String> redeemedRewards = user.getRedeemedRewards();
                     rewardsModel.getRewardsforAll(redeemedRewards);
                     missionsModel.getMissionForAll(redeemedMissions);
@@ -204,7 +204,7 @@ for(Rewards r : rewardsList){
     }
 
 
-    //OBSOLETE?
+    //OBSOLETE
     private void loadRewards(int userPoints) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Get current user ID
         db.collection("rewards")
@@ -250,6 +250,7 @@ for(Rewards r : rewardsList){
                 });
     }
 
+    //OBSOLETE
     private void checkIfRewardRedeemed(String userId, int rewardId, RedeemedCallback callback) {
         db.collection("users")
                 .document(userId)
@@ -271,6 +272,7 @@ for(Rewards r : rewardsList){
         void onChecked(boolean isRedeemed);
     }
 
+    //OBSOLETE
     private void fetchMissionsAgain() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -294,7 +296,7 @@ for(Rewards r : rewardsList){
         void onCountLoaded(int count);
     }
 
-
+    //OBSOLETE
     private void getRedeemedVoucherCount(RedeemedVoucherCountCallback callback) {
         String userId = getCurrentUserId();
 
