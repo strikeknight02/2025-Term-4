@@ -13,6 +13,11 @@ public class Voucher {
     private String code = ""; // Unique voucher code
     private String imageName = ""; // Name of the drawable resource (e.g., "voucher_tofu")
 
+    public Voucher() {
+        // Needed for Firestore deserialization
+    }
+
+
     // Constructor
     public Voucher(String voucherId, String title, String details, String status, String locationId, String createdAt, long pointsReward, String code, String imageName) {
         this.voucherId = voucherId;

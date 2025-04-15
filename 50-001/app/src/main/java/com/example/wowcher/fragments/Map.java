@@ -27,7 +27,11 @@ import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -55,7 +59,11 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+
+
 
 import androidx.fragment.app.FragmentActivity;
 
@@ -104,7 +112,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
         if (!Places.isInitialized() && apiKey != null) {
             Places.initialize(currentContext, apiKey);
         }
-
         // Necessary variables for getting places from Google Maps
         autoCompleteAdapter = new ArrayAdapter<String>(currentContext, android.R.layout.simple_dropdown_item_1line);
         placesClient = Places.createClient(currentContext);
@@ -120,6 +127,27 @@ public class Map extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(@NonNull Marker marker) {
+                Location attributes = (Location) marker.getTag(); // Get the attributes from the marker
+
+                if (attributes != null) {
+                    Log.d("DEBUG", "Marker clicked for locationId: " + attributes.getLocationId());
+
+                    Intent in = new Intent(requireContext(), VouchersListActivity.class);
+                    Bundle b1 = new Bundle();
+                    b1.putString("locationId", attributes.getLocationId());
+                    in.putExtras(b1);
+                    startActivity(in);
+                } else {
+                    Log.w("DEBUG", "Marker has no tag!");
+                }
+
+                return false;
+            }
+        });
+
         checkLocationEnabled();
 
         // Check for location permissions
@@ -136,7 +164,10 @@ public class Map extends Fragment implements OnMapReadyCallback {
         } else {
             // Otherwise, retrieve current user location
             fetchUserLocation(currentContext, fusedLocationProviderClient);
-            makeLocationTestData();
+//            makeLocationTestData();
+//            seedLocationsToFirestore();
+//            addVouchersToLocations();
+            fetchLocationsAndDisplayMarkers();
         }
 
     }
@@ -196,7 +227,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
             }
         });
     }
-
     // Check if user location service is enabled
     public void checkLocationEnabled() {
         LocationManager lm = (LocationManager) currentContext.getSystemService(Context.LOCATION_SERVICE);
@@ -245,26 +275,16 @@ public class Map extends Fragment implements OnMapReadyCallback {
     }
 
     // Add marker to user location
-    public void addMarkerToMap(LatLng location, int imageId) {
+    public void addMarkerToMap(LatLng location, int imageId, Location attributes) {
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(location)
                 .icon(BitmapDescriptorFactory.fromBitmap(customMarker(imageId)))
                 .flat(true);
 
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(@NonNull Marker marker) {
-                Intent in = new Intent(requireContext(), VouchersListActivity.class);
-                Bundle b1 = new Bundle();
-                b1.putString("locationId", "Uwc62HtzeDrk97Gx3fxh");
-                in.putExtras(b1);
-                startActivity(in);
-                return false;
-            }
-        });
-
-        mMap.addMarker(markerOptions);
+        Marker marker = mMap.addMarker(markerOptions);
+        marker.setTag(attributes); // Attach the location data to this specific marker
     }
+
 
     // Create custom marker from image from drawable
     private Bitmap customMarker(int resId) {
@@ -285,26 +305,22 @@ public class Map extends Fragment implements OnMapReadyCallback {
     public void moveCameraToLocation(CameraPosition cameraPosition) {
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
-
     // Handles after requesting for permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE_ASK_PERMISSIONS:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission Granted
-                    // Retrieve user location
-                    fetchUserLocation(currentContext, fusedLocationProviderClient);
-                } else {
-                    // Permission Denied
-                    Toast.makeText(currentContext, "Location Permission Denied", Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_ASK_PERMISSIONS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission Granted
+                fetchUserLocation(currentContext, fusedLocationProviderClient);
+            } else {
+                // Permission Denied or grantResults is empty
+                Toast.makeText(currentContext, "Location Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
+
 
     // Handle selecting location from recommended search
     public void selectLocation(String selectedPlace, Context context) {
@@ -349,18 +365,117 @@ public class Map extends Fragment implements OnMapReadyCallback {
     }
 
     // todo (Maryse) - this is where the call is to get location based on vouchers
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public void makeLocationTestData(){
-        locationList.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "")); // tofu
-        locationList.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
-        locationList.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
+//    @RequiresApi(api = Build.VERSION_CODES.O)
+//    public void makeLocationTestData(){
+//        locationList.add(new Location("Uwc62HtzeDrk97Gx3fxh", 0, new GeoPoint(1.334708,103.963177), "", "")); // tofu
+//        locationList.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "","")); // bread
+//        locationList.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "","")); // noods
+//
+//        // todo (Maryse) - on successful, handle response
+//        for (Location location: locationList) {
+//            GeoPoint geoObject = location.getGeolocation();
+//            LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
+//            // temp image, still figuring out how to handle the marker images
+//            addMarkerToMap(latlngObject, R.drawable.marker);
+//        }
+//    }
 
-        // todo (Maryse) - on successful, handle response
-        for (Location location: locationList) {
-            GeoPoint geoObject = location.getGeolocation();
-            LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
-            // temp image, still figuring out how to handle the marker images
-            addMarkerToMap(latlngObject, R.drawable.marker_mcd);
-        }
+    private void fetchLocationsAndDisplayMarkers() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("locations")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Location> locationList = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Location location = document.toObject(Location.class);
+                        locationList.add(location);
+                    }
+
+                    // Now you can use your original loop
+                    for (Location location : locationList) {
+
+                        GeoPoint geoObject = location.getGeolocation();
+                        LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
+                        String imageName = location.getImageName();
+                        int imageResId = currentContext.getResources().getIdentifier(imageName, "drawable", currentContext.getPackageName());
+                        if (imageResId != 0) {
+                            addMarkerToMap(latlngObject, imageResId,location);
+                        } else {
+                            addMarkerToMap(latlngObject, R.drawable.lebron_james,location);
+                        }
+                        // Temporary marker image
+
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Log.e("Firestore", "Error fetching locations", e));
     }
+
+
+//    @RequiresApi(api = Build.VERSION_CODES.O)
+//    private void seedLocationsToFirestore() {
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//
+//        List<Location> locations = Arrays.asList(
+//                new Location("", 1, new GeoPoint(1.2630, 103.6350), "2025-04-14T12:00:00", "Dairy Queen"),
+//                new Location("", 2, new GeoPoint(1.4285, 103.8352), "2025-04-14T12:01:00", "Taco Bell"),
+//                new Location("", 1, new GeoPoint(1.3900, 103.9880), "2025-04-14T12:02:00", "Cinnabon"),
+//                new Location("", 2, new GeoPoint(1.2465, 103.8300), "2025-04-14T12:03:00", "Sbarro"),
+//                new Location("", 1, new GeoPoint(1.3470, 103.6981), "2025-04-14T12:04:00", "A&W"),
+//                new Location("", 2, new GeoPoint(1.3211, 103.9016), "2025-04-14T12:05:00", "Dunkin'."),
+//                new Location("", 1, new GeoPoint(1.3732, 103.7677), "2025-04-14T12:06:00", "Nando's"),
+//                new Location("", 2, new GeoPoint(1.2821, 103.8580), "2025-04-14T12:07:00", "Burger King"),
+//                new Location("", 1, new GeoPoint(1.3000, 103.7870), "2025-04-14T12:08:00", "Pizza Hut"),
+//                new Location("", 2, new GeoPoint(1.3521, 104.0035), "2025-04-14T12:09:00", "Starbucks")
+//        );
+//
+//        for (Location location : locations) {
+//            java.util.Map<String, Object> locationMap = new HashMap<>();
+//            locationMap.put("locationType", location.getLocationType());
+//            locationMap.put("geolocation", location.getGeolocation());
+//            locationMap.put("createdAt", location.getCreatedAt());
+//            locationMap.put("name", location.getName());
+//
+//            DocumentReference docRef = db.collection("locations").document(); // generate a new doc ref
+//            String generatedId = docRef.getId();
+//
+//            locationMap.put("locationId", generatedId); // set locationId field
+//
+//            docRef.set(locationMap)
+//                    .addOnSuccessListener(aVoid ->
+//                            Log.d("Firestore", "Location added with ID: " + generatedId))
+//                    .addOnFailureListener(e ->
+//                            Log.e("Firestore", "Error adding location", e));
+//        }
+//    }
+
+//    private void addVouchersToLocations() {
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//
+//        db.collection("vouchers")
+//                .get()
+//                .addOnSuccessListener(voucherSnapshots -> {
+//                    for (DocumentSnapshot voucherDoc : voucherSnapshots) {
+//                        String locationId = voucherDoc.getString("locationId");
+//
+//                        if (locationId != null) {
+//                            db.collection("locations")
+//                                    .document(locationId)
+//                                    .collection("vouchers")
+//                                    .document(voucherDoc.getId())  // same voucherId
+//                                    .set(voucherDoc.getData())
+//                                    .addOnSuccessListener(aVoid ->
+//                                            Log.d("Firestore", "Voucher added to location: " + locationId))
+//                                    .addOnFailureListener(e ->
+//                                            Log.e("Firestore", "Failed to add voucher to location: " + locationId, e));
+//                        } else {
+//                            Log.w("Firestore", "Voucher has no locationId: " + voucherDoc.getId());
+//                        }
+//                    }
+//                })
+//                .addOnFailureListener(e ->
+//                        Log.e("Firestore", "Failed to fetch vouchers", e));
+//    }
+
+
 }

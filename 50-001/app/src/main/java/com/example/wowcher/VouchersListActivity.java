@@ -73,6 +73,7 @@ public class VouchersListActivity extends AppCompatActivity {
         if(b2 != null){
             locationId = b2.getString("locationId");
             System.out.println(locationId);
+            loadVouchersForLocation(locationId);
         }
 
         Button backButton = this.findViewById(R.id.backButton);
@@ -113,7 +114,6 @@ public class VouchersListActivity extends AppCompatActivity {
 
 
         RequestQueue queue = Volley.newRequestQueue(this);
-
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -159,13 +159,14 @@ public class VouchersListActivity extends AppCompatActivity {
 
             int j = step - 1;
 
-            // Compare key with each element on the left of it until an element smaller than it is found.
+            // Compare value with each element on the left of it
+            // until an element smaller than it is found.
             while (j >= 0 && currentValue < locationList.get(j).get("value").getAsInt()) {
                 locationList.set(j+1,locationList.get(j));
                 --j;
             }
 
-            // Place key at after the element just smaller than it.
+            // Place location object at after the element just smaller than it.
             locationList.set(j+1,currentObject);
         }
 
@@ -184,18 +185,55 @@ public class VouchersListActivity extends AppCompatActivity {
 
     }
 
+    private void loadVouchersForLocation(String locationId) {
+        db = FirebaseFirestore.getInstance();
+
+        Log.d("DEBUG", "Loading vouchers for locationId: " + locationId);
+
+        db.collection("vouchers")
+                .whereEqualTo("locationId", locationId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    vouchersDataList.clear();
+                    Log.d("DEBUG", "Vouchers found: " + queryDocumentSnapshots.size());
+
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        Log.d("DEBUG", "Raw document ID: " + doc.getId());
+                        Log.d("DEBUG", "Raw document data: " + doc.getData());
+
+                        try {
+                            Voucher voucher = doc.toObject(Voucher.class);
+                            Log.d("DEBUG", "Voucher created: " +
+                                    voucher.getVoucherId() + " | " +
+                                    voucher.getTitle() + " | " +
+                                    voucher.getLocationId());
+
+                            vouchersDataList.add(voucher);
+                        } catch (Exception e) {
+                            Log.e("DEBUG", "Error parsing voucher", e);
+                        }
+                    }
+
+                    adapter.notifyDataSetChanged();
+                    Log.d("DEBUG", "Total vouchers loaded: " + vouchersDataList.size());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Failed to fetch vouchers", e);
+                    Toast.makeText(this, "Failed to load vouchers", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
+
     // todo (Maryse) - this is the call function to get vouchers based on location
-    //  locationId is available above
-//    public void makeVouchersTestData(){
-//        vouchersDataList.add(new Voucher("1", "Bread", "30% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-//        vouchersDataList.add(new Voucher("2", "Eat", "10% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-//        vouchersDataList.add(new Voucher("3", "Rice", "20% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-//        vouchersDataList.add(new Voucher("4", "Meat", "40% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-//        vouchersDataList.add(new Voucher("5", "Sushi", "33% off", "Available", "Uwc62HtzeDrk97Gx3fxh", ""));
-//
-//        //todo (Maryse) - handle successful repsonse
-//        // get location based on vouchers
-//        // call getRoute function and pass in the arrayList of locations
+    //locationId is available above
+//    public void makeVouchersTestData() {
+//        vouchersDataList.add(new Voucher("1", "Bread", "30% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 0, "", ""));
+//        vouchersDataList.add(new Voucher("2", "Eat", "10% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 0, "", ""));
+//        vouchersDataList.add(new Voucher("3", "Rice", "20% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 0, "", ""));
+//        vouchersDataList.add(new Voucher("4", "Meat", "40% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 0, "", ""));
+//        vouchersDataList.add(new Voucher("5", "Sushi", "33% off", "Available", "Uwc62HtzeDrk97Gx3fxh", "", 0, "", ""));
 //    }
+
 
 }

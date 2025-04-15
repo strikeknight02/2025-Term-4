@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,6 +17,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -80,8 +82,21 @@ public class Register extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
                             if (firebaseUser != null) {
-                                String userID = firebaseUser.getUid();
+                                // ✅ Update FirebaseAuth user profile with display name
+                                firebaseUser.updateProfile(new UserProfileChangeRequest.Builder()
+                                                .setDisplayName(name) // Set the username as display name
+                                                .build())
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    Log.d("Register", "User display name updated.");
+                                                }
+                                            }
+                                        });
 
+                                // Save other user data in Firestore
+                                String userID = firebaseUser.getUid();
                                 DocumentReference documentReference = fstore.collection("users").document(userID);
                                 Map<String, Object> user = new HashMap<>();
                                 user.put("username", name);
@@ -91,20 +106,20 @@ public class Register extends AppCompatActivity {
                                 user.put("tier", "Bronze");
                                 user.put("totalPoints", 0);
                                 user.put("currentPoints", 0);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    user.put("createdAt", LocalDateTime.now().toString());
-                                }
+                                user.put("createdAt", LocalDateTime.now().toString());
                                 user.put("availableVouchers", new ArrayList<String>());
                                 user.put("previousVouchers", new ArrayList<String>());
                                 user.put("password", password);
 
-                                documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void unused) {
-                                        Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                                documentReference.set(user)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
 
+                                // Redirect to MainActivity
                                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(intent);
                                 finish();
@@ -115,4 +130,5 @@ public class Register extends AppCompatActivity {
                     }
                 });
     }
+
 }

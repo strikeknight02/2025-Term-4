@@ -10,22 +10,27 @@ import java.time.LocalDateTime;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class Location {
-    //primary key
+    // Primary key
     private String locationId = "";
 
     private int locationType = 0;
     private GeoPoint geolocation = new GeoPoint(0.0, 0.0);
     private String createdAt = LocalDateTime.now().toString();
+    private String name = ""; // Name of the location
+    private String imageName = ""; // New imageName field
 
-    //location constructor
-    public Location(String locationId, int locationType, GeoPoint geolocation, String createdAt) {
+    // Full constructor
+    public Location(String locationId, int locationType, GeoPoint geolocation, String createdAt, String name, String imageName) {
         this.locationId = locationId;
         this.locationType = locationType;
         this.geolocation = geolocation;
         this.createdAt = createdAt;
+        this.name = name;
+        this.imageName = imageName;
     }
 
-    public Location(){}
+    // No-arg constructor (required by Firestore)
+    public Location() {}
 
     public String getLocationId() {
         return locationId;
@@ -57,5 +62,21 @@ public class Location {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 }

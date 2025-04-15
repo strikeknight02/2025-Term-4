@@ -1,14 +1,17 @@
 package com.example.wowcher.fragments;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -18,13 +21,16 @@ import com.example.wowcher.ClaimedVouchersActivity;
 import com.example.wowcher.Login;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
+import com.example.wowcher.classes.Location;
 import com.example.wowcher.classes.Voucher;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +48,8 @@ public class Profile extends Fragment {
     TextView userNameText; // Declare the TextView
     ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
 
+    Button btnlogout;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -49,6 +57,8 @@ public class Profile extends Fragment {
 
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
+
+        btnlogout = view.findViewById(R.id.elevatedButton);
 
         if (user == null) {
             startActivity(new Intent(requireContext(), Login.class));
@@ -66,17 +76,28 @@ public class Profile extends Fragment {
         claimedVouchersLayout = view.findViewById(R.id.constraintLayout2); // Bind the "Claimed Vouchers" section
 
         db = FirebaseFirestore.getInstance();
-        loadUserName(); // Load the user's name
-//        loadUserVouchers(); // Load vouchers as before
 
-        // Set the click listener for the "Claimed Vouchers" section
+        if (user != null) {
+            String displayName = user.getDisplayName();
+            userNameText.setText(displayName != null ? displayName : "No Name Found");
+        }
+
+
+        // Handle "Claimed Vouchers" click
         claimedVouchersLayout.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ClaimedVouchersActivity.class);
             startActivity(intent);
         });
 
+        btnlogout.setOnClickListener(v -> {
+            auth.signOut();
+            Intent intent = new Intent(getActivity(), Login.class);
+            startActivity(intent);
+        });
+
         return view;
     }
+
 
     private void loadUserName() {
         if (user == null) return;
@@ -96,5 +117,6 @@ public class Profile extends Fragment {
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Failed to load user name", Toast.LENGTH_SHORT).show());
     }
+
 
 }

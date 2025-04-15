@@ -35,16 +35,20 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Voucher voucher = dataList.get(position);
-        holder.recTitle.setText(voucher.getTitle());
-        holder.recDesc.setText(voucher.getDetails());
-        holder.recID.setText(voucher.getVoucherId());
 
-        String imageName = voucher.getImageName(); // assuming you have a getter for it
+        String imageName = voucher.getImageName();
         int imageResId = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
-
+        if (imageResId != 0) {
+            holder.recImage.setImageResource(imageResId);
+        } else {
+            holder.recImage.setImageResource(R.drawable.lebron_james);
+        }
 
         String voucherId = voucher.getVoucherId();
         String userId = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Set a tag to identify the voucher
+        holder.recCard.setTag(voucherId);
 
         com.google.firebase.firestore.FirebaseFirestore.getInstance()
                 .collection("users")
@@ -53,18 +57,24 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
                 .document(voucherId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    // Check if this holder is still bound to the same voucher
+                    if (!voucherId.equals(holder.recCard.getTag())) return;
+
                     if (documentSnapshot.exists()) {
-                        // Already redeemed
+                        holder.recTitle.setText(voucher.getTitle());
+                        holder.recDesc.setText(voucher.getDetails());
+                        holder.recID.setText(voucher.getVoucherId());
                         holder.recLang.setText("Redeemed");
                         holder.recCard.setClickable(false);
-                        holder.recCard.setAlpha(0.5f); // Optional: dim the card
+                        holder.recCard.setAlpha(0.5f);
+                        holder.recCard.setOnClickListener(null); // remove listener
                     } else {
-
-                        // Not redeemed
+                        holder.recTitle.setText(voucher.getTitle());
+                        holder.recDesc.setText(voucher.getDetails());
+                        holder.recID.setText(voucher.getVoucherId());
                         holder.recLang.setText("Available");
                         holder.recCard.setClickable(true);
-                        holder.recCard.setAlpha(1f); // Restore brightness
-
+                        holder.recCard.setAlpha(1f);
                         holder.recCard.setOnClickListener(view -> {
                             Intent intent = new Intent(context, VoucherDetailActivity.class);
                             intent.putExtra("Id", voucher.getVoucherId());
@@ -75,17 +85,14 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
                             context.startActivity(intent);
                         });
                     }
-                    if (imageResId != 0) {
-                        holder.recImage.setImageResource(imageResId);
-                    } else {
-                        holder.recImage.setImageResource(R.drawable.lebron_james); // fallback
-                    }
                 })
                 .addOnFailureListener(e -> {
+                    if (!voucherId.equals(holder.recCard.getTag())) return;
                     holder.recLang.setText("Status Unknown");
                     holder.recCard.setClickable(false);
                 });
     }
+
 
     @Override
     public int getItemCount() {
