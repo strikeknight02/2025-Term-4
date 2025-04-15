@@ -77,7 +77,8 @@
                 android:text="Pleaser refer to the FAQ guide for solutions to common problems."
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -85,14 +86,17 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"
+                />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="A: Make sure your location services are enabled and you have granted the app permission to access your location. You can also try refreshing the app."
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -101,14 +105,16 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="A: Tap on a voucher to view its details. Once you redeem the voucher, it will appear in your profile under Claimed Vouchers. Find your desired voucher and click on it to show the voucher code."
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -117,14 +123,16 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="A: This may be due to a slow internet connection. Try reconnecting to Wi-Fi or checking your mobile data."
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -133,14 +141,16 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="A: We regularly update voucher listings, but availability may vary. We recommend checking the expiration date and terms before redeeming."
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -148,14 +158,16 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="A: Yes, Voucher is completely free to use."
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -164,14 +176,16 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="A: Definitely! Reach out through the Contact Support section to suggest a new deal or partner store."
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -180,14 +194,16 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="A: The expiry date for vouchers can vary, but most vouchers may expire within a day, so make sure to check the details!"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -209,7 +225,8 @@
                     android:text="Contact Support"
                     android:textStyle="bold"
                     android:textSize="18dp"
-                    android:layout_marginStart="10dp"/>
+                    android:layout_marginStart="10dp"
+                    />
             </LinearLayout>
             <TextView
                 android:layout_width="match_parent"
@@ -217,7 +234,8 @@
                 android:text="Still have unanswered questions and concerns? Feel free to reach out!"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:textSize="15dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -226,7 +244,8 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -235,7 +254,8 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="15dp"/>
 
         </LinearLayout>
     </ScrollView>
