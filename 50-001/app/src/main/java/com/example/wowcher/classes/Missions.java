@@ -1,6 +1,6 @@
 package com.example.wowcher.classes;
 
-public class Mission {
+public class Missions {
     private String missionId;
     private String missionName;
     private String description;
@@ -13,11 +13,11 @@ public class Mission {
     private String locationId;
     private String requiredTier;
 
-    public Mission() {} // Needed for Firestore deserialization
+    public Missions() {} // Needed for Firestore deserialization
 
-    public Mission(String missionId, String missionName, String description,
-                   long criteria, long pointsReward, long progress,
-                   String type, String locationId, String requiredTier) {
+    public Missions(String missionId, String missionName, String description,
+                    long criteria, long pointsReward, long progress,
+                    String type, String locationId, String requiredTier) {
         this.missionId = missionId;
         this.missionName = missionName;
         this.description = description;

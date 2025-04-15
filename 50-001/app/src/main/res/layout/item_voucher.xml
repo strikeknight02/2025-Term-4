@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#E040FB">
+        android:background="#E040FB">>
 
         <!-- Colored Top Section -->
         <LinearLayout
@@ -47,7 +47,7 @@
         <!-- White Bottom Section -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="10dp"
             android:background="#FFFFFF"
@@ -55,7 +55,7 @@
 
             <TextView
                 android:id="@+id/voucher_points_required"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="1000 Points"
                 android:textColor="#673AB7"

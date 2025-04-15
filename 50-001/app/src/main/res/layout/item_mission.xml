@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mission_card"
     android:layout_width="280dp"
-    android:layout_height="250dp"
+    android:layout_height="200dp"
     android:layout_marginEnd="12dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
@@ -111,7 +111,6 @@
                 android:background="@color/mc_red"
                 />
         </com.google.android.material.card.MaterialCardView>
-
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

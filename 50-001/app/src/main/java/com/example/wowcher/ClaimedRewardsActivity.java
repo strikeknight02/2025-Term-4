@@ -1,5 +1,6 @@
 package com.example.wowcher;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -9,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.wowcher.classes.Reward;
+import com.example.wowcher.classes.Rewards;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -20,7 +21,7 @@ import java.util.List;
 public class ClaimedRewardsActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
-    List<Reward> dataList;
+    List<Rewards> dataList;
     ClaimedRewardAdapter adapter;
 
     FirebaseFirestore db;
@@ -72,7 +73,7 @@ public class ClaimedRewardsActivity extends AppCompatActivity {
                             int points = document.getLong("points").intValue();
                             int timestamp = document.getLong("timestamp").intValue();
 
-                            Reward reward = new Reward(0,title,description,points,String.valueOf(timestamp),true);
+                            Rewards reward = new Rewards(0,title,description,points,String.valueOf(timestamp),true);
                             dataList.add(reward); // Add the voucher to the list
                         }
 

@@ -7,22 +7,25 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.wowcher.classes.Reward;
+import com.example.wowcher.classes.Rewards;
+import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.fragments.Home;
 
 public class ClaimedRewardAdapter extends RecyclerView.Adapter<ClaimedRewardViewHolder> {
     private Context context;
-    private List<Reward> dataList;
-    public void setSearchList(List<Reward> dataSearchList){
+    private List<Rewards> dataList;
+    public void setSearchList(List<Rewards> dataSearchList){
         this.dataList = dataSearchList;
         notifyDataSetChanged();
     }
-    public ClaimedRewardAdapter(Context context, List<Reward> dataList){
+    public ClaimedRewardAdapter(Context context, List<Rewards> dataList){
         this.context = context;
         this.dataList = dataList;
     }
@@ -34,7 +37,7 @@ public class ClaimedRewardAdapter extends RecyclerView.Adapter<ClaimedRewardView
     }
     @Override
     public void onBindViewHolder(@NonNull ClaimedRewardViewHolder holder, int position) {
-        Reward reward = dataList.get(position);
+        Rewards reward = dataList.get(position);
         holder.rewardName.setText(reward.getName());
         holder.rewardDescription.setText(reward.getDescription());
         holder.rewardPoints.setText(reward.getPointsRequired() + " Points");  // Points required for the reward

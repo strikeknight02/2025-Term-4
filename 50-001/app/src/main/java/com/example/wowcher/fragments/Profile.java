@@ -48,7 +48,7 @@ public class Profile extends Fragment {
     FirebaseFirestore db;
 
     TextView userNameText; // Declare the TextView
-    ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Rewards"
+    ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
 
     ConstraintLayout claimedRewardsLayout;
 
@@ -77,8 +77,8 @@ public class Profile extends Fragment {
         recyclerView.setAdapter(adapter);
 
         userNameText = view.findViewById(R.id.userNameText); // Bind the TextView
-        claimedVouchersLayout = view.findViewById(R.id.constraintLayout2); // Bind the "Claimed Rewards" section
-        claimedRewardsLayout = view.findViewById(R.id.constraintLayout3); // Bind the "Claimed Rewards" section
+        claimedVouchersLayout = view.findViewById(R.id.constraintLayout2); // Bind the "Claimed Vouchers" section
+        claimedRewardsLayout = view.findViewById(R.id.constraintLayout3); // Bind the "Claimed Vouchers" section
 
         db = FirebaseFirestore.getInstance();
 
@@ -88,13 +88,13 @@ public class Profile extends Fragment {
         }
 
 
-        // Handle "Claimed Rewards" click
+        // Handle "Claimed Vouchers" click
         claimedVouchersLayout.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ClaimedVouchersActivity.class);
             startActivity(intent);
         });
 
-        // Handle "Claimed Rewards" click
+        // Handle "Claimed Vouchers" click
         claimedRewardsLayout.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ClaimedRewardsActivity.class);
             startActivity(intent);
