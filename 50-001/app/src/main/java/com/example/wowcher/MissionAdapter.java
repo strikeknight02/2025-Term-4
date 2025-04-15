@@ -76,8 +76,10 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        holder.itemView.setAlpha(0.3f);
+//                        holder.itemView.setAlpha(0.3f);
                         holder.itemView.setClickable(false);
+                        holder.completeIndicator.setBackgroundColor(Color.GREEN);
+                        holder.completeIndicator.setText("Completed");
                         holder.itemView.setOnClickListener(null);
                         return; // already redeemed
                     } else {
@@ -191,12 +193,14 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
         if (isCompleted) {
             holder.itemView.setAlpha(1f);
             holder.itemView.setClickable(true);
+            holder.completeIndicator.setBackgroundColor(Color.GREEN);
+            holder.completeIndicator.setText("Completed");
             holder.itemView.setOnClickListener(v -> {
                 Toast.makeText(v.getContext(), toastMsg + mission.getPointsReward() + " points!", Toast.LENGTH_SHORT).show();
                 redeemMission(missionId, mission.getPointsReward(), holder);
             });
         } else {
-            holder.itemView.setAlpha(0.4f);
+            // holder.itemView.setAlpha(0.4f);
             holder.itemView.setClickable(false);
             holder.itemView.setOnClickListener(null);
         }
@@ -249,8 +253,9 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
                                 if (!newTier.equalsIgnoreCase(currentTier)) {
                                     Toast.makeText(context, "You've been promoted to " + newTier.toUpperCase() + " tier!", Toast.LENGTH_LONG).show();
                                 }
-                                holder.itemView.setAlpha(0.3f);
+                                // holder.itemView.setAlpha(0.3f);
                                 holder.itemView.setClickable(false);
+                                holder.completeIndicator.setBackgroundColor(Color.GREEN);
                                 holder.itemView.setOnClickListener(null);
                             });
                 });
@@ -287,6 +292,7 @@ class MissionViewHolder extends RecyclerView.ViewHolder {
     TextView progressTextView;  // New TextView for progress text
     LinearProgressIndicator missionProgress;
     CardView missionCard;
+    TextView completeIndicator;
 
     public MissionViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -296,5 +302,6 @@ class MissionViewHolder extends RecyclerView.ViewHolder {
         progressTextView = itemView.findViewById(R.id.mission_progress_text);  // Initialize the progress text view
         missionProgress = itemView.findViewById(R.id.mission_progress);
         missionCard = itemView.findViewById(R.id.mission_card);
+        completeIndicator = itemView.findViewById(R.id.complete_indicator);
     }
 }
