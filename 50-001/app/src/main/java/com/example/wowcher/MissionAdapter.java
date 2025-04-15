@@ -194,7 +194,7 @@ class MissionViewHolder extends RecyclerView.ViewHolder {
     public MissionViewHolder(@NonNull View itemView) {
         super(itemView);
         missionNameTextView = itemView.findViewById(R.id.mission_title);
-        descriptionTextView = itemView.findViewById(R.id.mission_progress_text);
+        descriptionTextView = itemView.findViewById(R.id.mission_description);
         pointsRewardTextView = itemView.findViewById(R.id.mission_points);
         progressTextView = itemView.findViewById(R.id.mission_progress_text);  // Initialize the progress text view
         missionProgress = itemView.findViewById(R.id.mission_progress);

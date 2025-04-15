@@ -153,6 +153,9 @@ public class Vouchers extends Fragment {
                                 // Create Rewards object with the redeemable status
                                 Rewards reward = new Rewards(rewardId, name, description, pointsRequired, expirationDate, isAvailable);
 
+                                if(description.length() >= 20){
+                                    reward.setDescription(description.substring(0, 20) + "...");
+                                }
                                 // Add to the list
                                 rewardsList.add(reward);
 
@@ -203,6 +206,7 @@ public class Vouchers extends Fragment {
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
                         Missions mission = doc.toObject(Missions.class);
                         if (mission != null) {
+
                             missions.add(mission);
                         }
                     }
@@ -227,8 +231,8 @@ public class Vouchers extends Fragment {
                                 String missionName = documentSnapshot.getString("missionName");
                                 String description = documentSnapshot.getString("description");
                                 Long criteria = documentSnapshot.getLong("criteria");
-                                Long pointsReward = documentSnapshot.getLong("pointsReward").longValue();
-                                Long progress = documentSnapshot.getLong("progress").longValue();
+                                Long pointsReward = documentSnapshot.getLong("pointsReward");
+                                Long progress = documentSnapshot.getLong("progress");
 
                                 Missions mission = new Missions(missionId, missionName, description, criteria, pointsReward, progress);
 

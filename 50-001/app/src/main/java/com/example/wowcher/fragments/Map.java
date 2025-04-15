@@ -283,9 +283,10 @@ public class Map extends Fragment implements OnMapReadyCallback {
                 .flat(true);
 
         Marker marker = mMap.addMarker(markerOptions);
-        marker.setTag(attributes); // Attach the location data to this specific marker
+        if (marker != null) {
+            marker.setTag(attributes); // Attach the location data to this specific marker
+        }
     }
-
 
     // Create custom marker from image from drawable
     private Bitmap customMarker(int resId) {
@@ -306,6 +307,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
     public void moveCameraToLocation(CameraPosition cameraPosition) {
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
+
     // Handles after requesting for permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -331,7 +333,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
             List<Address> addressList = geocoder.getFromLocationName(selectedPlace, 1);
 
             // Handle if selected location is found
-            if (!addressList.isEmpty()) {
+            if (addressList != null) {
                 Address address = addressList.get(0);
 
                 selectedLocation = new LatLng(address.getLatitude(), address.getLongitude());
@@ -381,6 +383,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
 //        }
 //    }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void fetchLocationsAndDisplayMarkers() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("locations")
@@ -397,7 +400,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
 
                         GeoPoint geoObject = location.getGeolocation();
                         LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
-                        String imageName = location.getImageName();
+                        String imageName = "marker_" + location.getImageName();
                         int imageResId = currentContext.getResources().getIdentifier(imageName, "drawable", currentContext.getPackageName());
                         if (imageResId != 0) {
                             addMarkerToMap(latlngObject, imageResId,location);

@@ -29,18 +29,15 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_claimedvouchers);
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
 
         recyclerView = findViewById(R.id.recyclerView); // Get reference to RecyclerView
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1)); // Use 1 column grid layout for simplicity
 
         dataList = new ArrayList<>();
-        adapter = new ClaimedVoucherAdapter(this, dataList); // Initialize your adapter
-        recyclerView.setAdapter(adapter);
-
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
-
         loadVouchersFromFirebase(); // Load vouchers when the activity starts
+
     }
 
     private void loadVouchersFromFirebase() {
@@ -71,7 +68,9 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
                             dataList.add(voucher); // Add the voucher to the list
                         }
 
-                        adapter.notifyDataSetChanged(); // Notify the adapter that data has changed
+                        adapter = new ClaimedVoucherAdapter(this, dataList); // Initialize your adapter
+                        recyclerView.setAdapter(adapter);
+
                     } else {
                         Toast.makeText(this, "Failed to load vouchers", Toast.LENGTH_SHORT).show();
                     }

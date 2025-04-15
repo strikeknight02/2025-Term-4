@@ -35,11 +35,11 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="" />
+            android:value="${mapApiKey}" />
 
         <meta-data
             android:name="dirApiKey"
-            android:value="" />
+            android:value="${dirApiKey}" />
 
         <activity
             android:name=".VouchersListActivity"

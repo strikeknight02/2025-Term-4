@@ -25,6 +25,7 @@ public class RewardDetailActivity extends AppCompatActivity {
         String rewardDescription = getIntent().getStringExtra("RewardDescription");
         int rewardPoints = getIntent().getIntExtra("RewardPoints", 0);
 
+
         // Set the data to the TextViews
         rewardNameText.setText(rewardName);
         rewardDescriptionText.setText(rewardDescription);

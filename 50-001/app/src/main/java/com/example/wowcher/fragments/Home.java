@@ -115,7 +115,7 @@ public class Home extends Fragment {
 //                        locations.add(new Location("cjhivi5QhPQKEzsuO1zs", 0,new GeoPoint(1.343304, 103.962652), "")); // bread
 //                        locations.add(new Location("WTPg6z7sim0z7ZmNcaWY", 0, new GeoPoint(1.341547, 103.961101), "")); // noods
 //
-//                        getRoute(locations);
+ //                        getRoute(locations);
 
                         adapter.notifyDataSetChanged();
                     } else {
