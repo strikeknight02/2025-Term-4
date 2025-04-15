@@ -32,7 +32,7 @@
             android:id="@+id/headerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="My Redeemed Vouchers"
+            android:text="My Redeemed Rewards"
             android:textSize="20sp"
             android:textColor="@color/black"
             android:layout_marginStart="16dp"
@@ -64,14 +64,14 @@
                 app:boxCornerRadiusTopEnd="10dp"
                 app:boxCornerRadiusTopStart="10dp">
 
-<!--                <com.google.android.material.textfield.TextInputEditText-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:drawableStart="@drawable/baseline_search_24"-->
-<!--                    android:drawablePadding="8dp"-->
-<!--                    android:hint="Search Redeemed Vouchers"-->
-<!--                    android:inputType="text"-->
-<!--                    android:paddingEnd="40dp" />-->
+                <!--                <com.google.android.material.textfield.TextInputEditText-->
+                <!--                    android:layout_width="match_parent"-->
+                <!--                    android:layout_height="wrap_content"-->
+                <!--                    android:drawableStart="@drawable/baseline_search_24"-->
+                <!--                    android:drawablePadding="8dp"-->
+                <!--                    android:hint="Search Redeemed Vouchers"-->
+                <!--                    android:inputType="text"-->
+                <!--                    android:paddingEnd="40dp" />-->
             </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
