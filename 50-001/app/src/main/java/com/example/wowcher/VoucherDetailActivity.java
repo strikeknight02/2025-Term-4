@@ -19,7 +19,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
     TextView detailDesc, detailTitle, detailVoucherId, detailStatus;
     ImageView detailImage, backButton, voucherImage; // corrected imageView name
     Button redeemButton;
-    String voucherTitle, voucherDetails, voucherStatus, voucherImageName,voucherCode;
+    String voucherTitle, voucherDetails, voucherStatus, voucherImageName,voucherCode,voucherLocationID;
     long voucherPoints;
 
     FirebaseFirestore db;
@@ -58,6 +58,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
             voucherPoints = bundle.getLong("Points", 10);
             voucherCode = bundle.getString("Code", "");
             voucherImageName = bundle.getString("Image", "");  // assuming this is the image name
+            voucherLocationID = bundle.getString("Location", "");
 
             int imageResId = getResources().getIdentifier(voucherImageName, "drawable", getPackageName());
 
@@ -123,6 +124,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
         String generatedCode = generateRandomCode(8); // You can choose any length
         voucherData.put("code", generatedCode);
         voucherData.put("image", voucherImageName);
+        voucherData.put("locationId", voucherLocationID);
 
         // Save the redemption record in Firestore
         db.collection("users")

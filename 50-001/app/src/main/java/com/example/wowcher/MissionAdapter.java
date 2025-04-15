@@ -1,7 +1,6 @@
 package com.example.wowcher;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,15 +12,17 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wowcher.classes.Missions;
-import com.example.wowcher.R;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
 
     private final Context context;
@@ -31,18 +32,17 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
     FirebaseAuth auth;
     FirebaseUser user;
 
-    // Constructor
+    private final List<String> tierOrder = Arrays.asList("bronze", "silver", "gold", "platinum");
+
     public MissionAdapter(Context context, List<Missions> missionList) {
         this.context = context;
         this.missionList = missionList;
 
-        // Initialize Firebase instances
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
     }
 
-    // Set the mission list
     public void setMissionList(List<Missions> missionList) {
         this.missionList = missionList;
         notifyDataSetChanged();
@@ -63,36 +63,12 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
         holder.descriptionTextView.setText(mission.getDescription());
         holder.pointsRewardTextView.setText(String.valueOf(mission.getPointsReward()));
 
-        // Check if the mission is completed
-        boolean isCompleted = mission.getProgress() == 100;
-        String missionId = mission.getMissionId(); // Use missionId to check redemption status
-
-        // Check if the mission is already redeemed
-        checkIfMissionRedeemed(missionId, holder, mission);
-
-        // If the mission is completed and not redeemed, enable it for redemption
-        if (isCompleted) {
-            holder.itemView.setAlpha(1f);
-            holder.itemView.setClickable(true);
-            holder.itemView.setOnClickListener(v -> {
-                // Add click logic for completed mission
-                Toast.makeText(v.getContext(), "Mission Complete! You earned " + mission.getPointsReward() + " points!", Toast.LENGTH_SHORT).show();
-                redeemMission(missionId, mission.getPointsReward(), holder);
-            });
-        } else {
-            // Dimmed out and not clickable if not completed
-            holder.itemView.setAlpha(0.4f);
-            holder.itemView.setClickable(false);
-            holder.itemView.setOnClickListener(null);
-        }
-    }
-
-    private void checkIfMissionRedeemed(String missionId, MissionViewHolder holder, Missions mission) {
         if (user == null) return;
 
         String userId = user.getUid();
+        String missionId = mission.getMissionId();
 
-        // Check if the mission is already redeemed by the user
+        // First check: if mission is already redeemed, disable it and return early
         db.collection("users")
                 .document(userId)
                 .collection("redeemedMissions")
@@ -100,80 +76,200 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Mission is already redeemed, disable the card
                         holder.itemView.setAlpha(0.3f);
                         holder.itemView.setClickable(false);
                         holder.itemView.setOnClickListener(null);
+                        return; // already redeemed
+                    } else {
+                        handleMissionTypeLogic(holder, mission, missionId);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(context, "Error checking redemption status", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Error checking mission status", Toast.LENGTH_SHORT).show();
                 });
     }
 
-    private void redeemMission(String missionId, long missionPoints, MissionViewHolder holder) {
-        if (user == null) {
-            Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    private void handleMissionTypeLogic(MissionViewHolder holder, Missions mission, String missionId) {
+        String missionType = mission.getType();
 
+        switch (missionType) {
+            case "collect_voucher":
+                handleCollectVoucherMissionLogic(holder, mission, missionId);
+                break;
+
+            case "location_voucher":
+                handleLocationVoucherMissionLogic(holder, mission, missionId);
+                break;
+
+            case "tier":
+                handleTierMissionLogic(holder, mission, missionId);
+                break;
+
+            default:
+                handleDefaultMission(holder, mission, false, missionId);
+        }
+    }
+
+    private void handleCollectVoucherMissionLogic(MissionViewHolder holder, Missions mission, String missionId) {
         String userId = user.getUid();
 
-        // Store the redeemed mission in Firestore
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedVouchers")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    long redeemedCount = querySnapshot.size();
+                    boolean isCompleted = redeemedCount >= mission.getCriteria();
+                    handleCollectVoucherMission(holder, mission, isCompleted, missionId);
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Error fetching redeemed vouchers", Toast.LENGTH_SHORT).show());
+    }
+
+    private void handleLocationVoucherMissionLogic(MissionViewHolder holder, Missions mission, String missionId) {
+        String userId = user.getUid();
+        String missionLocationId = mission.getLocationId();
+
+        db.collection("users")
+                .document(userId)
+                .collection("redeemedVouchers")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    long matchingCount = 0;
+                    for (QueryDocumentSnapshot doc : snapshot) {
+                        String locId = doc.getString("locationId");
+                        if (locId != null && locId.equals(missionLocationId)) {
+                            matchingCount++;
+                        }
+                    }
+                    boolean isCompleted = matchingCount >= mission.getCriteria();
+                    handleLocationVoucherMission(holder, mission, isCompleted, missionId);
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Error fetching location vouchers", Toast.LENGTH_SHORT).show());
+    }
+
+
+    private void handleTierMissionLogic(MissionViewHolder holder, Missions mission, String missionId) {
+        String userId = user.getUid();
+
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    String userTier = doc.getString("tier");
+                    String requiredTier = mission.getRequiredTier();
+
+                    if (userTier != null && requiredTier != null) {
+                        int userTierIndex = tierOrder.indexOf(userTier.toLowerCase());
+                        int requiredTierIndex = tierOrder.indexOf(requiredTier.toLowerCase());
+
+                        boolean isCompleted = userTierIndex >= requiredTierIndex;
+                        handleTierMission(holder, mission, isCompleted, missionId);
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Error fetching user tier", Toast.LENGTH_SHORT).show());
+    }
+
+    // ====== MISSION HANDLERS ======
+
+    private void handleCollectVoucherMission(MissionViewHolder holder, Missions mission, boolean isCompleted, String missionId) {
+        handleGenericMission(holder, mission, isCompleted, missionId, "Voucher Collected! You earned ");
+    }
+
+    private void handleLocationVoucherMission(MissionViewHolder holder, Missions mission, boolean isCompleted, String missionId) {
+        handleGenericMission(holder, mission, isCompleted, missionId, "Location Voucher Completed! You earned ");
+    }
+
+    private void handleTierMission(MissionViewHolder holder, Missions mission, boolean isCompleted, String missionId) {
+        handleGenericMission(holder, mission, isCompleted, missionId, "Tier Mission Completed! You earned ");
+    }
+
+    private void handleDefaultMission(MissionViewHolder holder, Missions mission, boolean isCompleted, String missionId) {
+        handleGenericMission(holder, mission, isCompleted, missionId, "Mission Completed! You earned ");
+    }
+
+    private void handleGenericMission(MissionViewHolder holder, Missions mission, boolean isCompleted, String missionId, String toastMsg) {
+        if (isCompleted) {
+            holder.itemView.setAlpha(1f);
+            holder.itemView.setClickable(true);
+            holder.itemView.setOnClickListener(v -> {
+                Toast.makeText(v.getContext(), toastMsg + mission.getPointsReward() + " points!", Toast.LENGTH_SHORT).show();
+                redeemMission(missionId, mission.getPointsReward(), holder);
+            });
+        } else {
+            holder.itemView.setAlpha(0.4f);
+            holder.itemView.setClickable(false);
+            holder.itemView.setOnClickListener(null);
+        }
+    }
+
+    private void redeemMission(String missionId, long basePoints, MissionViewHolder holder) {
+        String userId = user.getUid();
+
         Map<String, Object> redeemedData = new HashMap<>();
         redeemedData.put("redeemedAt", System.currentTimeMillis());
 
-        // Add the redeemed mission record under the user's redeemedMissions collection
         db.collection("users")
                 .document(userId)
                 .collection("redeemedMissions")
                 .document(missionId)
                 .set(redeemedData)
-                .addOnSuccessListener(aVoid -> {
-                    // Update the user's points after redeeming the mission
-                    updateUserPoints(missionPoints, userId, holder);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(context, "Failed to redeem mission", Toast.LENGTH_SHORT).show();
-                });
+                .addOnSuccessListener(unused -> updateUserPoints(basePoints, userId, holder))
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to redeem mission", Toast.LENGTH_SHORT).show());
     }
 
-    private void updateUserPoints(long missionPoints, String userId, MissionViewHolder holder) {
-        // Retrieve the current points of the user
+    private void updateUserPoints(long basePoints, String userId, MissionViewHolder holder) {
         db.collection("users")
                 .document(userId)
                 .get()
-                .addOnSuccessListener(userSnapshot -> {
-                    long currentPoints = userSnapshot.contains("currentPoints") ? userSnapshot.getLong("currentPoints") : 0;
-                    long totalPoints = userSnapshot.contains("totalPoints") ? userSnapshot.getLong("totalPoints") : 0;
+                .addOnSuccessListener(doc -> {
+                    long currentPoints = doc.contains("currentPoints") ? doc.getLong("currentPoints") : 0;
+                    long totalPoints = doc.contains("totalPoints") ? doc.getLong("totalPoints") : 0;
+                    String currentTier = doc.contains("tier") ? doc.getString("tier") : "bronze";
 
-                    // Calculate updated points
-                    long updatedCurrentPoints = currentPoints + missionPoints;
-                    long updatedTotalPoints = totalPoints + missionPoints;
+                    double multiplier = getMultiplierForTier(currentTier);
+                    long awardedPoints = Math.round(basePoints * multiplier);
+
+                    long updatedCurrent = currentPoints + awardedPoints;
+                    long updatedTotal = totalPoints + awardedPoints;
+
+                    String newTier = getTierForPoints(updatedTotal);
 
                     Map<String, Object> updates = new HashMap<>();
-                    updates.put("currentPoints", updatedCurrentPoints);
-                    updates.put("totalPoints", updatedTotalPoints);
+                    updates.put("currentPoints", updatedCurrent);
+                    updates.put("totalPoints", updatedTotal);
+                    if (!newTier.equalsIgnoreCase(currentTier)) {
+                        updates.put("tier", newTier);
+                    }
 
-                    // Update the user's points in Firestore
                     db.collection("users")
                             .document(userId)
                             .update(updates)
-                            .addOnSuccessListener(unused -> {
-                                // Successfully updated points
-                                Toast.makeText(context, "Mission redeemed! +" + missionPoints + " points", Toast.LENGTH_SHORT).show();
-                                // Disable the card after redemption
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(context, "Mission redeemed! +" + awardedPoints + " points (x" + multiplier + ")", Toast.LENGTH_SHORT).show();
+                                if (!newTier.equalsIgnoreCase(currentTier)) {
+                                    Toast.makeText(context, "You've been promoted to " + newTier.toUpperCase() + " tier!", Toast.LENGTH_LONG).show();
+                                }
                                 holder.itemView.setAlpha(0.3f);
                                 holder.itemView.setClickable(false);
                                 holder.itemView.setOnClickListener(null);
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(context, "Failed to update points", Toast.LENGTH_SHORT).show();
                             });
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(context, "Failed to fetch user points", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private double getMultiplierForTier(String tier) {
+        switch (tier.toLowerCase()) {
+            case "silver": return 1.2;
+            case "gold": return 1.5;
+            case "platinum": return 2.0;
+            default: return 1.0;
+        }
+    }
+
+    private String getTierForPoints(long totalPoints) {
+        if (totalPoints >= 1500) return "platinum";
+        else if (totalPoints >= 1000) return "gold";
+        else if (totalPoints >= 500) return "silver";
+        else return "bronze";
     }
 
     @Override
@@ -181,6 +277,7 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
         return missionList.size();
     }
 }
+
 class MissionViewHolder extends RecyclerView.ViewHolder {
 
     TextView missionNameTextView;

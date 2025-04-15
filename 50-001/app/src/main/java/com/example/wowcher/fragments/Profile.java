@@ -17,7 +17,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.wowcher.ClaimedRewardsActivity;
 import com.example.wowcher.ClaimedVouchersActivity;
+import com.example.wowcher.HelpActivity;
 import com.example.wowcher.Login;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
@@ -48,6 +50,8 @@ public class Profile extends Fragment {
     TextView userNameText; // Declare the TextView
     ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
 
+    ConstraintLayout claimedRewardsLayout;
+
     Button btnlogout;
 
     @Nullable
@@ -74,6 +78,7 @@ public class Profile extends Fragment {
 
         userNameText = view.findViewById(R.id.userNameText); // Bind the TextView
         claimedVouchersLayout = view.findViewById(R.id.constraintLayout2); // Bind the "Claimed Vouchers" section
+        claimedRewardsLayout = view.findViewById(R.id.constraintLayout3); // Bind the "Claimed Vouchers" section
 
         db = FirebaseFirestore.getInstance();
 
@@ -89,11 +94,25 @@ public class Profile extends Fragment {
             startActivity(intent);
         });
 
+        // Handle "Claimed Vouchers" click
+        claimedRewardsLayout.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ClaimedRewardsActivity.class);
+            startActivity(intent);
+        });
+
         btnlogout.setOnClickListener(v -> {
             auth.signOut();
             Intent intent = new Intent(getActivity(), Login.class);
             startActivity(intent);
         });
+
+        // Inside onCreateView(...)
+        TextView helpTextView = view.findViewById(R.id.help);
+        helpTextView.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), HelpActivity.class);
+            startActivity(intent);
+        });
+
 
         return view;
     }

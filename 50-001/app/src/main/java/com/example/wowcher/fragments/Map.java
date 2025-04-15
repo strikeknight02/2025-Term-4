@@ -27,11 +27,14 @@ import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -62,7 +65,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.Random;
+import java.util.UUID;
 
 
 import androidx.fragment.app.FragmentActivity;
@@ -168,6 +172,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
 //            makeLocationTestData();
 //            seedLocationsToFirestore();
 //            addVouchersToLocations();
+//            generateMultipleVouchersPerLocation();
             fetchLocationsAndDisplayMarkers();
         }
 
@@ -480,6 +485,124 @@ public class Map extends Fragment implements OnMapReadyCallback {
 //                .addOnFailureListener(e ->
 //                        Log.e("Firestore", "Failed to fetch vouchers", e));
 //    }
+
+//    private void generateMultipleVouchersPerLocation() {
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//
+//        java.util.Map<String, String> locations = new HashMap<>();
+//        locations.put("Dairy Queen", "NPUZqaHCoePhxPPeO8SQ");
+//        locations.put("Taco Bell", "jIHUP0fOsp8VImNMZ97L");
+//        locations.put("Cinnabon", "VyAivJk602ruVhxdAroc");
+//        locations.put("Sbarro", "ReYPMldrROBkhI8NmZaU");
+//        locations.put("A&W", "jduYTW0ADkdTzRlRF2wj");
+//        locations.put("Dunkin'", "MBojTExozTWk78ttOAls");
+//        locations.put("Nando's", "O1WXMi9HLOJk3I7fxEdM");
+//        locations.put("Burger King", "5c3ZzTSQpGxPNxElVuYM");
+//        locations.put("Pizza Hut", "dm3fLx25wtJfIQ9sfhrU");
+//        locations.put("Starbucks", "FTou7vyO5Hbf4MSgTJNk");
+//
+//        WriteBatch batch = db.batch();
+//        CollectionReference vouchersRef = db.collection("vouchers");
+//
+//        java.util.Map<String, List<String[]>> voucherTemplates = new HashMap<>();
+//
+//        // Sample voucher templates for variety per brand
+//        voucherTemplates.put("Dairy Queen", Arrays.asList(
+//                new String[]{"Choco Dipped Cone", "Free upgrade to choco dipped cone on any soft serve"},
+//                new String[]{"Buy 1 Blizzard, Get 1", "Available on Fridays only"},
+//                new String[]{"Dairy Queen Happy Hour", "20% off from 2pm-4pm daily"},
+//                new String[]{"Free Sundae Scoop", "Claim a free sundae with any combo meal"},
+//                new String[]{"Waffle Cone Bonus", "Waffle cones at half points this week!"}
+//        ));
+//        voucherTemplates.put("Taco Bell", Arrays.asList(
+//                new String[]{"Taco Tuesday Treat", "Redeem any taco for 20 points"},
+//                new String[]{"Burrito Bundle Deal", "Free drink with burrito order"},
+//                new String[]{"Spicy Boost", "Get double points on spicy menu items"},
+//                new String[]{"Nacho Surprise", "Free nachos with every 2 redemptions"},
+//                new String[]{"Fiesta Friday", "Special reward items every Friday"}
+//        ));
+//        voucherTemplates.put("Cinnabon", Arrays.asList(
+//                new String[]{"MiniBon Bonus", "Redeem a MiniBon for 30 points"},
+//                new String[]{"Roll into Savings", "10% off classic rolls"},
+//                new String[]{"Sweet Deal Alert", "Double your points on large Cinnabons"},
+//                new String[]{"Extra Icing!", "Get extra icing free for any redemption"},
+//                new String[]{"Cinna Happy Hour", "2-for-1 MiniBons from 3–5pm"}
+//        ));
+//        voucherTemplates.put("Sbarro", Arrays.asList(
+//                new String[]{"Pizza Slice Special", "Free slice of cheese pizza"},
+//                new String[]{"Free Drink Combo", "Add a drink to your meal for free"},
+//                new String[]{"Midweek Pizza Boost", "Redeem pizza slice for only 25 points"},
+//                new String[]{"Garlic Bread Bonus", "Free garlic bread with any pasta"},
+//                new String[]{"Weekend Feast", "Extra points for Sbarro redemptions on weekends"}
+//        ));
+//        voucherTemplates.put("A&W", Arrays.asList(
+//                new String[]{"Root Beer Float Fest", "Redeem a float for 20 points"},
+//                new String[]{"Burger Bonus", "Buy a burger, get fries free"},
+//                new String[]{"Curly Fries Special", "Discounted curly fries all week"},
+//                new String[]{"Waffle Combo Deal", "Waffle + Float combo for fewer points"},
+//                new String[]{"2x Points on Chicken Sandwich", "Earn double for each redemption"}
+//        ));
+//        voucherTemplates.put("Dunkin'", Arrays.asList(
+//                new String[]{"Coffee Boost", "Get a free small coffee every 3 redemptions"},
+//                new String[]{"Donut Delight", "Free classic donut with any drink"},
+//                new String[]{"Mocha Madness", "Redeem mocha for 35 points"},
+//                new String[]{"Morning Starter Pack", "Double points for orders before 11am"},
+//                new String[]{"Sweet Pair Deal", "Buy 2 donuts, get 1 free"}
+//        ));
+//        voucherTemplates.put("Nando's", Arrays.asList(
+//                new String[]{"Peri-Peri Perk", "Redeem free spicy wings"},
+//                new String[]{"Chicken Feast", "Free ¼ chicken with any sides"},
+//                new String[]{"Grill Master Bonus", "Double points on grilled platters"},
+//                new String[]{"Midweek Flame Deal", "20% off Wednesday orders"},
+//                new String[]{"Hot Sauce Hunt", "Collect and redeem hot sauces for rewards"}
+//        ));
+//        voucherTemplates.put("Burger King", Arrays.asList(
+//                new String[]{"Whopper Win", "Whopper for 30 points"},
+//                new String[]{"Breakfast Bonus", "Free coffee with morning sandwich"},
+//                new String[]{"2-for-1 Cheeseburger", "Tuesdays only"},
+//                new String[]{"King's Combo", "Get a free side on large combo"},
+//                new String[]{"Weekend Crown Points", "Earn triple points Saturdays"}
+//        ));
+//        voucherTemplates.put("Pizza Hut", Arrays.asList(
+//                new String[]{"Stuffed Crust Reward", "Redeem for only 40 points"},
+//                new String[]{"Family Feast Voucher", "Extra side with large pizza"},
+//                new String[]{"Cheesy Bites Treat", "Claim cheesy bites with any redemption"},
+//                new String[]{"Pizza Friday Bonus", "Earn 20 bonus points"},
+//                new String[]{"Free Dip Pack", "Free dipping sauces with order"}
+//        ));
+//        voucherTemplates.put("Starbucks", Arrays.asList(
+//                new String[]{"Free Drink Toppings", "Free toppings from 2–5pm weekends"},
+//                new String[]{"Iced Coffee Upgrade", "Upgrade to venti free"},
+//                new String[]{"Morning Brew Deal", "Double points before 10am"},
+//                new String[]{"Cake Pop Combo", "Get a cake pop for 15 points"},
+//                new String[]{"2x Frappuccino Friday", "Earn double points on frappes"}
+//        ));
+//
+//        for (java.util.Map.Entry<String, String> entry : locations.entrySet()) {
+//            String brand = entry.getKey();
+//            String locationId = entry.getValue();
+//            List<String[]> templates = voucherTemplates.get(brand);
+//
+//            for (String[] template : templates) {
+//                DocumentReference newVoucherRef = vouchersRef.document();
+//                java.util.Map<String, Object> voucher = new HashMap<>();
+//                voucher.put("voucherId", newVoucherRef.getId());
+//                voucher.put("title", template[0]);
+//                voucher.put("details", template[1]);
+//                voucher.put("code", UUID.randomUUID().toString().substring(0, 10));
+//                voucher.put("imageName", brand.toLowerCase().replaceAll("[^a-z]", ""));
+//                voucher.put("locationId", locationId);
+//                voucher.put("pointsReward", new Random().nextInt(16) + 30); // Random between 30–45
+//                voucher.put("status", "Available");
+//                voucher.put("createdAt", Timestamp.now());
+//
+//                batch.set(newVoucherRef, voucher);
+//            }
+//        }
+//
+//        batch.commit();
+//    }
+
 
 
 }

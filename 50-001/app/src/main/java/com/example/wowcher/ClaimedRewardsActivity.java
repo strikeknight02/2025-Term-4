@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.classes.Rewards;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -18,11 +18,11 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClaimedVouchersActivity extends AppCompatActivity {
+public class ClaimedRewardsActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
-    List<Voucher> dataList;
-    ClaimedVoucherAdapter adapter;
+    List<Rewards> dataList;
+    ClaimedRewardAdapter adapter;
 
     FirebaseFirestore db;
     FirebaseAuth auth;
@@ -30,14 +30,18 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_claimedvouchers);
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
+        setContentView(R.layout.activity_claimedrewards);
 
         recyclerView = findViewById(R.id.recyclerView); // Get reference to RecyclerView
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1)); // Use 1 column grid layout for simplicity
 
         dataList = new ArrayList<>();
+        adapter = new ClaimedRewardAdapter(this, dataList); // Initialize your adapter
+        recyclerView.setAdapter(adapter);
+
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+
         loadVouchersFromFirebase(); // Load vouchers when the activity starts
 
         // Bind the back icon and set the click listener
@@ -57,30 +61,23 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
         // Get redeemed vouchers for the specific user from the `redeemedVouchers` subcollection
         db.collection("users")
                 .document(userId)
-                .collection("redeemedVouchers")
+                .collection("redeemedRewards")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         dataList.clear(); // Clear previous data
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            String voucherId = document.getString("voucherId");
-                            String title = document.getString("title");
-                            String details = document.getString("details");
-                            String status = document.getString("status");
-                            String createdAt = document.getString("createdAt");
-                            String locationId = document.getString("locationId");
-                            Long pointsReward = document.getLong("points");
-                            String code = document.getString("code");
-                            String imageName = document.getString("image");
+                            String description = document.getString("description");
+                            String title = document.getString("name");
+                            int points = document.getLong("points").intValue();
+                            int timestamp = document.getLong("timestamp").intValue();
 
-                            Voucher voucher = new Voucher(voucherId, title, details, status, locationId, createdAt,pointsReward,code,imageName);
-                            dataList.add(voucher); // Add the voucher to the list
+                            Rewards reward = new Rewards(0,title,description,points,String.valueOf(timestamp),true);
+                            dataList.add(reward); // Add the voucher to the list
                         }
 
-                        adapter = new ClaimedVoucherAdapter(this, dataList); // Initialize your adapter
-                        recyclerView.setAdapter(adapter);
-
+                        adapter.notifyDataSetChanged(); // Notify the adapter that data has changed
                     } else {
                         Toast.makeText(this, "Failed to load vouchers", Toast.LENGTH_SHORT).show();
                     }
