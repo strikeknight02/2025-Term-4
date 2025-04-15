@@ -135,8 +135,6 @@ public class VoucherDetailActivity extends AppCompatActivity {
                 .addOnSuccessListener(docRef -> {
                     Toast.makeText(this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
                     // Redirect to HomeActivity
-                    Intent intent = new Intent(VoucherDetailActivity.this, MainActivity.class); // replace with your actual HomeActivity
-                    startActivity(intent);
                     finish(); // Close the current activity
                     // Update user's points after redeeming the voucher
 //                    db.collection("users")
