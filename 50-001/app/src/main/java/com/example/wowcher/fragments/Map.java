@@ -112,6 +112,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
         if (!Places.isInitialized() && apiKey != null) {
             Places.initialize(currentContext, apiKey);
         }
+
         // Necessary variables for getting places from Google Maps
         autoCompleteAdapter = new ArrayAdapter<String>(currentContext, android.R.layout.simple_dropdown_item_1line);
         placesClient = Places.createClient(currentContext);
