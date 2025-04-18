@@ -40,12 +40,12 @@ public class RewardsController extends ViewModel {
     }
 
     public void getRewardsforAll(ArrayList<String> redeemedRewards){
-        Consumer<ArrayList<Rewards>> method = (ArrayList<Rewards> rewardss) -> { instance.getAllRewards().setValue((ArrayList<Rewards>) rewardss); };
+        Consumer<ArrayList<Rewards>> method = (ArrayList<Rewards> rewards) -> { instance.getAllRewards().setValue((ArrayList<Rewards>) rewards); };
         databaseInstance.getAllData( method , redeemedRewards.isEmpty()? "" : redeemedRewards);
     }
 
-    public void getSpecificRewards(String column, String value){
-        Consumer<ArrayList<Rewards>> method = (ArrayList<Rewards> rewardss) -> { instance.getSomeRewards().setValue((ArrayList<Rewards>) rewardss); };
+    public void getSpecificRewards(String column, Object value){
+        Consumer<ArrayList<Rewards>> method = (ArrayList<Rewards> rewards) -> { instance.getSomeRewards().setValue((ArrayList<Rewards>) rewards); };
         databaseInstance.getData(column, value, method );
     }
     

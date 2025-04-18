@@ -117,7 +117,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
     FirebaseAuth auth;
     FirebaseUser user;
     FirebaseFirestore db;
-    UserController userModel;
     VoucherController voucherModel;
     LocationController locationModel;
 
@@ -153,10 +152,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
         db = FirebaseFirestore.getInstance();
-        //User
-        DBSource userSourceInstance = new UserSource(db);
-        userModel = new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
-        userModel.getModelInstance(userModel);
 
         //Voucher
         DBSource voucherSourceInstance = new VoucherSource(db);
@@ -167,8 +162,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
         DBSource locationSourceInstance = new LocationSource(db);
         locationModel = new ViewModelProvider(this, new LocationControllerFactory(locationSourceInstance)).get(LocationController.class);
         locationModel.getModelInstance(locationModel);
-
-        userModel.getUserInfoFromSource("userId", user.getUid());
 
         final Observer<ArrayList<Location>> locationObserver = new Observer<ArrayList<Location>>() {
             @Override
@@ -195,7 +188,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
             public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
 
                 if (voucherList != null) {
-                    //TODO ENSURE IT UPDATES AFTER REDEMPTION
                     ArrayList<String> voucherIdList = new ArrayList<>();
                     for (Voucher v : voucherList) {
                         if (!voucherIdList.contains(v.getLocationId())) {
@@ -203,7 +195,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
                         }
                     }
 
-                    Log.d("GETTING LOCATIONS", voucherIdList.toString());
                     locationModel.getLocationsBasedOnVoucher(voucherIdList);
                     locationModel.locationBasedVouchers().observe(getViewLifecycleOwner(), locationObserver);
 
@@ -213,22 +204,8 @@ public class Map extends Fragment implements OnMapReadyCallback {
             }
         };
 
-        final Observer<User> userObserver = new Observer<User>() {
-            @Override
-            public void onChanged(@Nullable final User user) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (user != null)) {
-                    ArrayList<String> redeemedVouchers = user.getRedeemedVouchers();
-
-                    //TODO supposed to get all now?
-                    voucherModel.getVouchersforAll(redeemedVouchers);
-                    voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
-                }
-
-            }
-        };
-
-
-        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
+        voucherModel.getVouchersforAll();
+        voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
 
         return currentView;
     }
@@ -297,7 +274,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
                 String query = s.toString();
                 System.out.println("what");
                 if (!query.isEmpty()) {
-                    System.out.println(query);
+                    //System.out.println(query);
                     // Build a request to fetch autocomplete predictions based on the user's input
                     FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
                             .setSessionToken(autocompleteSessionToken)

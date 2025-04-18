@@ -76,18 +76,13 @@ public class Home extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_vouchers, container, false);
 
-        auth = FirebaseAuth.getInstance();
-        user = auth.getCurrentUser();
-
         recyclerView = view.findViewById(R.id.recyclerView);
 
         recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
 
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
         db = FirebaseFirestore.getInstance();
-        //User
-        DBSource userSourceInstance = new UserSource(db);
-        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
-        userModel.getModelInstance(userModel);
 
         //Voucher
         DBSource voucherSourceInstance = new VoucherSource(db);
@@ -98,8 +93,6 @@ public class Home extends Fragment {
         DBSource locationSourceInstance = new LocationSource(db);
         locationModel = new ViewModelProvider(this, new LocationControllerFactory(locationSourceInstance)).get(LocationController.class);
         locationModel.getModelInstance(locationModel);
-
-        userModel.getUserInfoFromSource("userId", user.getUid());
 
         final Observer<ArrayList<Location>> locationObserver = new Observer<ArrayList<Location>> () {
             @Override
@@ -141,20 +134,8 @@ public class Home extends Fragment {
             }
         };
 
-        final Observer<User> userObserver = new Observer<User> () {
-            @Override
-            public void onChanged(@Nullable final User user) {
-                if (user != null){
-                    ArrayList<String> redeemedVouchers = user.getRedeemedVouchers();
-
-                    voucherModel.getVouchersforAll(redeemedVouchers);
-                    voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
-                }
-
-            }
-        };
-
-        userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
+        voucherModel.getVouchersforAll();
+        voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
 
         return view;
     }
@@ -218,7 +199,7 @@ public class Home extends Fragment {
                         JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
                         JsonArray routes = responseObject.getAsJsonArray("rows").get(0).getAsJsonObject().getAsJsonArray("elements");
 
-                        System.out.println(response);
+                        //System.out.println(response);
                         // Prepare location details to sort vouchers by distance
                         ArrayList<JsonObject> locationList = new ArrayList<>();
                         for (int i = 0; i < routes.size(); i++) {

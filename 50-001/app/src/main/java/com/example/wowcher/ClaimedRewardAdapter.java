@@ -17,10 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.wowcher.classes.Rewards;
 import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.fragments.Home;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ClaimedRewardAdapter extends RecyclerView.Adapter<ClaimedRewardViewHolder> {
     private Context context;
     private List<Rewards> dataList;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+
     public void setSearchList(List<Rewards> dataSearchList){
         this.dataList = dataSearchList;
         notifyDataSetChanged();
@@ -42,12 +47,13 @@ public class ClaimedRewardAdapter extends RecyclerView.Adapter<ClaimedRewardView
         holder.rewardDescription.setText(reward.getDescription());
         holder.rewardPoints.setText(reward.getPointsRequired() + " Points");  // Points required for the reward
 
-        String userId = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+        //TODO CHANGE LTR
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+        String userId = auth.getCurrentUser().getUid();
 
-        com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                .collection("users")
+        db.collection("users")
                 .document(userId)
-                .collection("redeemedRewards")
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                         holder.rewardCard.setOnClickListener(view -> {

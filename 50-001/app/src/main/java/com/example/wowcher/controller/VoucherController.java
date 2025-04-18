@@ -50,10 +50,10 @@ public class VoucherController extends ViewModel {
         return locationVouchers;
     }
 
-    public void getVouchersforAll(ArrayList<String> redeemedVouchers){
+    public void getVouchersforAll(){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getAllVouchers().setValue((ArrayList<Voucher>) vouchers); };
         VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
-        voucherSourceInstance.getAllData( method, redeemedVouchers );
+        voucherSourceInstance.getAllData( method, "" );
     }
 
     //TODO CHECK THROUGH USAGES

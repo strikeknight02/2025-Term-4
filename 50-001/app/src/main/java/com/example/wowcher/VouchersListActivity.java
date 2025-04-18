@@ -83,7 +83,7 @@ public class VouchersListActivity extends AppCompatActivity {
         Bundle b2 = getIntent().getExtras();
         if(b2 != null){
             locationId = b2.getString("locationId");
-            System.out.println(locationId);
+            //System.out.println(locationId);
             //loadVouchersForLocation(locationId);
         }
 

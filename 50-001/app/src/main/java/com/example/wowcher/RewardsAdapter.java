@@ -18,6 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RewardsAdapter extends RecyclerView.Adapter<RewardViewHolder> {
@@ -48,6 +49,7 @@ public class RewardsAdapter extends RecyclerView.Adapter<RewardViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull RewardViewHolder holder, int position) {
+
         // Get the current reward object from the list
         Rewards reward = rewardList.get(position);
 
@@ -116,13 +118,15 @@ public class RewardsAdapter extends RecyclerView.Adapter<RewardViewHolder> {
     // Method to check if a reward has been redeemed by the user
     private void checkIfRewardRedeemed(String userId, int rewardId, RedeemedCallback callback) {
         DocumentReference rewardRef = db.collection("users")
-                .document(userId)
-                .collection("redeemedRewards")
-                .document(String.valueOf(rewardId));
+                .document(userId);
 
         rewardRef.get().addOnSuccessListener(documentSnapshot -> {
-            boolean isRedeemed = documentSnapshot.exists(); // If document exists, reward is redeemed
-            callback.onChecked(isRedeemed, null);  // Pass null if there's no error
+            ArrayList<String> redeemedRewards = (ArrayList<String>) documentSnapshot.get("redeemedRewards");
+            if (redeemedRewards != null){
+                callback.onChecked(redeemedRewards.contains(Integer.toString(rewardId)), null);  // Pass null if there's no error
+            } else {
+                callback.onChecked(false, "Failed to load reward status"); // If error occurs, assume the reward is not redeemed
+            }
         }).addOnFailureListener(e -> {
             callback.onChecked(false, "Failed to load reward status"); // If error occurs, assume the reward is not redeemed
         });

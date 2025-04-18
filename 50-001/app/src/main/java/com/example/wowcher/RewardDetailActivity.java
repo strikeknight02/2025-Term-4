@@ -1,18 +1,33 @@
 package com.example.wowcher;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.wowcher.classes.Rewards;
+import com.example.wowcher.classes.User;
+import com.example.wowcher.controller.RewardsController;
+import com.example.wowcher.controller.RewardsControllerFactory;
+import com.example.wowcher.controller.UserController;
+import com.example.wowcher.controller.UserControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.RewardsSource;
+import com.example.wowcher.db.UserSource;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +38,11 @@ public class RewardDetailActivity extends AppCompatActivity {
 
     FirebaseFirestore db;
     FirebaseUser user;
+    UserController userModel;
+    RewardsController rewardsModel;
 
     String rewardName, rewardDescription;
-    int rewardPoints;
+    int rewardPoints, rewardId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +55,7 @@ public class RewardDetailActivity extends AppCompatActivity {
         rewardPointsText = findViewById(R.id.reward_points_text);
         redeemButton = findViewById(R.id.redeemButton);
 
-        db = FirebaseFirestore.getInstance();
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        //TODO Add User Model
-        //TODO Add Rewards Model
-
+        rewardId = getIntent().getIntExtra("RewardId", 0);
         rewardName = getIntent().getStringExtra("RewardName");
         rewardDescription = getIntent().getStringExtra("RewardDescription");
         rewardPoints = getIntent().getIntExtra("RewardPoints", 0);
@@ -50,6 +63,14 @@ public class RewardDetailActivity extends AppCompatActivity {
         rewardNameText.setText(rewardName);
         rewardDescriptionText.setText(rewardDescription);
         rewardPointsText.setText("Points Required: " + rewardPoints);
+
+        db = FirebaseFirestore.getInstance();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+
+        //User
+        DBSource userSourceInstance = new UserSource(db);
+        userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
+        userModel.getModelInstance(userModel);
 
         redeemButton.setOnClickListener(v -> attemptRedemption());
     }
@@ -59,49 +80,15 @@ public class RewardDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             return;
         }
-
         String userId = user.getUid();
-        DocumentReference userRef = db.collection("users").document(userId);
 
-        userRef.get().addOnSuccessListener(snapshot -> {
-            if (snapshot.exists()) {
-                long currentPoints = snapshot.getLong("currentPoints") != null ? snapshot.getLong("currentPoints") : 0;
+        userModel.updateUser(userId, "currentPoints", FieldValue.increment(-rewardPoints));
+        userModel.updateUser(userId, "redeemedRewards", FieldValue.arrayUnion(Integer.toString(rewardId)));
 
-                if (currentPoints >= rewardPoints) {
-                    // Enough points: proceed with redemption
-                    long newPoints = currentPoints - rewardPoints;
-
-                    // Update user's points
-                    userRef.update("currentPoints", newPoints)
-                            .addOnSuccessListener(unused -> {
-                                // Add reward to redeemedRewards collection
-                                Map<String, Object> rewardData = new HashMap<>();
-                                rewardData.put("name", rewardName);
-                                rewardData.put("description", rewardDescription);
-                                rewardData.put("points", rewardPoints);
-                                rewardData.put("timestamp", System.currentTimeMillis());
-
-                                db.collection("users")
-                                        .document(userId)
-                                        .collection("redeemedRewards")
-                                        .add(rewardData)
-                                        .addOnSuccessListener(docRef -> {
-                                            Toast.makeText(this, "Reward redeemed successfully!", Toast.LENGTH_SHORT).show();
-                                            // Go back to home
-                                            Intent intent = new Intent(this, MainActivity.class); // Change if your home activity is named differently
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                            startActivity(intent);
-                                            finish();
-                                        })
-                                        .addOnFailureListener(e -> Toast.makeText(this, "Failed to save reward", Toast.LENGTH_SHORT).show());
-                            })
-                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to update points", Toast.LENGTH_SHORT).show());
-                } else {
-                    Toast.makeText(this, "Not enough points to redeem this reward", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(e -> Toast.makeText(this, "Failed to fetch user data", Toast.LENGTH_SHORT).show());
+        // Go back to home
+        Intent intent = new Intent(this, MainActivity.class); // Change if your home activity is named differently
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 }

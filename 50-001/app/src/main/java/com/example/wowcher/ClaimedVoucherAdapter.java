@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -15,10 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.fragments.Home;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ClaimedVoucherAdapter extends RecyclerView.Adapter<MyViewHolder> {
     private Context context;
     private List<Voucher> dataList;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+
     public void setSearchList(List<Voucher> dataSearchList){
         this.dataList = dataSearchList;
         notifyDataSetChanged();
@@ -39,17 +46,17 @@ public class ClaimedVoucherAdapter extends RecyclerView.Adapter<MyViewHolder> {
         holder.recTitle.setText(voucher.getTitle());
         holder.recDesc.setText(voucher.getDetails());
 
-        String voucherId = voucher.getVoucherId();
-        String userId = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+        String userId = auth.getCurrentUser().getUid();
 
-        com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                .collection("users")
+        String voucherId = voucher.getVoucherId();
+        //TODO need change also
+        db.collection("users")
                 .document(userId)
-                .collection("redeemedVouchers")
-                .document(voucherId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
+                    if (((ArrayList<String>)documentSnapshot.get("redeemedVouchers")).contains(voucherId)) {
                         // Not redeemed
                         holder.recLang.setText("Redeemed");
                         holder.recCard.setAlpha(0.5f);

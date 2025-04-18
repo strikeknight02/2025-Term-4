@@ -61,8 +61,6 @@ public class Profile extends Fragment {
     FirebaseFirestore db;
     UserController userModel;
 
-    VoucherController voucherModel;
-
     TextView userNameText; // Declare the TextView
     ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
 

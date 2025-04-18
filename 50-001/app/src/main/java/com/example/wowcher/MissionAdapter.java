@@ -69,7 +69,7 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
         String userId = user.getUid();
         String missionId = mission.getMissionId();
 
-        //TODO send prayers
+        //TODO change ltr
 
         // First check: if mission is already redeemed, disable it and return early
         db.collection("users")
