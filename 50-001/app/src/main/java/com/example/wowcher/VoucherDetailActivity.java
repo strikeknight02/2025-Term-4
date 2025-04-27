@@ -135,17 +135,18 @@ public class VoucherDetailActivity extends AppCompatActivity {
 
     private void redeemVoucher(String voucherId) {
         String userId = user.getUid();
+
         //Voucher
         DBSource userSourceInstance = new VoucherSource(db);
-        voucherModel= new ViewModelProvider(this, new VoucherControllerFactory(userSourceInstance)).get(VoucherController.class);
+        voucherModel = new ViewModelProvider(this, new VoucherControllerFactory(userSourceInstance)).get(VoucherController.class);
         voucherModel.getModelInstance(voucherModel);
 
         voucherModel.getVoucherBySomething("voucherId", voucherId);
 
-        final Observer<Voucher> voucherObserver = new Observer<Voucher> () {
+        final Observer<Voucher> voucherObserver = new Observer<Voucher>() {
             @Override
             public void onChanged(@Nullable final Voucher voucher) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (voucher !=null)) {
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (voucher != null)) {
 
                     userModel.updateUser(userId, "redeemedVouchers", FieldValue.arrayUnion(voucherId));
                     Toast.makeText(VoucherDetailActivity.this, "Voucher redeemed!", Toast.LENGTH_SHORT).show();
@@ -153,7 +154,11 @@ public class VoucherDetailActivity extends AppCompatActivity {
                     redeemButton.setText("Owned");
                     userModel.updateUser(userId, "currentPoints", FieldValue.increment((long) voucher.getPointsReward()));
                     userModel.updateUser(userId, "totalPoints", FieldValue.increment((long) voucher.getPointsReward()));
-                    finish(); // Close the current activity
+
+                    // ✅ Redirect to ClaimedVouchersActivity
+                    Intent intent = new Intent(VoucherDetailActivity.this, ClaimedVouchersActivity.class);
+                    startActivity(intent);
+                    finish(); // Optional: finish VoucherDetailActivity so it’s removed from the back stack
                 } else {
                     Toast.makeText(VoucherDetailActivity.this, "Failed to redeem voucher", Toast.LENGTH_SHORT).show();
                 }
@@ -162,6 +167,7 @@ public class VoucherDetailActivity extends AppCompatActivity {
 
         voucherModel.getRedeemedVouchers().observe(this, voucherObserver);
     }
+
 
     private String generateRandomCode(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

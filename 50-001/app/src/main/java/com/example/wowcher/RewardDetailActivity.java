@@ -86,7 +86,7 @@ public class RewardDetailActivity extends AppCompatActivity {
         userModel.updateUser(userId, "redeemedRewards", FieldValue.arrayUnion(Integer.toString(rewardId)));
 
         // Go back to home
-        Intent intent = new Intent(this, MainActivity.class); // Change if your home activity is named differently
+        Intent intent = new Intent(this, ClaimedRewardsActivity.class); // Change if your home activity is named differently
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();

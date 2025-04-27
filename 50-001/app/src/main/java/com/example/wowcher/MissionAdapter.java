@@ -2,6 +2,7 @@ package com.example.wowcher;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,11 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wowcher.classes.Missions;
-import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -69,9 +69,6 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
         String userId = user.getUid();
         String missionId = mission.getMissionId();
 
-        //TODO change ltr
-
-        // First check: if mission is already redeemed, disable it and return early
         db.collection("users")
                 .document(userId)
                 .collection("redeemedMissions")
@@ -79,17 +76,15 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-//                        holder.itemView.setAlpha(0.3f);
-                        holder.itemView.setClickable(false);
-                        holder.completeIndicator.setBackgroundColor(Color.GREEN);
-                        holder.completeIndicator.setText("Completed");
-                        holder.itemView.setOnClickListener(null);
-                        return; // already redeemed
+                        // Already redeemed
+                        setMissionCompletedUI(holder);
+                        return;
                     } else {
                         handleMissionTypeLogic(holder, mission, missionId);
                     }
                 })
                 .addOnFailureListener(e -> {
+                    Log.e("IndivMission", "Error checking mission status", e);
                     Toast.makeText(context, "Error checking mission status", Toast.LENGTH_SHORT).show();
                 });
     }
@@ -101,15 +96,12 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
             case "collect_voucher":
                 handleCollectVoucherMissionLogic(holder, mission, missionId);
                 break;
-
             case "location_voucher":
                 handleLocationVoucherMissionLogic(holder, mission, missionId);
                 break;
-
             case "tier":
                 handleTierMissionLogic(holder, mission, missionId);
                 break;
-
             default:
                 handleDefaultMission(holder, mission, false, missionId);
         }
@@ -120,14 +112,17 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
 
         db.collection("users")
                 .document(userId)
-                .collection("redeemedVouchers")
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    long redeemedCount = querySnapshot.size();
+                .addOnSuccessListener(userDoc -> {
+                    List<String> redeemedVouchers = (List<String>) userDoc.get("redeemedVouchers");
+                    int redeemedCount = (redeemedVouchers != null) ? redeemedVouchers.size() : 0;
+
                     boolean isCompleted = redeemedCount >= mission.getCriteria();
                     handleCollectVoucherMission(holder, mission, isCompleted, missionId);
                 })
-                .addOnFailureListener(e -> Toast.makeText(context, "Error fetching redeemed vouchers", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(context, "Error fetching redeemed vouchers", Toast.LENGTH_SHORT).show()
+                );
     }
 
     private void handleLocationVoucherMissionLogic(MissionViewHolder holder, Missions mission, String missionId) {
@@ -136,22 +131,48 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
 
         db.collection("users")
                 .document(userId)
-                .collection("redeemedVouchers")
                 .get()
-                .addOnSuccessListener(snapshot -> {
-                    long matchingCount = 0;
-                    for (QueryDocumentSnapshot doc : snapshot) {
-                        String locId = doc.getString("locationId");
-                        if (locId != null && locId.equals(missionLocationId)) {
-                            matchingCount++;
-                        }
+                .addOnSuccessListener(userDoc -> {
+                    List<String> redeemedVoucherIds = (List<String>) userDoc.get("redeemedVouchers");
+                    if (redeemedVoucherIds == null || redeemedVoucherIds.isEmpty()) {
+                        handleLocationVoucherMission(holder, mission, false, missionId);
+                        return;
                     }
-                    boolean isCompleted = matchingCount >= mission.getCriteria();
-                    handleLocationVoucherMission(holder, mission, isCompleted, missionId);
-                })
-                .addOnFailureListener(e -> Toast.makeText(context, "Error fetching location vouchers", Toast.LENGTH_SHORT).show());
-    }
 
+                    // Fetch each redeemed voucher and check if it matches locationId
+                    final int[] matchingCount = {0};
+                    final int total = redeemedVoucherIds.size();
+                    final int[] processed = {0};
+
+                    for (String voucherId : redeemedVoucherIds) {
+                        db.collection("vouchers")
+                                .document(voucherId)
+                                .get()
+                                .addOnSuccessListener(voucherDoc -> {
+                                    String locId = voucherDoc.getString("locationId");
+                                    if (locId != null && locId.equals(missionLocationId)) {
+                                        matchingCount[0]++;
+                                    }
+                                    processed[0]++;
+
+                                    if (processed[0] == total) {
+                                        boolean isCompleted = matchingCount[0] >= mission.getCriteria();
+                                        handleLocationVoucherMission(holder, mission, isCompleted, missionId);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    processed[0]++;
+                                    if (processed[0] == total) {
+                                        boolean isCompleted = matchingCount[0] >= mission.getCriteria();
+                                        handleLocationVoucherMission(holder, mission, isCompleted, missionId);
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(context, "Error fetching redeemed vouchers", Toast.LENGTH_SHORT).show()
+                );
+    }
 
     private void handleTierMissionLogic(MissionViewHolder holder, Missions mission, String missionId) {
         String userId = user.getUid();
@@ -171,10 +192,10 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
                         handleTierMission(holder, mission, isCompleted, missionId);
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(context, "Error fetching user tier", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(context, "Error fetching user tier", Toast.LENGTH_SHORT).show()
+                );
     }
-
-    // ====== MISSION HANDLERS ======
 
     private void handleCollectVoucherMission(MissionViewHolder holder, Missions mission, boolean isCompleted, String missionId) {
         handleGenericMission(holder, mission, isCompleted, missionId, "Voucher Collected! You earned ");
@@ -198,16 +219,25 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
             holder.itemView.setClickable(true);
             holder.completeIndicator.setBackgroundColor(Color.GREEN);
             holder.completeIndicator.setText("Completed");
+
             holder.itemView.setOnClickListener(v -> {
                 Toast.makeText(v.getContext(), toastMsg + mission.getPointsReward() + " points!", Toast.LENGTH_SHORT).show();
                 redeemMission(missionId, mission.getPointsReward(), holder);
             });
         } else {
-            // holder.itemView.setAlpha(0.4f);
-            holder.itemView.setClickable(false);
-            holder.itemView.setOnClickListener(null);
+            resetMissionUI(holder);  // 👈 IMPORTANT: reset the recycled view state
         }
     }
+
+    private void resetMissionUI(MissionViewHolder holder) {
+        holder.itemView.setAlpha(1f);
+        holder.itemView.setClickable(false);
+        holder.itemView.setOnClickListener(null);
+        holder.completeIndicator.setBackgroundColor(Color.GRAY);
+        holder.completeIndicator.setText("Incomplete");
+    }
+
+
 
     private void redeemMission(String missionId, long basePoints, MissionViewHolder holder) {
         String userId = user.getUid();
@@ -221,7 +251,9 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
                 .document(missionId)
                 .set(redeemedData)
                 .addOnSuccessListener(unused -> updateUserPoints(basePoints, userId, holder))
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to redeem mission", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(context, "Failed to redeem mission", Toast.LENGTH_SHORT).show()
+                );
     }
 
     private void updateUserPoints(long basePoints, String userId, MissionViewHolder holder) {
@@ -238,7 +270,6 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
 
                     long updatedCurrent = currentPoints + awardedPoints;
                     long updatedTotal = totalPoints + awardedPoints;
-
                     String newTier = getTierForPoints(updatedTotal);
 
                     Map<String, Object> updates = new HashMap<>();
@@ -256,12 +287,17 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionViewHolder> {
                                 if (!newTier.equalsIgnoreCase(currentTier)) {
                                     Toast.makeText(context, "You've been promoted to " + newTier.toUpperCase() + " tier!", Toast.LENGTH_LONG).show();
                                 }
-                                // holder.itemView.setAlpha(0.3f);
-                                holder.itemView.setClickable(false);
-                                holder.completeIndicator.setBackgroundColor(Color.GREEN);
-                                holder.itemView.setOnClickListener(null);
+                                setMissionCompletedUI(holder);
                             });
                 });
+    }
+
+    private void setMissionCompletedUI(MissionViewHolder holder) {
+        holder.itemView.setAlpha(0.3f);
+        holder.itemView.setClickable(false);
+        holder.completeIndicator.setBackgroundColor(Color.GREEN);
+        holder.completeIndicator.setText("Completed");
+        holder.itemView.setOnClickListener(null);
     }
 
     private double getMultiplierForTier(String tier) {
@@ -292,8 +328,6 @@ class MissionViewHolder extends RecyclerView.ViewHolder {
     TextView descriptionTextView;
     TextView pointsRewardTextView;
     TextView criteriaTextView;
-    TextView progressTextView;  // New TextView for progress text
-    LinearProgressIndicator missionProgress;
     CardView missionCard;
     TextView completeIndicator;
 
@@ -302,8 +336,6 @@ class MissionViewHolder extends RecyclerView.ViewHolder {
         missionNameTextView = itemView.findViewById(R.id.mission_title);
         descriptionTextView = itemView.findViewById(R.id.mission_description);
         pointsRewardTextView = itemView.findViewById(R.id.mission_points);
-        progressTextView = itemView.findViewById(R.id.mission_progress_text);  // Initialize the progress text view
-        missionProgress = itemView.findViewById(R.id.mission_progress);
         missionCard = itemView.findViewById(R.id.mission_card);
         completeIndicator = itemView.findViewById(R.id.complete_indicator);
     }

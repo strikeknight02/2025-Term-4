@@ -336,6 +336,9 @@ public class Map extends Fragment implements OnMapReadyCallback {
                 // Fetch the last known location
                 fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
                     if (location != null) {
+                        // Log the location fetched
+                        Log.d("DEBUG", "Location fetched: Latitude = " + location.getLatitude() + ", Longitude = " + location.getLongitude());
+
                         // Update the user's location in the state
                         userLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
@@ -346,9 +349,9 @@ public class Map extends Fragment implements OnMapReadyCallback {
                         // Enable maps functions
                         mMap.setMyLocationEnabled(true);
                         mMap.getUiSettings().setZoomControlsEnabled(true);
-
                     } else {
-                        System.out.println("didnt get location");
+                        // Log if location is null
+                        Log.d("DEBUG", "Location is null.");
                     }
                 });
             } catch (SecurityException e) {
@@ -358,6 +361,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
             Log.e("Location Error", "Location permission is not granted.");
         }
     }
+
 
     // Add marker to user location
     public void addMarkerToMap(LatLng location, int imageId, Location attributes) {
