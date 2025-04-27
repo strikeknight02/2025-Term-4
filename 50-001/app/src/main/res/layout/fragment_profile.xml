@@ -156,6 +156,7 @@
                     app:layout_constraintStart_toEndOf="@+id/imageView3"
                     app:layout_constraintTop_toTopOf="@+id/imageView3" />
 
+     ]
                 <ImageView
                     android:id="@+id/imageView4"
                     android:layout_width="wrap_content"
@@ -166,6 +167,8 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/materialDivider2"
@@ -190,7 +193,7 @@
                     android:id="@+id/settings_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:src="@drawable/baseline_settings_24"
+                    android:src="@drawable/baseline_discount_24"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -200,7 +203,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:text="Settings"
+                    android:text="Claimed Rewards"
                     app:layout_constraintBottom_toBottomOf="@+id/settings_icon"
                     app:layout_constraintStart_toEndOf="@+id/settings_icon"
                     app:layout_constraintTop_toTopOf="@+id/settings_icon" />

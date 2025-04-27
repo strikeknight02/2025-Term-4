@@ -2,78 +2,100 @@ package com.example.wowcher;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wowcher.classes.Voucher;
-import com.example.wowcher.fragments.Home;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
-    private Context context;
+
+    private final Context context;
     private List<Voucher> dataList;
-    public void setSearchList(List<Voucher> dataSearchList){
+    private final FirebaseFirestore db;
+
+    public MyAdapter(Context context, List<Voucher> dataList) {
+        this.context = context;
+        this.dataList = dataList;
+        this.db = FirebaseFirestore.getInstance();
+    }
+
+    public void setSearchList(List<Voucher> dataSearchList) {
         this.dataList = dataSearchList;
         notifyDataSetChanged();
     }
-    public MyAdapter(Context context, List<Voucher> dataList){
-        this.context = context;
-        this.dataList = dataList;
-    }
+
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_item, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.recycler_item, parent, false);
         return new MyViewHolder(view);
     }
+
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Voucher voucher = dataList.get(position);
-        holder.recTitle.setText(voucher.getTitle());
-        holder.recDesc.setText(voucher.getDetails());
-        holder.recID.setText(voucher.getVoucherId());
-
         String voucherId = voucher.getVoucherId();
-        String userId = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(userId)
-                .collection("redeemedVouchers")
-                .document(voucherId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        // Already redeemed
-                        holder.recLang.setText("Redeemed");
-                        holder.recCard.setClickable(false);
-                        holder.recCard.setAlpha(0.5f); // Optional: dim the card
-                    } else {
-                        // Not redeemed
-                        holder.recLang.setText("Available");
-                        holder.recCard.setClickable(true);
-                        holder.recCard.setAlpha(1f); // Restore brightness
+        // Set Image
+        int imageResId = context.getResources().getIdentifier(
+                voucher.getImageName(), "drawable", context.getPackageName()
+        );
+        holder.recImage.setImageResource(imageResId != 0 ? imageResId : R.drawable.lebron_james);
 
-                        holder.recCard.setOnClickListener(view -> {
-                            Intent intent = new Intent(context, VoucherDetailActivity.class);
-                            intent.putExtra("Id", voucher.getVoucherId());
-                            intent.putExtra("Title", voucher.getTitle());
-                            intent.putExtra("Desc", voucher.getDetails());
-                            intent.putExtra("Points", voucher.getPointsReward());
-                            context.startActivity(intent);
-                        });
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    holder.recLang.setText("Status Unknown");
-                    holder.recCard.setClickable(false);
+        // Tag the card for consistency check
+        holder.recCard.setTag(voucherId);
+
+        // Check redemption status
+        checkIfVoucherRedeemed(userId, voucherId, (isRedeemed, errorMessage) -> {
+            if (!voucherId.equals(holder.recCard.getTag())) return; // Avoid recycled view bugs
+
+            holder.recTitle.setText(voucher.getTitle());
+            holder.recDesc.setText(voucher.getDetails());
+            //holder.recID.setText(voucher.getVoucherId());
+
+            if (errorMessage != null) {
+                holder.recLang.setText("Status Unknown");
+                holder.recCard.setAlpha(0.5f);
+                holder.recCard.setClickable(false);
+                return;
+            }
+
+            if (isRedeemed) {
+                holder.recLang.setText("Redeemed");
+                holder.recCard.setAlpha(0.5f);
+                holder.recCard.setClickable(false);
+                holder.recCard.setOnClickListener(null);
+            } else {
+                holder.recLang.setText("Available");
+                holder.recCard.setAlpha(1f);
+                holder.recCard.setClickable(true);
+                holder.recCard.setOnClickListener(view -> {
+                    Intent intent = new Intent(context, VoucherDetailActivity.class);
+                    intent.putExtra("Id", voucher.getVoucherId());
+                    intent.putExtra("Title", voucher.getTitle());
+                    intent.putExtra("Desc", voucher.getDetails());
+                    intent.putExtra("Points", voucher.getPointsReward());
+                    intent.putExtra("Image", voucher.getImageName());
+                    intent.putExtra("Location", voucher.getLocationId());
+                    context.startActivity(intent);
                 });
+            }
+        });
     }
 
     @Override
@@ -81,8 +103,35 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
         return dataList.size();
     }
 
+    // Firestore method to check if the voucher is redeemed
+    //TODO Change this also
+    private void checkIfVoucherRedeemed(String userId, String voucherId, VoucherRedeemedCallback callback) {
+        DocumentReference voucherRef = db.collection("users")
+                .document(userId);
 
+        voucherRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    ArrayList<String> voucherList = (ArrayList<String>) documentSnapshot.get("redeemedVouchers");
+                    boolean isRedeemed = false;
+                    if (voucherList !=null){
+                        isRedeemed = voucherList.contains(voucherId);
+                    } else {
+                        Log.e("SOMETHING WRONG", "CANNOT GET REDEEMED");
+                    }
+
+                    callback.onChecked(isRedeemed, null);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onChecked(false, "Failed to load redemption status");
+                });
+    }
+
+    // Callback interface
+    public interface VoucherRedeemedCallback {
+        void onChecked(boolean isRedeemed, String errorMessage);
+    }
 }
+
 class MyViewHolder extends RecyclerView.ViewHolder{
     ImageView recImage;
     TextView recTitle, recDesc, recLang,recID;
@@ -94,6 +143,5 @@ class MyViewHolder extends RecyclerView.ViewHolder{
         recDesc = itemView.findViewById(R.id.recDesc);
         recLang = itemView.findViewById(R.id.recLang);
         recCard = itemView.findViewById(R.id.recCard);
-        recID = itemView.findViewById(R.id.recID);
     }
 }

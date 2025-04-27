@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.AuthResult;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -64,12 +66,12 @@ public class Login extends AppCompatActivity {
         passwordField = findViewById(R.id.password);
         loginButton = findViewById(R.id.loginButton);
         registerButton = findViewById(R.id.registerButton);
-        nameText = findViewById(R.id.titleText);
-
-        // Ensure nameText is not null
-        if (nameText == null) {
-            Log.e("DEBUG", "TextView 'titleText' is NULL! Check activity_login.xml.");
-        }
+//        nameText = findViewById(R.id.titleText);
+//
+//        // Ensure nameText is not null
+//        if (nameText == null) {
+//            Log.e("DEBUG", "TextView 'titleText' is NULL! Check activity_login.xml.");
+//        }
 
 
 
@@ -93,17 +95,13 @@ public class Login extends AppCompatActivity {
         String email = emailField.getText().toString();
         String password = passwordField.getText().toString();
 
-        Log.d("DEBUG", "Email entered: " + email);
-
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
             Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Validate email format before sending request
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show();
-            Log.e("DEBUG", "Invalid email format: " + email);
             return;
         }
 
@@ -112,19 +110,29 @@ public class Login extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
+                            // ✅ New: Grab and log the display name
+                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            if (firebaseUser != null) {
+                                String displayName = firebaseUser.getDisplayName();
+                                Log.d("Login", "Display name: " + displayName);
+                            }
 
+                            // Go to MainActivity
                             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                             startActivity(intent);
                             finish();
                         } else {
-                            // If sign in fails, display a message to the user.
-                             Toast.makeText(Login.this, "Authentication failed.",
+                            Toast.makeText(Login.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
-
                         }
                     }
-                });
+                }).addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("NO LOGIN", e.toString());
+                    }
+                });;
     }
+
 
 }

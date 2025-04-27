@@ -3,6 +3,7 @@ package com.example.wowcher.classes;
 import android.os.Build;
 import androidx.annotation.RequiresApi;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class User {
@@ -15,20 +16,22 @@ public class User {
     public String mobileNumber = "";
     public String role = "";
     public String tier = "Bronze"; // Default tier
-    public long totalPoints = 0; // Total accumulated over time
-    public long currentPoints = 0; // Points available for redemption
+    public int totalPoints = 0; // Default points
+    public int currentPoints = 0; //Current Points
     public String createdAt = LocalDateTime.now().toString();
-    public int availableVouchers = 0;
-    public int previousVouchers = 0;
+
+    public ArrayList<String> redeemedVouchers = new ArrayList<String>();
+    public ArrayList<String> redeemedMissions = new ArrayList<String>();
+
+    public ArrayList<String> redeemedRewards = new ArrayList<String>();
 
     // No-arg constructor
     public User() {}
 
-    // Updated constructor
+    // User constructor
     public User(String userId, String username, String email, String password, String mobileNumber, String role,
-                String tier, long totalPoints, long currentPoints, String createdAt,
-                int availableVouchers, int previousVouchers) {
-
+                String tier, int totalPoints, int currentPoints, String createdAt,
+                ArrayList<String> redeemedVouchers, ArrayList<String> redeemedMissions, ArrayList<String> redeemedRewards) {
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -39,8 +42,9 @@ public class User {
         this.totalPoints = totalPoints;
         this.currentPoints = currentPoints;
         this.createdAt = createdAt;
-        this.availableVouchers = availableVouchers;
-        this.previousVouchers = previousVouchers;
+        this.redeemedVouchers = redeemedVouchers;
+        this.redeemedMissions = redeemedMissions;
+        this.redeemedRewards = redeemedRewards;
     }
 
     // Getters and Setters
@@ -65,18 +69,21 @@ public class User {
     public String getTier() { return tier; }
     public void setTier(String tier) { this.tier = tier; }
 
-    public long getTotalPoints() { return totalPoints; }
+    public int getTotalPoints() { return totalPoints; }
     public void setTotalPoints(int totalPoints) { this.totalPoints = totalPoints; }
 
-    public long getCurrentPoints() { return currentPoints; }
+    public int getCurrentPoints() { return currentPoints; }
     public void setCurrentPoints(int currentPoints) { this.currentPoints = currentPoints; }
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 
-    public int getAvailableVouchers() { return availableVouchers; }
-    public void setAvailableVouchers(int availableVouchers) { this.availableVouchers = availableVouchers; }
+    public ArrayList<String> getRedeemedVouchers() {return redeemedVouchers;}
+    public void setRedeemedVouchers(ArrayList<String> redeemedVouchers) {this.redeemedVouchers = redeemedVouchers;}
 
-    public int getPreviousVouchers() { return previousVouchers; }
-    public void setPreviousVouchers(int previousVouchers) { this.previousVouchers = previousVouchers; }
+    public ArrayList<String> getRedeemedMissions() {return redeemedMissions;}
+    public void setRedeemedMissions(ArrayList<String> redeemedMissions) {this.redeemedMissions = redeemedMissions;}
+
+    public ArrayList<String> getRedeemedRewards() {return redeemedRewards;}
+    public void setRedeemedRewards(ArrayList<String> redeemedRewards) {this.redeemedRewards = redeemedRewards;}
 }

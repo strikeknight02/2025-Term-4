@@ -8,10 +8,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.lifecycle.ViewModel;
 
+import com.example.wowcher.classes.Missions;
+import com.example.wowcher.classes.Rewards;
 import com.example.wowcher.classes.User;
-import com.example.wowcher.controller.UserController;
+import com.example.wowcher.classes.Voucher;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -35,42 +37,35 @@ public class UserSource implements DBSource{
         this.userCollection = db.collection("users");
     }
 
-    public void getAll( ViewModel model){
-        UserController userVM = (UserController) model;
-
-        db.collection("users")
+    @Override
+    public void getAllData(Consumer<?> method, Object extras){
+        userCollection
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<User> mUserList = new ArrayList<User>();
-
-                        // 🔍 Debug: Check if Firestore returned any results
-                        Log.d("DEBUG", "Firestore Query Result Count: " + task.getResult().size());
-
+                        ArrayList<User> userList = new ArrayList<User>();
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
                                 User user = document.toObject(User.class);
-                                mUserList.add(user);
+                                userList.add(user);
                             }
+                            if (method instanceof Consumer<?>){
 
-                            if (!mUserList.isEmpty()) {
-                                Log.d("SUCCESSFUL GET", mUserList.get(0).getUsername()); // ✅ Safe access
+                                Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
+                                methodCast.accept(userList);
                             } else {
-                                Log.e("ERROR", "No users found in Firestore!");
+                                Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
-
-                            userVM.getAll().setValue(mUserList);
                         } else {
-                            Log.e("FIRESTORE ERROR", "Error getting documents.", task.getException());
+                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
                     }
                 });
 
-
-        db.collection("users")
+        userCollection
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -80,21 +75,25 @@ public class UserSource implements DBSource{
                             return;
                         }
 
-                        ArrayList<User> mUserList = new ArrayList<User>();
+                        ArrayList<User> userList = new ArrayList<User>();
                         for (QueryDocumentSnapshot document : value) {
                             User user = document.toObject(User.class);
-                            mUserList.add(user);
+                            userList.add(user);
                         }
-                        userVM.getAll().setValue(mUserList);
+                        if (method instanceof Consumer<?>){
+
+                            Consumer<ArrayList<User>> methodCast = (Consumer<ArrayList<User>>) method;
+                            methodCast.accept(userList);
+                        } else {
+                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                        }
                     }
                 });
     }
 
     @Override
     public void getData(String column, Object comparison, Consumer<?> method) {
-        Log.d("DEBUG", "getData() called with column: " + column + ", value: " + comparison);
-
-        db.collection("users")
+        userCollection
                 .whereEqualTo(column, comparison)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -106,6 +105,7 @@ public class UserSource implements DBSource{
 
                                 Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
                                 User user = document.toObject(User.class);
+
                                 UserList.add(user);
                             }
 
@@ -117,7 +117,7 @@ public class UserSource implements DBSource{
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
                         } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
+                            Log.w("ERROR", "Error getting documents.", task.getException());
                         }
                     }
                 });
@@ -151,8 +151,8 @@ public class UserSource implements DBSource{
     }
 
     @Override
-    public void create( Object t) {
-        db.collection("users")
+    public void create(Object t) {
+        userCollection
                 .add(t)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
                     @Override
@@ -187,7 +187,8 @@ public class UserSource implements DBSource{
 
     @Override
     public void delete(String reference) {
-        db.collection("users").document(reference)
+        userCollection
+                .document(reference)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -204,22 +205,23 @@ public class UserSource implements DBSource{
     }
 
     @Override
-    public void update( String reference,  String column, Object newValues) {
-        db.collection("users")
-                .document(reference)
-                .update(column, newValues)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d("SUCCESSFUL UPDATE", "DocumentSnapshot successfully updated!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("UNSUCCESSFUL UPDATE", "Error updating document", e);
-                    }
-                });
+    public void update( String reference, String column, Object newValues) {
+         userCollection
+                    .document(reference)
+                    .update(column, newValues)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d("SUCCESSFUL UPDATE", "DocumentSnapshot successfully updated!");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w("UNSUCCESSFUL UPDATE", "Error updating document", e);
+                        }
+                    });
+
     }
 
 }
