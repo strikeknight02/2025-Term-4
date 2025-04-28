@@ -1,0 +1,35 @@
+Index: app/google-services.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\r\n  \"project_info\": {\r\n    \"project_number\": \"501064280344\",\r\n    \"project_id\": \"wowcher-e52cd\",\r\n    \"storage_bucket\": \"wowcher-e52cd.firebasestorage.app\"\r\n  },\r\n  \"client\": [\r\n    {\r\n      \"client_info\": {\r\n        \"mobilesdk_app_id\": \"1:501064280344:android:8a76e0fa045f33420c566d\",\r\n        \"android_client_info\": {\r\n          \"package_name\": \"com.example.wowcher\"\r\n        }\r\n      },\r\n      \"oauth_client\": [],\r\n      \"api_key\": [\r\n        {\r\n          \"current_key\": \"AIzaSyD5mNF7r9AmzptULPm4xmjes1_RhShsCdo\"\r\n        }\r\n      ],\r\n      \"services\": {\r\n        \"appinvite_service\": {\r\n          \"other_platform_oauth_client\": []\r\n        }\r\n      }\r\n    }\r\n  ],\r\n  \"configuration_version\": \"1\"\r\n}
+===================================================================
+diff --git a/app/google-services.json b/app/google-services.json
+--- a/app/google-services.json	(revision c46b30242d6bbc6e02733695f794d3a928375664)
++++ b/app/google-services.json	(date 1741952273653)
+@@ -1,13 +1,13 @@
+ {
+   "project_info": {
+-    "project_number": "501064280344",
+-    "project_id": "wowcher-e52cd",
+-    "storage_bucket": "wowcher-e52cd.firebasestorage.app"
++    "project_number": "302527014877",
++    "project_id": "isp1d-1f66f",
++    "storage_bucket": "isp1d-1f66f.firebasestorage.app"
+   },
+   "client": [
+     {
+       "client_info": {
+-        "mobilesdk_app_id": "1:501064280344:android:8a76e0fa045f33420c566d",
++        "mobilesdk_app_id": "1:302527014877:android:ce5e7798e5abab3fb9f834",
+         "android_client_info": {
+           "package_name": "com.example.wowcher"
+         }
+@@ -15,7 +15,7 @@
+       "oauth_client": [],
+       "api_key": [
+         {
+-          "current_key": "AIzaSyD5mNF7r9AmzptULPm4xmjes1_RhShsCdo"
++          "current_key": "AIzaSyD7fDxM4T4f2jWmFUt-3dhP-9VYUOi1ozA"
+         }
+       ],
+       "services": {
