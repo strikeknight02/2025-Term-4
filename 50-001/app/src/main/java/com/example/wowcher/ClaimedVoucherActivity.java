@@ -1,31 +1,19 @@
 package com.example.wowcher;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-import java.util.HashMap;
-import java.util.Map;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class ClaimedVoucherActivity extends AppCompatActivity {
 
-    TextView detailDesc, detailTitle,voucherCodeText, detailVoucherId, detailStatus;
-    ImageView detailImage, backButton, voucherImage; // corrected imageView name
-    Button redeemButton;
+    TextView detailDesc, detailTitle,voucherCodeText;
+    ImageView backButton, voucherImage; // corrected imageView name
+
     String voucherTitle, voucherDetails, voucherStatus, voucherImageName,voucherCode;
     long voucherPoints;
     String voucherId;
-
-    FirebaseFirestore db;
-    FirebaseAuth auth;
-    FirebaseUser user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,15 +25,10 @@ public class ClaimedVoucherActivity extends AppCompatActivity {
         // Initialize UI components
         detailDesc = findViewById(R.id.reward_description_text);
         detailTitle = findViewById(R.id.reward_name_text);
-        detailImage = findViewById(R.id.detailImage);
         backButton = findViewById(R.id.backButton);
         voucherImage = findViewById(R.id.voucherImage); // Correct reference for image view
         voucherCodeText = findViewById(R.id.voucherCodeText);
 
-        // Initialize Firebase instances
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
-        user = auth.getCurrentUser();
 
         // Fetch data from the Intent
         Bundle bundle = getIntent().getExtras();

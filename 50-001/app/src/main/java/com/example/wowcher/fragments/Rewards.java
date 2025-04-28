@@ -17,10 +17,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.wowcher.MissionAdapter;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
 import com.example.wowcher.RewardsAdapter;
-import com.example.wowcher.MissionAdapter;
 import com.example.wowcher.classes.Missions;
 import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
@@ -34,12 +34,9 @@ import com.example.wowcher.db.DBSource;
 import com.example.wowcher.db.MissionSource;
 import com.example.wowcher.db.RewardsSource;
 import com.example.wowcher.db.UserSource;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,8 +72,6 @@ public class Rewards extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-
-//        generateAndUploadMissions(); // Add this to test/seed data
 
         // Find TextViews
         tierNameText = view.findViewById(R.id.tier_name);
@@ -120,8 +115,10 @@ public class Rewards extends Fragment {
         missionsModel = new ViewModelProvider(this, new MissionControllerFactory(missionsSourceInstance)).get(MissionController.class);
         missionsModel.getModelInstance(missionsModel);
 
+        //Get User Info
         userModel.getUserInfoFromSource("userId", getCurrentUserId());
 
+        //Missions Observer
         final Observer<ArrayList<Missions>> missionObserver = new Observer<ArrayList<Missions>>() {
             @Override
             public void onChanged(ArrayList<Missions> missions) {
@@ -135,6 +132,7 @@ public class Rewards extends Fragment {
             }
         };
 
+        // Rewards Observer
         final Observer<ArrayList<com.example.wowcher.classes.Rewards>> rewardsObserver = new Observer<ArrayList<com.example.wowcher.classes.Rewards>>() {
             @Override
             public void onChanged(@Nullable final ArrayList<com.example.wowcher.classes.Rewards> rewardsList) {
@@ -146,19 +144,6 @@ public class Rewards extends Fragment {
                     // Extract only digits from the text, e.g. "0 p" -> "0"
                     String pointsText = pointsNameText.getText().toString().replaceAll("[^0-9]", "");
                     Log.d("RewardsObserver", "Points Text: " + pointsText);
-
-                    if (!pointsText.isEmpty()) {
-                        try {
-                            int value = Integer.parseInt(pointsText);  // allows 0
-                            Log.d("RewardsObserver", "User Points: " + value);
-
-                            Log.d("RewardsObserver", "Filtered Rewards: " + rewardsList.size());
-
-                        } catch (NumberFormatException e) {
-                            Toast.makeText(requireContext(), "Invalid number format", Toast.LENGTH_SHORT).show();
-                            Log.e("RewardsObserver", "Error parsing points: " + e.getMessage());
-                        }
-                    }
 
                     // Truncate long descriptions
                     for (com.example.wowcher.classes.Rewards r : rewardsList) {
@@ -177,7 +162,7 @@ public class Rewards extends Fragment {
             }
         };
 
-
+        //User Observer
         final Observer<User> userObserver = new Observer<User> () {
             @Override
             public void onChanged(@Nullable final User user) {
@@ -201,6 +186,7 @@ public class Rewards extends Fragment {
             }
         };
 
+        //All LiveData observer functions
         missionsModel.getAllMission().observe(getViewLifecycleOwner(), missionObserver);
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
         rewardsModel.getAllRewards().observe(getViewLifecycleOwner(), rewardsObserver);
@@ -208,119 +194,8 @@ public class Rewards extends Fragment {
         return view;
     }
 
+    //Get User ID from Firebase Auth
     private String getCurrentUserId() {
         return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
-
-
-    //OBSOLETE
-    private void loadRewards(int userPoints) {
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Get current user ID
-        db.collection("rewards")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        List<com.example.wowcher.classes.Rewards> rewardsList = new ArrayList<>();
-
-                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            int rewardId = documentSnapshot.getLong("rewardId").intValue();
-                            String name = documentSnapshot.getString("name");
-                            String description = documentSnapshot.getString("description");
-                            int pointsRequired = documentSnapshot.getLong("pointsRequired").intValue();
-                            String expirationDate = documentSnapshot.getString("expirationDate");
-                            boolean isAvailable = documentSnapshot.getBoolean("available");
-
-                            // Check if the user has already redeemed this reward
-                            checkIfRewardRedeemed(userId, rewardId, isRedeemed -> {
-                                // If the reward is redeemed or the user doesn't have enough points, block it out
-                                boolean isRedeemable = userPoints >= pointsRequired && !isRedeemed;
-
-                                // Create Rewards object with the redeemable status
-                                com.example.wowcher.classes.Rewards reward = new com.example.wowcher.classes.Rewards(rewardId, name, description, pointsRequired, expirationDate, isAvailable);
-
-                                if(description.length() >= 20){
-                                    reward.setDescription(description.substring(0, 20) + "...");
-                                }
-                                // Add to the list
-                                rewardsList.add(reward);
-
-                                // If this is the last reward, notify adapter
-                                if (rewardsList.size() == queryDocumentSnapshots.size()) {
-                                    Log.d("Firestore", "Loaded rewards: " + rewardsList.size());
-                                    // Update the rewardAdapter with the new rewards list
-                                    rewardAdapter.setSearchList(rewardsList);  // or rewardAdapter.notifyDataSetChanged();
-                                }
-                            });
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to load rewards", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    //OBSOLETE
-    private void checkIfRewardRedeemed(String userId, int rewardId, RedeemedCallback callback) {
-        db.collection("users")
-                .document(userId)
-                .collection("redeemedRewards")
-                .document(String.valueOf(rewardId))
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    boolean isRedeemed = documentSnapshot.exists(); // If the document exists, it means the reward has been redeemed
-                    callback.onChecked(isRedeemed);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error checking redeemed status", e);
-                    callback.onChecked(false); // Consider not redeemed if there is an error
-                });
-    }
-
-    // Callback interface to handle the result of the redeemed check
-    public interface RedeemedCallback {
-        void onChecked(boolean isRedeemed);
-    }
-
-    //OBSOLETE
-    private void fetchMissionsAgain() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        db.collection("missions")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Missions> missions = new ArrayList<>();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        Missions mission = doc.toObject(Missions.class);
-                        if (mission != null) {
-
-                            missions.add(mission);
-                        }
-                    }
-                    missionAdapter.setMissionList(missions);
-                });
-    }
-
-    public interface RedeemedVoucherCountCallback {
-        void onCountLoaded(int count);
-    }
-
-    //OBSOLETE
-    private void getRedeemedVoucherCount(RedeemedVoucherCountCallback callback) {
-        String userId = getCurrentUserId();
-
-        db.collection("users")
-                .document(userId)
-                .collection("redeemedVouchers")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    int count = queryDocumentSnapshots.size();
-                    callback.onCountLoaded(count); // Return count via callback
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Failed to load redeemed vouchers", e);
-                    callback.onCountLoaded(0); // Return 0 if error occurs
-                });
-    }
-
 }

@@ -13,7 +13,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.wowcher.classes.Location;
-import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.controller.LocationController;
 import com.example.wowcher.controller.LocationControllerFactory;
@@ -27,7 +26,6 @@ import com.example.wowcher.db.UserSource;
 import com.example.wowcher.db.VoucherSource;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 @RequiresApi(api = Build.VERSION_CODES.O)

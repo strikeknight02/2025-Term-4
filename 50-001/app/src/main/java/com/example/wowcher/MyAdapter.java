@@ -104,7 +104,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
     }
 
     // Firestore method to check if the voucher is redeemed
-    //TODO Change this also
     private void checkIfVoucherRedeemed(String userId, String voucherId, VoucherRedeemedCallback callback) {
         DocumentReference voucherRef = db.collection("users")
                 .document(userId);

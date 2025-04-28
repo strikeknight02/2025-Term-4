@@ -1,7 +1,5 @@
 package com.example.wowcher.classes;
 
-import java.time.LocalDateTime;
-
 public class Voucher {
     // Primary key
     private String voucherId;

@@ -1,6 +1,5 @@
 package com.example.wowcher;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -25,7 +24,6 @@ import com.example.wowcher.db.RewardsSource;
 import com.example.wowcher.db.UserSource;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;

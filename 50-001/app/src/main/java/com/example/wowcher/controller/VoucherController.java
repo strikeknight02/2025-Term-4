@@ -5,14 +5,13 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.db.DBSource;
-import com.example.wowcher.db.VoucherSource;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class VoucherController extends ViewModel {
 
-    private DBSource databaseInstance;
+    private final DBSource databaseInstance;
     private VoucherController instance;
 
     private MutableLiveData<ArrayList<Voucher>> voucherListAll;
@@ -50,25 +49,25 @@ public class VoucherController extends ViewModel {
         return locationVouchers;
     }
 
+    // Get All Users
     public void getVouchersforAll(){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getAllVouchers().setValue((ArrayList<Voucher>) vouchers); };
-        VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
-        voucherSourceInstance.getAllData( method, "" );
+        databaseInstance.getAllData( method, "", "");
     }
 
-    //TODO CHECK THROUGH USAGES
+    //Get User Redeemed Vouchers
     public void getUserRedeemedVouchers(String column, ArrayList<String> redeemedVouchers){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getAllVouchers().setValue( vouchers); };
-        VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
-        voucherSourceInstance.getAllRedeemedVouchers( method, redeemedVouchers );
+        databaseInstance.getAllData( method, "voucherId", redeemedVouchers );
     }
 
+    //Get Vouchers Based On Locations
     public void getVouchersBasedOnLocation(ArrayList<String> locationIds){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getVouchersBasedOnLocation().setValue((ArrayList<Voucher>) vouchers); };
-        VoucherSource voucherSourceInstance = (VoucherSource) databaseInstance;
-        voucherSourceInstance.getLocationBasedVouchers( method, locationIds );
+        databaseInstance.getAllData( method,"locationId", locationIds );
     }
 
+    //Get Voucher based on Query
     public void getVoucherBySomething(String column, Object comparison){
         Consumer<ArrayList<Voucher>> method = (ArrayList<Voucher> vouchers) -> { instance.getRedeemedVouchers().setValue(vouchers.get(0)); };
         databaseInstance.getData(column, comparison, method);

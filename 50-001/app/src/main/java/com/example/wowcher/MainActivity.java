@@ -11,9 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.wowcher.fragments.Rewards;
 import com.example.wowcher.fragments.Map;
 import com.example.wowcher.fragments.Profile;
+import com.example.wowcher.fragments.Rewards;
 import com.example.wowcher.fragments.Vouchers;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;

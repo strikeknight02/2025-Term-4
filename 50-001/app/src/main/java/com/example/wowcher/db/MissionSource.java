@@ -35,10 +35,10 @@ public class MissionSource implements DBSource{
         this.missionCollection = db.collection("missions");
     }
     @Override
-    public void getAllData(Consumer<?> method, Object extras) {
+    public void getAllData(Consumer<?> method, String column, Object extras) {
         if (!extras.equals("")){
             missionCollection
-                    .whereNotIn("missionId", (List<? extends Object>) extras)
+                    .whereNotIn(column, (List<? extends Object>) extras)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override

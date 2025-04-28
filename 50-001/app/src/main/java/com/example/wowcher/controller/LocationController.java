@@ -4,9 +4,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.wowcher.classes.Location;
-import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.db.DBSource;
-import com.example.wowcher.db.LocationSource;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -51,22 +49,25 @@ public class LocationController extends ViewModel {
         return locationBasedOnVouchers;
     }
 
+    //Get All locations
     public void getLocationforAll(){
         Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.getAllLocations().setValue((ArrayList<Location>) locations); };
-        databaseInstance.getAllData( method ,"");
+        databaseInstance.getAllData( method,"" , "");
     }
 
+    //Get locations depending on vouchers
     public void getLocationsBasedOnVoucher(ArrayList<String> locationList){
         Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.locationBasedVouchers().setValue((ArrayList<Location>) locations); };
-        LocationSource locationDatabaseInstance = (LocationSource) databaseInstance;
-        locationDatabaseInstance.getLocationBasedOnVoucher( method, locationList );
+        databaseInstance.getAllData( method,"locationId" , locationList);
     }
 
+    // Get Locations based on value
     public void getSpecificLocations(String category, Object comparison){
         Consumer<ArrayList<Location>> method = (ArrayList<Location> locations) -> { instance.getSomeLocations().setValue((ArrayList<Location>) locations); };
         databaseInstance.getData(category, comparison, method );
     }
 
+    //Update Location attributes
     public void updateLocation(String locationID, String column, Object newValue){
         databaseInstance.update(locationID, column, newValue);
     }

@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.wowcher.classes.Rewards;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.List;
 
 public class ClaimedRewardAdapter extends RecyclerView.Adapter<ClaimedRewardViewHolder> {
     private Context context;
@@ -44,32 +46,26 @@ public class ClaimedRewardAdapter extends RecyclerView.Adapter<ClaimedRewardView
         holder.rewardDescription.setText(reward.getDescription());
         holder.rewardPoints.setText(reward.getPointsRequired() + " Points");  // Points required for the reward
 
-        //TODO CHANGE LTR
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
-        String userId = auth.getCurrentUser().getUid();
 
-        db.collection("users")
-                .document(userId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                        holder.rewardCard.setOnClickListener(view -> {
-                            // Log what is being passed to the Intent
-                            Log.d("INTENT_DATA", "Description: " + reward.getDescription());
-                            Log.d("INTENT_DATA", "Name: " + reward.getName());
-                            Log.d("INTENT_DATA", "Points: " + reward.getPointsRequired());
-                            Log.d("INTENT_DATA", "Timestamp: " + reward.getExpirationDate());
+        holder.rewardCard.setOnClickListener(view -> {
+            // Log what is being passed to the Intent
+            Log.d("INTENT_DATA", "Description: " + reward.getDescription());
+            Log.d("INTENT_DATA", "Name: " + reward.getName());
+            Log.d("INTENT_DATA", "Points: " + reward.getPointsRequired());
+            Log.d("INTENT_DATA", "Timestamp: " + reward.getExpirationDate());
 
 
-                            Intent intent = new Intent(context, ClaimedRewardActivity.class);
-                            intent.putExtra("description", reward.getDescription());
-                            intent.putExtra("name", reward.getName());
-                            intent.putExtra("points", reward.getPointsRequired());
-                            intent.putExtra("timestamp", reward.getExpirationDate());
-                            context.startActivity(intent);
-                        });
-                });
-    }
+            Intent intent = new Intent(context, ClaimedRewardActivity.class);
+            intent.putExtra("description", reward.getDescription());
+            intent.putExtra("name", reward.getName());
+            intent.putExtra("points", reward.getPointsRequired());
+            intent.putExtra("timestamp", reward.getExpirationDate());
+            context.startActivity(intent);
+
+        });
+  }
 
     @Override
     public int getItemCount() {

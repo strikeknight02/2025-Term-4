@@ -6,10 +6,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.wowcher.classes.User;
-import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.db.DBSource;
-import com.example.wowcher.db.UserSource;
-
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -49,16 +46,16 @@ public class UserController extends ViewModel {
         return user;
     }
 
-    //Get All
+    //Get All Users
     public void getUsers(){
         Consumer<ArrayList<User>> method = (ArrayList<User> users) -> { instance.getAllUsers().setValue((ArrayList<User>) users); };
-        databaseInstance.getAllData( method , "");
+        databaseInstance.getAllData( method,"" , "");
     }
 
     //Get User Info From Database
     public void getUserInfoFromSource(String column, Object comparison){
         Consumer<ArrayList<User>> method = (ArrayList<User> userList) -> { if(!userList.isEmpty()) {instance.getUserInfo().setValue(userList.get(0));} else {
-            Log.d("BRO", "NOT WORKING");} };
+            Log.e("ERROR GET User", "User not found!");} };
         databaseInstance.getData(column, comparison, method );
     }
 

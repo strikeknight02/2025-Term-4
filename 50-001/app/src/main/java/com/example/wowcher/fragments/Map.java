@@ -1,59 +1,6 @@
 package com.example.wowcher.fragments;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.fragment.app.Fragment;
-
-import com.example.wowcher.MyAdapter;
-import com.example.wowcher.R;
-import com.example.wowcher.VouchersListActivity;
-import com.example.wowcher.classes.Location;
-import com.example.wowcher.classes.User;
-import com.example.wowcher.classes.Voucher;
-import com.example.wowcher.controller.LocationController;
-import com.example.wowcher.controller.LocationControllerFactory;
-import com.example.wowcher.controller.UserController;
-import com.example.wowcher.controller.UserControllerFactory;
-import com.example.wowcher.controller.VoucherController;
-import com.example.wowcher.controller.VoucherControllerFactory;
-import com.example.wowcher.db.DBSource;
-import com.example.wowcher.db.LocationSource;
-import com.example.wowcher.db.UserSource;
-import com.example.wowcher.db.VoucherSource;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.AutocompletePrediction;
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
-import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.WriteBatch;
-
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -76,18 +23,51 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
-
-import androidx.fragment.app.FragmentActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.example.wowcher.R;
+import com.example.wowcher.VouchersListActivity;
+import com.example.wowcher.classes.Location;
+import com.example.wowcher.classes.Voucher;
+import com.example.wowcher.controller.LocationController;
+import com.example.wowcher.controller.LocationControllerFactory;
+import com.example.wowcher.controller.VoucherController;
+import com.example.wowcher.controller.VoucherControllerFactory;
+import com.example.wowcher.db.DBSource;
+import com.example.wowcher.db.LocationSource;
+import com.example.wowcher.db.VoucherSource;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Map extends Fragment implements OnMapReadyCallback {
@@ -167,17 +147,35 @@ public class Map extends Fragment implements OnMapReadyCallback {
             @Override
             public void onChanged(@Nullable final ArrayList<Location> locationList) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (locationList != null)) {
-                    for (Location location : locationList) {
-                        GeoPoint geoObject = location.getGeolocation();
-                        LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
-                        String imageName = "marker_" + location.getImageName();
-                        int imageResId = currentContext.getResources().getIdentifier(imageName, "drawable", currentContext.getPackageName());
-                        if (imageResId != 0) {
-                            addMarkerToMap(latlngObject, imageResId, location);
-                        } else {
-                            addMarkerToMap(latlngObject, R.drawable.lebron_james, location);
+                    // Check for location permissions
+                    if (ActivityCompat.checkSelfPermission(currentContext,
+                            Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                            ActivityCompat.checkSelfPermission(currentContext,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                        // If don't have, request for permissions
+                        requestPermissions(new String[]{
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                        }, REQUEST_CODE_ASK_PERMISSIONS);
+                    } else {
+                        // Otherwise, retrieve current user location
+                        fetchUserLocation(currentContext, fusedLocationProviderClient);
+                        for (Location location : locationList) {
+                            GeoPoint geoObject = location.getGeolocation();
+                            LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
+                            String imageName = "marker_" + location.getImageName();
+                            int imageResId = currentContext.getResources().getIdentifier(imageName, "drawable", currentContext.getPackageName());
+                            if (imageResId != 0) {
+                                addMarkerToMap(latlngObject, imageResId, location);
+                            } else {
+                                addMarkerToMap(latlngObject, R.drawable.lebron_james, location);
+                            }
                         }
                     }
+
+                } else {
+                    Toast.makeText(getContext(), "Error Fetching Locations", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -236,24 +234,6 @@ public class Map extends Fragment implements OnMapReadyCallback {
         });
 
         checkLocationEnabled();
-
-        // Check for location permissions
-        if (ActivityCompat.checkSelfPermission(currentContext,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(currentContext,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            // If don't have, request for permissions
-            requestPermissions(new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            }, REQUEST_CODE_ASK_PERMISSIONS);
-        } else {
-            // Otherwise, retrieve current user location
-            fetchUserLocation(currentContext, fusedLocationProviderClient);
-            fetchLocationsAndDisplayMarkers();
-        }
-
     }
 
     // Function to setup the search bar
@@ -265,16 +245,12 @@ public class Map extends Fragment implements OnMapReadyCallback {
         autoCompleteTextView.addTextChangedListener(new TextWatcher() {
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String query = s.toString();
-                System.out.println("what");
                 if (!query.isEmpty()) {
-                    //System.out.println(query);
                     // Build a request to fetch autocomplete predictions based on the user's input
                     FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
                             .setSessionToken(autocompleteSessionToken)
@@ -294,9 +270,7 @@ public class Map extends Fragment implements OnMapReadyCallback {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+            public void afterTextChanged(Editable s) {}
 
         });
 
@@ -453,37 +427,5 @@ public class Map extends Fragment implements OnMapReadyCallback {
             return null;
         }
         return apiKey;
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void fetchLocationsAndDisplayMarkers() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("locations")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Location> locationList = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Location location = document.toObject(Location.class);
-                        locationList.add(location);
-                    }
-
-                    // Now you can use your original loop
-                    for (Location location : locationList) {
-
-                        GeoPoint geoObject = location.getGeolocation();
-                        LatLng latlngObject = new LatLng(geoObject.getLatitude(), geoObject.getLongitude());
-                        String imageName = "marker_" + location.getImageName();
-                        int imageResId = currentContext.getResources().getIdentifier(imageName, "drawable", currentContext.getPackageName());
-                        if (imageResId != 0) {
-                            addMarkerToMap(latlngObject, imageResId, location);
-                        } else {
-                            addMarkerToMap(latlngObject, R.drawable.lebron_james, location);
-                        }
-                        // Temporary marker image
-
-                    }
-                })
-                .addOnFailureListener(e ->
-                        Log.e("Firestore", "Error fetching locations", e));
     }
 }

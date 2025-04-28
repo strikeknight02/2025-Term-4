@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -20,19 +21,16 @@ import com.example.wowcher.db.DBSource;
 import com.example.wowcher.db.UserSource;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Register extends AppCompatActivity {
     private EditText nameField, emailField, passwordField, confirmPasswordField, mobileField;
@@ -114,7 +112,7 @@ public class Register extends AppCompatActivity {
                                 String userID = firebaseUser.getUid();
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    User newUser = new User("", name, email, password, mobile, "User", "Bronze", 0,0, LocalDateTime.now().toString(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>() );
+                                    User newUser = new User(userID, name, email, password, mobile, "User", "Bronze", 0,0, LocalDateTime.now().toString(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>() );
                                     userModel.addUser(newUser);
                                     Toast.makeText(Register.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
                                 }
@@ -124,14 +122,17 @@ public class Register extends AppCompatActivity {
                                 startActivity(intent);
                                 finish();
                             }
-                        } else {
-                            Toast.makeText(Register.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }).addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.e("NO REGISTER", e.toString());
+                        if (e instanceof FirebaseAuthWeakPasswordException){
+                            Toast.makeText(Register.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(Register.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                            Log.e("NO REGISTER", e.toString());
+                        }
                     }
                 });
     }

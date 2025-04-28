@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.example.wowcher.classes.Location;
-import com.example.wowcher.classes.Voucher;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -24,6 +23,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class LocationSource implements DBSource{
@@ -36,17 +36,46 @@ public class LocationSource implements DBSource{
     }
 
     @Override
-    public void getAllData(Consumer<?> method, Object extras) {
-        locationCollection
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<Location> locationList = new ArrayList<Location>();
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+    public void getAllData(Consumer<?> method, String column, Object extras) {
+        if (extras.equals("")){
+            locationCollection
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            ArrayList<Location> locationList = new ArrayList<Location>();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                    Location location = document.toObject(Location.class);
+                                    locationList.add(location);
+                                }
+                                if (method instanceof Consumer<?>){
+
+                                    Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                                    methodCast.accept(locationList);
+                                } else {
+                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                                }
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
+
+            locationCollection
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.w(TAG, "Listen failed.", e);
+                                return;
+                            }
+
+                            ArrayList<Location> locationList = new ArrayList<Location>();
+                            for (QueryDocumentSnapshot document : value) {
                                 Location location = document.toObject(Location.class);
                                 locationList.add(location);
                             }
@@ -57,68 +86,39 @@ public class LocationSource implements DBSource{
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
-                    }
-                });
+                    });
+        } else {
+            locationCollection
+                    .whereIn(column, (List<? extends Object>) extras)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            ArrayList<Location> locationList = new ArrayList<Location>();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
 
-        locationCollection
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
-                        }
+                                    Location location = document.toObject(Location.class);
+                                    locationList.add(location);
+                                }
 
-                        ArrayList<Location> locationList = new ArrayList<Location>();
-                        for (QueryDocumentSnapshot document : value) {
-                            Location location = document.toObject(Location.class);
-                            locationList.add(location);
-                        }
-                        if (method instanceof Consumer<?>){
-
-                            Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
-                            methodCast.accept(locationList);
-                        } else {
-                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
-                        }
-                    }
-                });
-    }
-
-    //Location Specific
-    public void getLocationBasedOnVoucher(Consumer<?> method, ArrayList<String> locationsList){
-        locationCollection
-                .whereIn("locationId", locationsList)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<Location> locationList = new ArrayList<Location>();
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-
-                                Location location = document.toObject(Location.class);
-                                locationList.add(location);
-                            }
-
-                            Log.i("WTF", "WHAT " + locationList.toString());
-                            if (method instanceof Consumer<?>){
-                                Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
-                                methodCast.accept(locationList);
+                                Log.i("WTF", "WHAT " + locationList.toString());
+                                if (method instanceof Consumer<?>){
+                                    Consumer<ArrayList<Location>> methodCast = (Consumer<ArrayList<Location>>) method;
+                                    methodCast.accept(locationList);
+                                } else {
+                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                                }
                             } else {
-                                Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                                Log.w(TAG, "Error getting documents.", task.getException());
                             }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
-                    }
-                });
+                    });
+        }
+
     }
 
     @Override

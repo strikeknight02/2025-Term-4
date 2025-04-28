@@ -1,6 +1,5 @@
 package com.example.wowcher;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -25,7 +24,6 @@ import com.example.wowcher.db.UserSource;
 import com.example.wowcher.db.VoucherSource;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +50,6 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1)); // Use 1 column grid layout for simplicity
 
         dataList = new ArrayList<>();
-        //loadVouchersFromFirebase(); // Load vouchers when the activity starts
 
         // Bind the back icon and set the click listener
         ImageView backIcon = findViewById(R.id.wowcher_icon);
@@ -104,6 +101,7 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
 
             }
         };
+
         userModel.getUserInfo().observe(this, userObserver);
     }
 

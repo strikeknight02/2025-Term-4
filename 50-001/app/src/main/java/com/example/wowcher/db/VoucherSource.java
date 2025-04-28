@@ -35,91 +35,63 @@ public class VoucherSource implements DBSource{
     }
 
     @Override
-    public void getAllData(Consumer<?> method, Object extras){
-        voucherCollection
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+    public void getAllData(Consumer<?> method, String column, Object extras) {
+        if (extras.equals("")) {
+            voucherCollection
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
+                                    Voucher voucher = document.toObject(Voucher.class);
+                                    voucherList.add(voucher);
+                                }
+                                if (method instanceof Consumer<?>) {
+
+                                    Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
+                                    methodCast.accept(voucherList);
+                                } else {
+                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
+                                }
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
+
+            voucherCollection
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.w(TAG, "Listen failed.", e);
+                                return;
+                            }
+
+                            ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
+                            for (QueryDocumentSnapshot document : value) {
                                 Voucher voucher = document.toObject(Voucher.class);
                                 voucherList.add(voucher);
                             }
-                            if (method instanceof Consumer<?>){
+                            if (method instanceof Consumer<?>) {
 
                                 Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
                                 methodCast.accept(voucherList);
                             } else {
                                 Log.d("INVALID PARAMETER", "Invalid Method passed!");
                             }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
-                    }
-                });
-
-        voucherCollection
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
-                        }
-
-                        ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
-                        for (QueryDocumentSnapshot document : value) {
-                            Voucher voucher = document.toObject(Voucher.class);
-                            voucherList.add(voucher);
-                        }
-                        if (method instanceof Consumer<?>){
-
-                            Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                            methodCast.accept(voucherList);
-                        } else {
-                            Log.d("INVALID PARAMETER", "Invalid Method passed!");
-                        }
-                    }
-                });
-    }
-
-    //Voucher Specific
-    public void getAllUserVouchers(Consumer<?> method, ArrayList<String> redeemedVouchers){
-        Log.d("THERE ARE REDEEMED", redeemedVouchers.toString());
-        if(redeemedVouchers.isEmpty()){
-            voucherCollection
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @RequiresApi(api = Build.VERSION_CODES.O)
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
-                            if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                    Voucher voucher = document.toObject(Voucher.class);
-                                    voucherList.add(voucher);
-                                }
-                                if (method instanceof Consumer<?>){
-
-                                    Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                                    methodCast.accept(voucherList);
-                                } else {
-                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
-                                }
-                            } else {
-                                Log.w(TAG, "Error getting documents.", task.getException());
-                            }
                         }
                     });
+
         } else {
+            ArrayList<?> list = (ArrayList<?>) extras;
             voucherCollection
-                    .whereNotIn("voucherId", redeemedVouchers)
+                    .whereIn(column, list)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @RequiresApi(api = Build.VERSION_CODES.O)
@@ -132,7 +104,7 @@ public class VoucherSource implements DBSource{
                                     Voucher voucher = document.toObject(Voucher.class);
                                     voucherList.add(voucher);
                                 }
-                                if (method instanceof Consumer<?>){
+                                if (method instanceof Consumer<?>) {
 
                                     Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
                                     methodCast.accept(voucherList);
@@ -145,103 +117,6 @@ public class VoucherSource implements DBSource{
                         }
                     });
         }
-    }
-
-    public void getLocationBasedVouchers(Consumer<?> method, ArrayList<String> locationIds){
-        if(locationIds.isEmpty()){
-            voucherCollection
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @RequiresApi(api = Build.VERSION_CODES.O)
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
-                            if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                    Voucher voucher = document.toObject(Voucher.class);
-                                    voucherList.add(voucher);
-                                }
-                                if (method instanceof Consumer<?>){
-
-                                    Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                                    methodCast.accept(voucherList);
-                                } else {
-                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
-                                }
-                            } else {
-                                Log.w(TAG, "Error getting documents.", task.getException());
-                            }
-                        }
-                    });
-        } else {
-            voucherCollection
-                    .whereIn("locationId", locationIds)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @RequiresApi(api = Build.VERSION_CODES.O)
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
-                            if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                    Voucher voucher = document.toObject(Voucher.class);
-                                    voucherList.add(voucher);
-                                }
-                                if (method instanceof Consumer<?>){
-
-                                    Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                                    methodCast.accept(voucherList);
-                                } else {
-                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
-                                }
-                            } else {
-                                Log.w(TAG, "Error getting documents.", task.getException());
-                            }
-                        }
-                    });
-        }
-    }
-
-    public void getAllRedeemedVouchers(Consumer<?> method, ArrayList<String> redeemedVouchers){
-        if(!redeemedVouchers.isEmpty()){
-            voucherCollection
-                    .whereIn("voucherId", redeemedVouchers)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @RequiresApi(api = Build.VERSION_CODES.O)
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            ArrayList<Voucher> voucherList = new ArrayList<Voucher>();
-                            if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d("DOCUMENT OUTPUT", document.getId() + " => " + document.getData());
-                                    Voucher voucher = document.toObject(Voucher.class);
-                                    voucherList.add(voucher);
-                                }
-                                if (method instanceof Consumer<?>){
-
-                                    Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                                    methodCast.accept(voucherList);
-                                } else {
-                                    Log.d("INVALID PARAMETER", "Invalid Method passed!");
-                                }
-                            } else {
-                                Log.w(TAG, "Error getting documents.", task.getException());
-                            }
-                        }
-                    });
-        } else {
-            if (method instanceof Consumer<?>){
-
-                Consumer<ArrayList<Voucher>> methodCast = (Consumer<ArrayList<Voucher>>) method;
-                methodCast.accept(new ArrayList<>());
-            } else {
-                Log.d("INVALID PARAMETER", "Invalid Method passed!");
-            }
-        }
-
     }
 
     @Override

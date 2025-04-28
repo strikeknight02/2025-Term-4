@@ -3,32 +3,28 @@ package com.example.wowcher.fragments;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.wowcher.ClaimedRewardActivity;
 import com.example.wowcher.ClaimedRewardsActivity;
 import com.example.wowcher.ClaimedVouchersActivity;
 import com.example.wowcher.HelpActivity;
 import com.example.wowcher.Login;
 import com.example.wowcher.MyAdapter;
 import com.example.wowcher.R;
-import com.example.wowcher.classes.Location;
 import com.example.wowcher.classes.User;
 import com.example.wowcher.classes.Voucher;
 import com.example.wowcher.controller.UserController;
@@ -41,14 +37,9 @@ import com.example.wowcher.db.VoucherSource;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Profile extends Fragment {
 
@@ -60,6 +51,7 @@ public class Profile extends Fragment {
     List<Voucher> ownedVouchers;
     FirebaseFirestore db;
     UserController userModel;
+    VoucherController voucherModel;
 
     TextView userNameText; // Declare the TextView
     ConstraintLayout claimedVouchersLayout; // Declare the ConstraintLayout for "Claimed Vouchers"
@@ -100,6 +92,11 @@ public class Profile extends Fragment {
         userModel= new ViewModelProvider(this, new UserControllerFactory(userSourceInstance)).get(UserController.class);
         userModel.getModelInstance(userModel);
 
+        //Voucher
+        DBSource voucherSourceInstance = new VoucherSource(db);
+        voucherModel= new ViewModelProvider(this, new VoucherControllerFactory(voucherSourceInstance)).get(VoucherController.class);
+        voucherModel.getModelInstance(voucherModel);
+
         userModel.getUserInfoFromSource("userId", user.getUid());
 
         final Observer<User> userObserver = new Observer<User> () {
@@ -108,6 +105,8 @@ public class Profile extends Fragment {
                 if (userObj != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
                     String name = userObj.getUsername();
                     userNameText.setText(name != null ? name : "No Name Found");
+
+                    voucherModel.getUserRedeemedVouchers("voucherId", userObj.getRedeemedVouchers());
                 } else {
                     String displayName = user.getDisplayName();
                     userNameText.setText(displayName != null ? displayName : "No Name Found");
@@ -116,6 +115,18 @@ public class Profile extends Fragment {
             }
         };
 
+        final Observer<ArrayList<Voucher>> voucherObserver = new Observer<ArrayList<Voucher>> () {
+            @Override
+            public void onChanged(@Nullable final ArrayList<Voucher> voucherList) {
+                if (voucherList != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                    adapter.setSearchList(voucherList);
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load redeemed vouchers", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        voucherModel.getAllVouchers().observe(getViewLifecycleOwner(), voucherObserver);
         userModel.getUserInfo().observe(getViewLifecycleOwner(), userObserver);
 
         // Handle "Claimed Vouchers" click

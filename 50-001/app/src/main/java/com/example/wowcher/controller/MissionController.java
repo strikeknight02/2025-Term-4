@@ -3,7 +3,6 @@ package com.example.wowcher.controller;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-
 import com.example.wowcher.classes.Missions;
 import com.example.wowcher.db.DBSource;
 
@@ -40,11 +39,13 @@ public class MissionController extends ViewModel {
         return specificMissionList;
     }
 
+    //Get Missions for All excluding specified missions
     public void getMissionForAll(ArrayList<String> missionIdList){
         Consumer<ArrayList<Missions>> method = (ArrayList<Missions> Missions) -> { instance.getAllMission().setValue((ArrayList<Missions>) Missions); };
-        databaseInstance.getAllData( method , !missionIdList.isEmpty()? missionIdList : "");
+        databaseInstance.getAllData( method, "missionId" , !missionIdList.isEmpty()? missionIdList : "");
     }
 
+    //Get Missions based on value
     public void getSpecificMission(String column, String value){
         Consumer<ArrayList<Missions>> method = (ArrayList<Missions> Missions) -> { instance.getSomeMission().setValue((ArrayList<Missions>) Missions); };
         databaseInstance.getData(column, value, method );

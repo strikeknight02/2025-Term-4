@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.wowcher.classes.Voucher;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.List;
 
 public class ClaimedVoucherAdapter extends RecyclerView.Adapter<MyViewHolder> {
     private Context context;
@@ -47,43 +47,34 @@ public class ClaimedVoucherAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
-        String userId = auth.getCurrentUser().getUid();
+    if (dataList.isEmpty()){
+        holder.recLang.setText("Status Unknown");
+        holder.recCard.setClickable(false);
+    } else {
+        holder.recLang.setText("Redeemed");
+        holder.recCard.setAlpha(0.5f);
 
-        String voucherId = voucher.getVoucherId();
-        //TODO need change also
-        db.collection("users")
-                .document(userId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (((ArrayList<String>)documentSnapshot.get("redeemedVouchers")).contains(voucherId)) {
-                        // Not redeemed
-                        holder.recLang.setText("Redeemed");
-                        holder.recCard.setAlpha(0.5f);
+        holder.recCard.setOnClickListener(view -> {
+            Intent intent = new Intent(context, ClaimedVoucherActivity.class);
+            intent.putExtra("Id", voucher.getVoucherId());
+            intent.putExtra("Title", voucher.getTitle());
+            intent.putExtra("Desc", voucher.getDetails());
+            intent.putExtra("Points", voucher.getPointsReward());
+            intent.putExtra("Image", voucher.getImageName());
+            intent.putExtra("Code", voucher.getCode());
+            context.startActivity(intent);
+        });
 
-                        holder.recCard.setOnClickListener(view -> {
-                            Intent intent = new Intent(context, ClaimedVoucherActivity.class);
-                            intent.putExtra("Id", voucher.getVoucherId());
-                            intent.putExtra("Title", voucher.getTitle());
-                            intent.putExtra("Desc", voucher.getDetails());
-                            intent.putExtra("Points", voucher.getPointsReward());
-                            intent.putExtra("Image", voucher.getImageName());
-                            intent.putExtra("Code", voucher.getCode());
-                            context.startActivity(intent);
-                        });
-                    }
-                    int imageResId = context.getResources().getIdentifier(voucher.getImageName(), "drawable", context.getPackageName());
+        int imageResId = context.getResources().getIdentifier(voucher.getImageName(), "drawable", context.getPackageName());
 
-                    if (imageResId != 0) {
-                        holder.recImage.setImageResource(imageResId);
-                    } else {
-                        holder.recImage.setImageResource(R.drawable.lebron_james); // fallback
-                    }
+        if (imageResId != 0) {
+        holder.recImage.setImageResource(imageResId);
+        } else {
+        holder.recImage.setImageResource(R.drawable.lebron_james); // fallback
+        }
 
-                })
-                .addOnFailureListener(e -> {
-                    holder.recLang.setText("Status Unknown");
-                    holder.recCard.setClickable(false);
-                });
+}
+
     }
 
     @Override

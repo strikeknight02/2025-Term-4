@@ -12,11 +12,11 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wowcher.classes.Rewards;
-import com.example.wowcher.R;
+import com.example.wowcher.controller.RewardsController;
+import com.example.wowcher.controller.UserController;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,9 @@ public class RewardsAdapter extends RecyclerView.Adapter<RewardViewHolder> {
     private final Context context;
     private List<Rewards> rewardList;
     private FirebaseFirestore db;
+
+    private UserController userModel;
+    private RewardsController rewardsModel;
 
     // Constructor
     public RewardsAdapter(Context context, List<Rewards> rewardList) {
@@ -117,6 +120,7 @@ public class RewardsAdapter extends RecyclerView.Adapter<RewardViewHolder> {
 
     // Method to check if a reward has been redeemed by the user
     private void checkIfRewardRedeemed(String userId, int rewardId, RedeemedCallback callback) {
+
         DocumentReference rewardRef = db.collection("users")
                 .document(userId);
 

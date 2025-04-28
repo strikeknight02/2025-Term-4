@@ -1,35 +1,23 @@
 package com.example.wowcher;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.wowcher.classes.Rewards;
-import com.example.wowcher.classes.User;
 import com.example.wowcher.controller.RewardsController;
-import com.example.wowcher.controller.RewardsControllerFactory;
 import com.example.wowcher.controller.UserController;
 import com.example.wowcher.controller.UserControllerFactory;
 import com.example.wowcher.db.DBSource;
-import com.example.wowcher.db.RewardsSource;
 import com.example.wowcher.db.UserSource;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RewardDetailActivity extends AppCompatActivity {
 

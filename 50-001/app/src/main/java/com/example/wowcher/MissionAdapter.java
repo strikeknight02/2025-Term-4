@@ -18,7 +18,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -327,7 +326,6 @@ class MissionViewHolder extends RecyclerView.ViewHolder {
     TextView missionNameTextView;
     TextView descriptionTextView;
     TextView pointsRewardTextView;
-    TextView criteriaTextView;
     CardView missionCard;
     TextView completeIndicator;
 
