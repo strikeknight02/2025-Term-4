@@ -106,7 +106,9 @@ public class Profile extends Fragment {
                     String name = userObj.getUsername();
                     userNameText.setText(name != null ? name : "No Name Found");
 
-                    voucherModel.getUserRedeemedVouchers("voucherId", userObj.getRedeemedVouchers());
+                    if (!userObj.getRedeemedVouchers().isEmpty()){
+                        voucherModel.getUserRedeemedVouchers("voucherId", userObj.getRedeemedVouchers());
+                    }
                 } else {
                     String displayName = user.getDisplayName();
                     userNameText.setText(displayName != null ? displayName : "No Name Found");

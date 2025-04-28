@@ -94,9 +94,10 @@ public class ClaimedVouchersActivity extends AppCompatActivity {
             public void onChanged(@Nullable final User user) {
                 if (user != null && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)){
                     ArrayList<String> redeemedVouchers = user.getRedeemedVouchers();
-
-                    voucherModel.getUserRedeemedVouchers("voucherId",redeemedVouchers);
-                    voucherModel.getAllVouchers().observe(ClaimedVouchersActivity.this, voucherObserver);
+                    if (!user.getRedeemedVouchers().isEmpty()){
+                        voucherModel.getUserRedeemedVouchers("voucherId",redeemedVouchers);
+                        voucherModel.getAllVouchers().observe(ClaimedVouchersActivity.this, voucherObserver);
+                    }
                 }
 
             }
