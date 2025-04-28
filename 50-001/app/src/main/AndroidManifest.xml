@@ -20,10 +20,6 @@
         android:theme="@style/Theme.WOWcher"
         tools:targetApi="31">
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBkfdhJhu_JdJYRGhuDiZFzNn_yJrOJSpw" />
-
         <activity
             android:name=".VoucherDetailActivity"
             android:exported="true">
