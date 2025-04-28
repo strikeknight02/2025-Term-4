@@ -1,0 +1,39 @@
+module instruction_rom #(
+    WORDS = 16 // total instructions in this ROM
+)(
+    input addr[$clog2(WORDS)], // this ROM is WORD addressable
+    output out[32],
+    output numinstr[10]
+) {
+    
+    // Driver code, the bottommost instruction is the first instruction
+    // CHECKOFF: write your own test instruction fulfilling the requirements written in the lab handout
+    const INSTRUCTIONS = {
+        32h6FFF0000  // 0x014 JMP(R31, R31)
+        32h77E3FFFB, // 0x010 BEQ(R3, main, R31) 
+        32h607F0020, // 0x00C LD(R31, 32, R3) 
+        32h643F0020, // 0x008 ST(R1, 32, R31)
+        32h90410800, // 0x004 CMPEQ(R1, R1, R2) 
+        32hC03F0003 // 0x000 ADDC(R31, 3, R1) --- main 
+    
+        // Reg[R1] <-- Reg[R31] + 3 // value 3 stored in Reg[R1]
+        // Reg[R2] <-- Reg[R1] == Reg[R1] // value 1 stored in Reg[R2]
+        // Mem[Reg[R31] + 32] <-- Reg[R1] // value 1 stored in Mem[32]
+        // Reg[R3] <-- Mem[Reg[R31] + 32] // value in Mem[32] loaded to Reg[R3]
+        // if (Reg[R3] == 0): PC <-- 0x000 // branches to 0x000 if Reg[R3] == 0; false
+        // PC <-- Reg[R31] & 0xFFFFFFFC // jumps to 0x000 uncondi
+    
+    }
+    
+    const NUM_OF_INSTRUCTIONS = $width(INSTRUCTIONS,0) // compute how many instructions are there
+    
+    always {
+        if (addr < NUM_OF_INSTRUCTIONS){ // check if addr < number of instructions before slicing the array
+            out = INSTRUCTIONS[addr]
+        }
+        else{
+            out = 0
+        }
+        numinstr = NUM_OF_INSTRUCTIONS
+    }
+}

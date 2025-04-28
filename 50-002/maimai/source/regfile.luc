@@ -1,0 +1,113 @@
+module regfile (
+    input clk,  // clock
+    input rst,  // reset
+    input wa[3],
+    input ra1[3],
+    input ra2[3],
+    input we,
+    input wdsel[32],
+    output rd1[32],
+    output rd2[32],
+    output led1[32], 
+    output led2[32],
+    output led3[32],
+    output clock[32],
+    output score[32]
+) {
+    .clk(clk){
+        .rst(rst){
+            dff led1_dff[32](#INIT(32b10100100010001000100010001000101))
+            dff led2_dff[32](#INIT(32b01010010001000100010001000100010))
+            dff led3_dff[32](#INIT(32b00001001100100010001000100010000))
+            dff score_dff[32](#INIT(0))
+            dff clk_dff[32](#INIT(3))
+            dff dff_5[32](#INIT(0))
+            dff dff_6[32](#INIT(0))
+            dff dff_7[32](#INIT(0))
+        }
+    }
+    
+    always {
+        // setting up outputs
+        led1 = led1_dff.q
+        led2 = led2_dff.q
+        led3 = led3_dff.q
+        score = score_dff.q
+        rd1 = led1_dff.q
+        rd2 = led1_dff.q
+        clock = clk_dff.q
+        
+        //connecting dffs
+        led1_dff.d = led1_dff.q
+        led2_dff.d = led2_dff.q
+        led3_dff.d = led3_dff.q
+        score_dff.d = score_dff.q
+        clk_dff.d = clk_dff.q
+        dff_5.d = dff_5.q
+        dff_6.d = dff_6.q
+        dff_7.d = dff_7.q
+        
+        //outputing read address 1
+        case (ra1){
+            b000:
+                rd1 = led1_dff.q
+            b001:
+                rd1 = led2_dff.q
+            b010:
+                rd1 = led3_dff.q
+            b011:
+                rd1 = score_dff.q
+            b100:
+                rd1 = clk_dff.q
+            b101:
+                rd1 = dff_5.q
+            b110:
+                rd1 = dff_6.q
+            b111:
+                rd1 = dff_7.q
+        }
+        
+        //outputting read address 2
+        case (ra2){
+            b000:
+                rd2 = led1_dff.q
+            b001:
+                rd2 = led2_dff.q
+            b010:
+                rd2 = led3_dff.q
+            b011:
+                rd2 = score_dff.q
+            b100:
+                rd2 = clk_dff.q
+            b101:
+                rd2 = dff_5.q
+            b110:
+                rd2 = dff_6.q
+            b111:
+                rd2 = dff_7.q
+        }
+        
+        //if write enabled
+        if (we){
+            //write to respective register
+            case (wa){
+                b000:
+                    led1_dff.d = wdsel
+                b001:
+                    led2_dff.d = wdsel
+                b010:
+                    led3_dff.d = wdsel
+                b011:
+                    score_dff.d = wdsel
+                b100:
+                    clk_dff.d = wdsel
+                b101:
+                    dff_5.d = wdsel
+                b110:
+                    dff_6.d = wdsel
+                b111:
+                    dff_7.d = wdsel
+            }
+        }
+    }
+}
